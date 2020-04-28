@@ -1,1 +1,1 @@
-siehe [wiki](../home).
+siehe [wiki](/..).
