@@ -1,0 +1,9 @@
+# vim temp files
+*.swp
+
+# Mac disk files
+.DS_Store
+*/.DS_Store
+
+# python byte code directory
+__pycache__/*
