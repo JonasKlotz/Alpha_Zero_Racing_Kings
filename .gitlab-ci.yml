@@ -1,0 +1,24 @@
+# Wir legen fest, dass wir unser Programm mit Python in der Version 3.7 ausführen möchten.
+ image: "python:3.7"
+
+# Wir stellen sicher, dass unsere Umgebung für die Ausführung unseres Programms bereit ist.
+before_script:
+  - python --version
+  - pip3 install -r requirements.txt
+
+# Wir haben zwei Stages: Das Linting und das Testing
+stages:
+  - Lint
+  - Test
+
+# Wir prüfen, ob der eingecheckte Code auch den PEP-8-Richtlinien entspricht.
+linting:
+  stage: Lint
+  script:
+    - pylint *.py
+
+# Wir lassen alle Tests laufen. Die Dateien dafür beginnen mit "test". 
+unittest:
+  stage: Test
+  script:
+    - python3 test*.py
