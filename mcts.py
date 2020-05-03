@@ -21,7 +21,7 @@ class mock_translator():
 
 
 class mock_model():
-    def inference(self):
+    def inference(self, position):
         p = np.random.rand(*DIMENSIONS)
         v = np.random.rand(1)[0]
 
@@ -45,56 +45,71 @@ class mcts():
 
 
 
-class mcts_node():
+class node():
     def __init__(self, translator, model, position):
 
         legal_moves = translator.get_legal_moves(position)
-        mask = legal_moves == 1
-        num_of_legal_moves = mask.sum()
+        self.legal_move_indices = np.where(legal_moves == 1)
+        num_of_legal_moves = len(self.legal_move_indices[0])
         self.children = [None] * num_of_legal_moves
 
-        p, v = model.inference(position)
+        p, self.v = model.inference(position)
         p_legal = p * legal_moves 
 
         # initialise tensor to hold 
         # 5 values per edge
         entries_per_edge = 5
-        edges = np.zeros((*legal_moves.shape, entries_per_edge))
+        self.edges = np.zeros((*legal_moves.shape, entries_per_edge))
 
         # store prior values from
         # p_legal in edges
-        edges[:,:,:,PPRIOR] = p_legal 
+        self.edges[:,:,:,PPRIOR] = p_legal 
 
         # for every legal move,
         # store list index which refers to
         # corresponding child node
-        node_indices = *np.where(mask), np.ones(mask.sum(), dtype=np.int) * CHILDNODE 
-        edges[node_indices] = np.arange(mask.sum())
+        legal_edges = self.all_legal_moves()
+        legal_edges[:,CHILDNODE] = np.arange(num_of_legal_moves) 
 
-        # save changes
-        self.edges = edges
-        self.mask = mask
-        self.v = v
 
     def get_evaluation(self):
         return self.v
 
-    def select_move(self):
+
+    def index_of_best_move(self):
         '''
         returns the index of the best move
         which then can be used to access the 
         5 values P, N, W, Q and childnode
         '''
 
-        legal_moves = np.where(self.mask)
-        edges = self.edges
+        legal_moves = self.all_legal_moves()
 
-        U = edges[legal_moves][:,PPRIOR] / (edges[legal_moves][:,NCOUNT] + 1)
-        Q = edges[legal_moves][:,QMEANVALUE] 
+        U = legal_moves[:,PPRIOR] / (legal_moves[:,NCOUNT] + 1)
+        Q = legal_moves[:,QMEANVALUE] 
         best_move = (Q + U).argmax()
-        move_index = tuple(np.array(legal_moves).T[best_move])
+        move_index = self.legal_to_total_index(best_move)
 
         return move_index
+
+
+    def all_legal_moves(self):
+        '''
+        returns only the legal moves
+        '''
+        return self.edges[self.legal_move_indices]
+
+
+    def legal_to_total_index(self, index):
+        '''
+        translates index to a move
+        in the legal move selection
+        to an index to the same move
+        in all moves
+        '''
+        return tuple(np.array(self.legal_move_indices).T[index])
+
+
 
 
 
