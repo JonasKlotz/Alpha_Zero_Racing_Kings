@@ -39,7 +39,6 @@ six==1.14.0
 toml==0.10.0
 tornado==6.0.4
 typed-ast==1.4.1
-unattended-upgrades==0.1
 urllib3==1.25.9
 wcwidth==0.1.9
 wrapt==1.12.1
