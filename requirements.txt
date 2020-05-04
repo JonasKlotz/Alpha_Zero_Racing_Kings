@@ -28,7 +28,6 @@ pyasn1==0.1.9
 pycparser==2.20
 pycrypto==2.6.1
 pycurl==7.43.0
-pygobject==3.22.0
 pylint==2.5.0
 pyparsing==2.4.7
 pytest==5.4.1
