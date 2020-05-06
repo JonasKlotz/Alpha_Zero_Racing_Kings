@@ -97,7 +97,7 @@ class Game:
         """
         return self.board.board_fen()
 
-    def get_moves_obeservation(self):
+    def get_moves_observation(self):
         """
 
         :return: List of moves as UCI String
@@ -191,4 +191,4 @@ class Game:
 
 
 game = Game()
-print(game.get_moves_obeservation())
+print(game.get_moves_observation())
