@@ -2,6 +2,7 @@
 
 import yaml
 from model import build_model
+import keras
 from keras.utils.vis_utils import plot_model
 
 
@@ -39,4 +40,15 @@ model_name = cfg['name'] + '%dv%d' % (model_depth, version)
 print('model name: %s' % model_name)
 
 
-(body, policy_head, value_head) = build_model(cfg_model)
+input_shape = cfg_model['input_shape']
+
+input_tensor = keras.layers.Input(shape=input_shape)
+(body, policy_head, value_head) = build_model(input_tensor, cfg_model)
+
+model = keras.models.Model(inputs=[input_tensor], outputs=[
+                           policy_head, value_head])
+
+model.summary()
+
+plot_model(model, to_file='Model/%s.png' % model_name,
+           show_shapes=True, show_layer_names=True)

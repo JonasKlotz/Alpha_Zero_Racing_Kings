@@ -4,9 +4,10 @@ from keras.layers import Dense, Conv2D, BatchNormalization, Activation, add
 from keras.regularizers import l2
 
 
-def build_model(cfg_model):
+def build_model(input, cfg_model):
     ''' Builds the ResNet model
     Args:
+        input (tensor): the input tensor
         cfg_model (dict): a dictionary containing the
                           model configuration settings
     Returns:
@@ -14,7 +15,6 @@ def build_model(cfg_model):
             body 
     '''
     # read model configuration
-    input_shape = cfg_model['input_shape']
     num_res_block = cfg_model['resnet_depth']
     num_res_block_layers = cfg_model['residual_block']['layers']
     num_res_block_filters = cfg_model['residual_block']['filters']
@@ -25,8 +25,7 @@ def build_model(cfg_model):
     policy_output_filters = cfg_model['policy_head']['output_shape'][-1]
 
     # Body
-    x = Sequential()
-    x = keras.layers.Input(input_shape)
+    x = input
     for res_block in range(num_res_block):
         x = residual_block(input=x,
                            layers=num_res_block_layers,
@@ -147,7 +146,7 @@ def policy_head_model(input, output_filters):
                padding='same',
                kernel_initializer='he_normal',
                kernel_regularizer=l2(1e-4))(x)
-    x = Activation('softmax')   # Does this have to be a prob. dist.?
+    # x = Activation('softmax')   # Does this have to be a prob. dist.?
     return x
 
 
@@ -172,8 +171,8 @@ def value_head_model(input):
     x = Activation('relu')(x)
     x = Dense(256,
               activation='relu',
-              kernel_initializer='he_normal')
+              kernel_initializer='he_normal')(x)
     x = Dense(output_size,
               activation='tanh',
-              kernel_initializer='he_normal')
+              kernel_initializer='he_normal')(x)
     return x
