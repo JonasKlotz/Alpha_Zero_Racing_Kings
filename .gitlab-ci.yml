@@ -22,4 +22,4 @@ linting:
 unittest:
   stage: Test
   script:
-    - python3 test*.py
+    - python3 Tests/test*.py
