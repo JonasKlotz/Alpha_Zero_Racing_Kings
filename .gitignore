@@ -10,3 +10,6 @@
 
 # VSCode config files
 .vscode
+
+# Venv
+.venv
