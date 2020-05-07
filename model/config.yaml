@@ -1,0 +1,34 @@
+### YAML Config-File
+
+name: 'AlphaZero'
+version: 1
+model:
+    # input feature dimensions
+    input_shape: !!python/tuple [8,8,11]    # could be read from data..
+    # total number of residual blocks
+    resnet_depth: 9
+    # residual block specificcations
+    residual_block:
+        # number of layers in residual block
+        layers: 2
+        # number of filters per layer
+        filters: 128
+        # convolutional filter size: SxS
+        filter_size: 3
+        # stride of convolutional layer
+        filter_stride: 1
+        # add batch normalization
+        batch_normalization: True
+        # add skip layer
+        skip_layer: True    # XXX remove?
+    policy_head:
+        # output feature dimensions
+        output_shape: !!python/tuple [8,8,64]
+        layers: # XXX not sure how to specify
+            - {
+            }
+    value_head:
+        output_shape: !!python/tuple [1] # quite unnecessary
+        layers: # XXX not sure how to specify
+            - {
+            }

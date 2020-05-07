@@ -7,3 +7,6 @@
 
 # python byte code directory
 __pycache__/*
+
+# VSCode config files
+.vscode
