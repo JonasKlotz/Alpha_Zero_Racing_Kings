@@ -6,7 +6,7 @@
 */.DS_Store
 
 # python byte code directory
-__pycache__/*
+**/__pycache__/
 
 # VSCode config files
 .vscode
