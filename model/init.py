@@ -28,7 +28,7 @@ def dump_config(config):
     print(yaml.dump(config))
 
 
-cfg = load_config('config.yaml')
+cfg = load_config('Model/config.yaml')
 print('Configuration Settings:')
 dump_config(cfg)
 
