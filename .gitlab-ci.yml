@@ -16,10 +16,10 @@ stages:
 linting:
   stage: Lint
   script:
-    - pylint --evaluation= min(10.0, 12.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)) *.py 
+    - pylint *.py #--evaluation= min(10.0, 12.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10))
 
 # Wir lassen alle Tests laufen. Die Dateien dafür beginnen mit "test". 
 unittest:
   stage: Test
   script:
-    - python3 test*.py
+    - python3 Tests/test*.py

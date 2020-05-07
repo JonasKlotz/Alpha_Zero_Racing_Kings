@@ -1,9 +1,15 @@
 from copy import copy
 import io
+
+import enum
+
+Winner = enum.Enum("Winner", "black white draw")  # enumerator for winner
+
 # for svg rendering in pycharm
 from PIL import Image
 from cairosvg import svg2png
 import random
+
 import chess  # pip install python-chess
 import chess.variant
 import chess.engine
@@ -13,10 +19,7 @@ import chess.svg
 
 class Game:
     std_fen = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
-    valid_moves = []
-    white_to_win = False
-    black_to_win = False
-    engine = None
+    engine = None  # TODO does not belong in this class
 
     move_count = 0
 
@@ -24,7 +27,32 @@ class Game:
     def __init__(self, fen=std_fen):
         self.board = chess.variant.RacingKingsBoard()
         self.player_to_move = 1
-        print(self.board)
+        self.winner = None  # type: Winner
+        self.result = None
+        # print(self.board)
+
+    def reset(self):
+        """
+        Resets to begin a new game
+        :return Game: self
+        """
+        self.board = chess.variant.RacingKingsBoard()
+        self.player_to_move = 1
+        self.winner = None  # type: Winner
+        self.result = None
+        self.move_count = 0
+        return self
+
+    def update(self, board):
+        """
+        Like reset, but resets the position to whatever was supplied for board
+        :param chess.Board board: position to reset to
+        :return game: self
+        """
+        self.board = chess.variant.RacingKingsBoard(board)
+        self.winner = None
+        self.move_count = 0
+        return self
 
     def get_move_list(self):
         """
@@ -61,13 +89,21 @@ class Game:
         self.player_to_move = (self.player_to_move + 1) % 2  # kann man bestimmt schöner machen
         self.is_won()
 
-    def get_fen(self, ):
+    def get_observation(self):
         """
 
         Returns:
-            fen which will serve as an input to agent.predict
+            fen which will be translated to tensor
         """
         return self.board.board_fen()
+
+    def get_moves_observation(self):
+        """
+
+        :return: List of moves as UCI String
+        """
+        ml = self.get_move_list()
+        return [move.uci() for move in ml]
 
     def is_won(self):
         """
@@ -88,14 +124,14 @@ class Game:
         Returns:
             boolean: True if game ended in a draw, False otherwise
         """
-        return self.board.is_variant_draw()
+        return self.board.is_variant_draw()  #TODO Check 5fold repetition?
 
     def get_score(self, player):  # 0 for black, 1 for white
         """
         Input:
             player: current player
         Returns:
-            1-0, 0-1 or 1/2-1/2 if the game is over. Otherwise, the result is undetermined: *.
+            1, 0 or 1/2 if the game is over, depending on the plaer. Otherwise, the result is undetermined: *.
         """
         res = self.board.result()
         if res is '*':
@@ -134,7 +170,11 @@ class Game:
         plays random move
         """
         moves = self.get_move_list()
-        rnd_move = random.choice(moves)
+        try:
+            rnd_move = random.choice(moves)
+        except:
+            self.show_game()
+            RuntimeError()
         self.make_move(rnd_move)
 
     def play_stockfish(self, limit=1.0):  # if not working make engine/stockfish-x86_64 executable
@@ -149,12 +189,6 @@ class Game:
         self.make_move(result.move)
 
 
-game = Game()
-print(game.board.turn)
 
-while not game.is_ended():
-    game.play_stockfish(limit=0.01)
-game.show_game()
-res = game.get_score(1)
-print(res)
-game.engine.quit()
+game = Game()
+print(game.get_moves_observation())
