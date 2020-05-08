@@ -7,31 +7,46 @@ model:
     input_shape: !!python/tuple [8,8,11]    # could be read from data..
     # total number of residual blocks
     resnet_depth: 9
-    # residual block specificcations
+    # residual block specifications
     residual_block:
         # number of layers in residual block
         layers: 2
         # number of filters per layer
-        filters: 128
+        num_filters: 128
         # convolutional filter size: SxS
         filter_size: 3
         # stride of convolutional layer
         filter_stride: 1
         # add batch normalization
         batch_normalization: True
-        # add skip layer
-        skip_layer: True    # XXX remove?
     policy_head:
-        # output feature dimensions
-        output_shape: !!python/tuple [8,8,64]
-        layers: # XXX not sure how to specify
-            - {
-            }
+        # policy head's residual layer specifications
+        residual_layer:
+            num_filters: 192
+            filter_size: 3
+            filter_stride: 1
+            batch_normalization: True
+        # policy head's fully connected layer specifications
+        dense_layer:
+            # number of output filters for dense layer
+            # this is also the number of valid moves (8x8xnum_filters)
+            num_filters: 64
+            # type of activation function
+            activation: 'relu'
     value_head:
-        output_shape: !!python/tuple [1] # quite unnecessary
-        layers: # XXX not sure how to specify
-            - {
-            }
+        # value head's residual layer specifications
+        residual_layer:
+            num_filters: 4
+            filter_size: 3
+            filter_stride: 1
+            batch_normalization: True
+        # value head's fully connected layer specifications
+        dense_layer:
+            # number of output filters for first dense layer
+            # !After Flatten(), downsampling from 8x8xres_num_filt -> num_filters
+            num_filters: 256
+            # type of activation function for second dense layer
+            activation: 'tanh'
 
 
 ### Leela Zero Config ###

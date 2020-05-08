@@ -1,6 +1,6 @@
 import keras
 from keras.models import Sequential
-from keras.layers import Dense, Conv2D, BatchNormalization, Activation, add
+from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
 from keras.regularizers import l2
 
 
@@ -17,15 +17,18 @@ def build_model(input, cfg_model):
     # read model configuration
     num_res_block = cfg_model['resnet_depth']
     num_res_block_layers = cfg_model['residual_block']['layers']
-    num_res_block_filters = cfg_model['residual_block']['filters']
+    num_res_block_filters = cfg_model['residual_block']['num_filters']
     res_block_filter_size = cfg_model['residual_block']['filter_size']
     res_block_filter_stride = cfg_model['residual_block']['filter_stride']
     res_block_batch_normalization = cfg_model['residual_block']['batch_normalization']
-    # policy_output_filters corresponds to the number of available moves
-    policy_output_filters = cfg_model['policy_head']['output_shape'][-1]
 
     # Body
     x = input
+    x = residual_layer(input=x,
+                       num_filters=num_res_block_filters,
+                       kernel_size=res_block_filter_size,
+                       stride=res_block_filter_stride,
+                       batch_normalization=res_block_batch_normalization)
     for res_block in range(num_res_block):
         x = residual_block(input=x,
                            layers=num_res_block_layers,
@@ -35,11 +38,12 @@ def build_model(input, cfg_model):
                            batch_normalization=res_block_batch_normalization)
     body = x
 
-    policy_head = policy_head_model(body, policy_output_filters)
-    value_head = value_head_model(body)
+    # Head
+    policy_head = policy_head_model(
+        input=body, cfg_policy=cfg_model['policy_head'])
+    value_head = value_head_model(
+        input=body, cfg_value=cfg_model['value_head'])
 
-    # Do these share weights or will training
-    # result in training 3 seperate models?
     return (body, policy_head, value_head)
 
 
@@ -108,71 +112,71 @@ def residual_block(input,
                            stride=stride,
                            activation=activation)
     # skip connection
-    y = residual_layer(input=input,
-                       num_filters=num_filters,
-                       kernel_size=kernel_size,
-                       stride=stride,
-                       activation=None)
-    x = keras.layers.add([x, y])
+    x = keras.layers.add([x, input])
     return Activation(activation)(x)
 
 
-# Disclaimer: I don't know what I'm doing here
-
-def policy_head_model(input, output_filters):
+def policy_head_model(input, cfg_policy):
     ''' The policy head model
 
     Args:
         input (tensor): input tensor
-        output_filters (int): number of filters for the last
-                              convolutional layer, corresponds to
-                              number of actions 8x8xN_act
+        cfg_policy (dict): configuration of policy head
 
     Returns:
         x (tensor): policy head model
     '''
+    # read cfg
+    res_num_filters = cfg_policy['residual_layer']['num_filters']
+    res_filter_size = cfg_policy['residual_layer']['filter_size']
+    res_filter_stride = cfg_policy['residual_layer']['filter_stride']
+    res_batch_normalization = cfg_policy['residual_layer']['batch_normalization']
+    dense_num_filters = cfg_policy['dense_layer']['num_filters']
+    dense_activation = cfg_policy['dense_layer']['activation']
+
+    # build model
     x = input
-    x = Conv2D(192,
-               kernel_size=1,
-               strides=1,
-               padding='same',
-               kernel_initializer='he_normal',
-               kernel_regularizer=l2(1e-4))(x)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = Conv2D(output_filters,
-               kernel_size=1,
-               strides=1,
-               padding='same',
-               kernel_initializer='he_normal',
-               kernel_regularizer=l2(1e-4))(x)
-    # x = Activation('softmax')   # Does this have to be a prob. dist.?
+    x = residual_layer(input=x,
+                       num_filters=res_num_filters,
+                       kernel_size=res_filter_size,
+                       stride=res_filter_stride,
+                       batch_normalization=res_batch_normalization)
+    x = Dense(dense_num_filters,
+              activation=dense_activation,
+              kernel_initializer='he_normal')(x)
     return x
 
 
-def value_head_model(input):
+def value_head_model(input, cfg_value):
     ''' The value head model
 
     Args:
         input (tensor): input tensor
+        cfg_value (dict): configuration of value head
 
     Returns:
         x (tensor): value head model
     '''
-    output_size = 1
+    # read cfg
+    res_num_filters = cfg_value['residual_layer']['num_filters']
+    res_filter_size = cfg_value['residual_layer']['filter_size']
+    res_filter_stride = cfg_value['residual_layer']['filter_stride']
+    res_batch_normalization = cfg_value['residual_layer']['batch_normalization']
+    dense_num_filters = cfg_value['dense_layer']['num_filters']
+    dense_activation = cfg_value['dense_layer']['activation']
+
+    # build model
     x = input
-    x = Conv2D(192,
-               kernel_size=1,
-               strides=1,
-               padding='same',
-               kernel_initializer='he_normal',
-               kernel_regularizer=l2(1e-4))(x)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = Dense(256,
+    x = residual_layer(input=x,
+                       num_filters=res_num_filters,
+                       kernel_size=res_filter_size,
+                       stride=res_filter_stride,
+                       batch_normalization=res_batch_normalization)
+    x = Flatten()(x)
+    x = Dense(dense_num_filters,
               activation='relu',
               kernel_initializer='he_normal')(x)
-    x = Dense(output_size,
-              activation='tanh',
+    x = Dense(1,
+              activation=dense_activation,
               kernel_initializer='he_normal')(x)
     return x

@@ -50,5 +50,6 @@ model = keras.models.Model(inputs=[input_tensor], outputs=[
 
 model.summary()
 
+# graphviz has to be installed https://www.graphviz.org/
 plot_model(model, to_file='Model/%s.png' % model_name,
            show_shapes=True, show_layer_names=True)
