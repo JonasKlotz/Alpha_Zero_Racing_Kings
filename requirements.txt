@@ -1,6 +1,7 @@
 alabaster==0.7.12
 astroid==2.4.1
 attrs==19.3.0
+autopep8==1.5.2
 Babel==2.8.0
 certifi==2020.4.5.1
 chardet==3.0.4
@@ -25,6 +26,7 @@ pathlib2==2.3.5
 pluggy==0.13.1
 py==1.8.1
 pyasn1==0.1.9
+pycodestyle==2.5.0
 pycparser==2.20
 pycrypto==2.6.1
 pycurl==7.43.0
@@ -38,6 +40,7 @@ pytz==2020.1
 pyxdg==0.25
 PyYAML==5.3.1
 requests==2.23.0
+rope==0.17.0
 scipy==1.4.1
 six==1.14.0
 snowballstemmer==2.0.0
