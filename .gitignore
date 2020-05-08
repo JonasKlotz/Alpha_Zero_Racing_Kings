@@ -7,3 +7,4 @@
 
 # python byte code directory
 __pycache__/*
+*/__pycache__/*
