@@ -10,3 +10,6 @@ __pycache__/*
 
 # VSCode config files
 .vscode
+
+# PyCharm
+.idea/*
