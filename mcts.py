@@ -1,3 +1,11 @@
+'''
+mcts module containing classes
+for the alpha zero tree search.
+the mcts module is the entry
+point and the actual tree is
+built with node objects defined
+in the node module.  
+'''
 import numpy as np
 
 # dimensions of mock object tensors
@@ -12,6 +20,7 @@ QMEANVALUE = 3
 CHILDNODE = 4
 
 
+
 class MockTranslator():
     def get_legal_moves(self, position):
         legal_moves = np.random.rand(*DIMENSIONS)
@@ -22,34 +31,52 @@ class MockTranslator():
 
 class MockModel():
     def inference(self, position):
-        p = np.random.rand(*DIMENSIONS)
-        v = np.random.rand(1)[0]
+        policy = np.random.rand(*DIMENSIONS)
+        evaluation = np.random.rand(1)[0]
 
-        return (p, v)
+        return (policy, evaluation)
 
 
 class Mcts():
-    def __init__(self, translator, model, sims_per_move=10):
+    '''
+    Mcts represents the
+    alpha zero search tree.
+    '''
+    def __init__(self, translator, model, position, sims_per_move=10):
         self.translator = translator
-        self.modell = modell
-        self.root = mcts_node(translator, model)
+        self.model = model
+        self.root = Node(translator, model, position)
         self.sims_per_move = sims_per_move
 
-    def get_move_distribution(self, position):
+    def _tree_search(self):
         for i in range(self.sims_per_move):
-            simulation_run(position) 
-        pass
+            self.root.rollout()
 
-    def simulation_run(self):
-        pass
+    def _set_root_to(position):
+
 
 
 
 class Node():
+    '''
+    Node of the Alpha Zero Tree Search.
+    Each node represents a game state
+    and holds all possible moves as
+    edges to other states. Edges keep
+    track of the variables of the
+    algorithm: N, W, Q, P.
+    '''
+    # pylint: disable=C0326
     def __init__(self, translator, model, position):
 
-        self.v = 0 
+        self.translator = translator
+        self.model = model
+        self.evaluation = 0
         self.endposition = False
+
+        self.position_shape = position.shape
+        self.position = np.where(position == 1)
+
         legal_moves = translator.get_legal_moves(position)
         self.legal_move_indices = np.where(legal_moves == 1)
         num_of_legal_moves = len(self.legal_move_indices[0])
@@ -57,29 +84,28 @@ class Node():
 
         if num_of_legal_moves == 0:
             # reached end of game
-            self.v = translator.get_result(position)
+            self.evaluation = translator.get_result(position)
             self.endposition = True
 
-        else: 
+        else:
             # expanding leaf node
-            p, self.v = model.inference(position)
-            p_legal = p * legal_moves 
+            policy, self.evaluation = model.inference(position)
+            p_legal = policy * legal_moves
 
-            # initialise tensor to hold 
+            # initialise tensor to hold
             # 5 values per edge
             entries_per_edge = 5
             self.edges = np.zeros((*legal_moves.shape, entries_per_edge))
 
             # store prior values from
             # p_legal in edges
-            self.edges[:,:,:,PPRIOR] = p_legal 
+            self.edges[:, :, :, PPRIOR] = p_legal
 
             # for every legal move,
             # store list index which refers to
             # corresponding child node
-            legal_edges = self.all_legal_moves()
-            legal_edges[:,CHILDNODE] = np.arange(num_of_legal_moves) 
-
+            legal_edges = self._all_legal_moves()
+            legal_edges[:,CHILDNODE] = np.arange(num_of_legal_moves)
 
     def rollout(self):
         '''
@@ -90,81 +116,66 @@ class Node():
         if self.endposition:
             # terminate recursion
             # if end state is reached
-            return self.v
+            return self.evaluation
 
-        i = self.index_of_best_move()
+        i = self._index_of_best_move()
         j = self.edges[i][CHILDNODE]
         nextnode = self.children[j]
-        v = 0
+        evaluation = 0
 
-        if nextnode == None:
+        if nextnode is None:
             # terminate recursion
             # on leaf expansion
             # TODO: where do we get new position?
-            newposition = Null
+            newposition = None
             leaf = Node(self.translator, self.model, newposition)
-            v = leaf.v
+            evaluation = leaf.evaluation
 
         else:
             # recursion
-            v = nextnode.rollout()
+            evaluation = nextnode.rollout()
 
         # calculate edge stats
         count = self.edges[i][NCOUNT] + 1
-        accum = self.edges[i][WACCUMVALUE] + v 
+        accum = self.edges[i][WACCUMVALUE] + evaluation
 
         # update edge stats
         self.edges[i][QMEANVALUE] = accum / count
         self.edges[i][NCOUNT] = count
         self.edges[i][WACCUMVALUE] = accum
 
-        return v
+        return evaluation
 
-
-    def index_of_best_move(self):
+    def _index_of_best_move(self):
         '''
         returns the index of the best move
-        which then can be used to access the 
+        which then can be used to access the
         5 values P, N, W, Q and childnode
         '''
 
-        legal_moves = self.all_legal_moves()
+        legal_moves = self._all_legal_moves()
 
         U = legal_moves[:,PPRIOR] / (legal_moves[:,NCOUNT] + 1)
-        Q = legal_moves[:,QMEANVALUE] 
+        Q = legal_moves[:,QMEANVALUE]
         best_move = (Q + U).argmax()
-        move_index = self.legal_to_total_index(best_move)
+        move_index = self._legal_to_total_index(best_move)
 
         return move_index
 
-
-    def all_legal_moves(self):
+    def _all_legal_moves(self):
         '''
         returns only the legal moves
         '''
         return self.edges[self.legal_move_indices]
 
-
-    def legal_to_total_index(self, index):
+    def _legal_to_total_index(self, index):
         '''
         translates index to a move
         in the legal move selection
         to an index to the same move
         in all moves
         '''
-        return tuple(np.array(self.legal_move_indices).T[index])
+        return tuple(np.array(self.legal_move_indices).T[index])    
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # pylint: enable=C0326
