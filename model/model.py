@@ -2,7 +2,7 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
 from keras.regularizers import l2
-
+from time import time
 
 def build_model(input, cfg_model):
     ''' Builds the ResNet model
@@ -180,3 +180,27 @@ def value_head_model(input, cfg_value):
               activation=dense_activation,
               kernel_initializer='he_normal')(x)
     return x
+
+
+def save(model, dir_path):  # (self, conf_path, weight_path):  Überlegen ob nur modell oder modell und weights save/load
+    """
+    :param self: model
+    :param conf_path: path to save configuration from
+    :param weight_path: path to save weights from
+    """
+    print(f"save model to {dir_path}")  # logger.debug(f"save model to {config_path}")
+    t = time()
+    model.save(dir_path + '/{}.h5'.format(int(t)))
+    print("sucess")
+
+
+def load(model_path):  # , conf_path, weight_path):
+    """
+    :param self: model
+    :param conf_path: path to load configuration from
+    :param weight_path: path to load weights from
+    """
+    print(f"load model to {model_path}")  # logger.debug(f"load model to {config_path}")
+    model = keras.models.load_model(model_path)
+    print("sucess")
+    return model
