@@ -71,6 +71,7 @@ def fen_to_tensor(fen=std_fen):
 
     tensor = np.zeros((8, 8, 11))
     fen = fen.split()
+    board_fen = ""
 
     # replace digits by number of "1"s and split String into rows
     for i in range(2, 9):
@@ -142,6 +143,17 @@ def tensor_to_fen(tensor):
 
 
 def get_direction(coord1, coord2):
+    """
+
+    Args:
+        coord1: np.array with start position
+        coord2: np.array with end position
+
+    Returns: int For queen-moves -> 0 for North, counting clockwise to 7 for North-West
+                 For knight-moves -> -1 for 2 up 1 right, counting clockwise to -8 for 2 up 1 left
+
+    """
+
     diff = coord2 - coord1
     non_zero = np.count_nonzero(np.unique(np.abs(diff)))
     direction = 0
@@ -165,12 +177,20 @@ def get_direction(coord1, coord2):
 
         direction = queen_move_dir[int(diff[0]) + 1][int(diff[1]) + 1]
 
-
     return direction
 
 
-def move_to_tensor(uci):
-    tensor = np.zeros((8, 8, 64))
+def move_to_tensor_indices(uci):
+    """
+
+    Args:
+        uci: str of UCI representation of move
+
+    Returns: np.array of position in move-tensor as indices
+
+    """
+
+    indices = np.zeros(3)
 
     coord1 = np.array([ord(uci[0].upper()) - ord("A"), 8 - int(uci[1])])
     coord2 = np.array([ord(uci[2].upper()) - ord("A"), 8 - int(uci[3])])
@@ -178,10 +198,28 @@ def move_to_tensor(uci):
     direction = get_direction(coord1, coord2)
 
     if direction < 0:
-        tensor[coord1[0], coord1[1], abs(direction) + 55] = 1
+        indices = [coord1[0], coord1[1], abs(direction) + 55]
     else:
         diff = coord2 - coord1
-        tensor[coord1[0], coord1[1], np.abs(diff).max() * 8 + direction] = 1
-        print(coord1[0], coord1[1], (np.abs(diff).max() - 1) * 8 + direction)
+        indices = [coord1[0], coord1[1], np.abs(diff).max() * 8 + direction]
+
+    return indices
+
+
+def move_to_tensor(uci):
+    """
+
+    Args:
+        uci: str of UCI representation of move
+
+    Returns: np.array representing the move in tensor notation
+
+    """
+
+    indices = move_to_tensor_indices(uci)
+
+    tensor = np.zeros((8, 8, 64))
+
+    tensor[indices[0], indices[1], indices[2]] = 1
 
     return tensor
