@@ -68,6 +68,7 @@ def fen_to_tensor(fen=std_fen):
     Returns: np.array representing the board in tensor notation
 
     """
+
     tensor = np.zeros((8, 8, 11))
     fen = fen.split()
 
@@ -100,6 +101,7 @@ def tensor_to_fen(tensor):
     Returns: str representing the board in FEN notation
 
     """
+
     fen = ""
 
     # find color
@@ -137,3 +139,49 @@ def tensor_to_fen(tensor):
     fen += " " + fen_color + " - - 0 1"
 
     return fen
+
+
+def get_direction(coord1, coord2):
+    diff = coord2 - coord1
+    non_zero = np.count_nonzero(np.unique(np.abs(diff)))
+    direction = 0
+
+    if non_zero > 1:
+        knight_move_indices = [
+            [0, -7, 0, -6, 0]
+            , [-8, 0, 0, 0, -5]
+            , [0, 0, 0, 0, 0]
+            , [-1, 0, 0, 0, -4]
+            , [0, -2, 0, -3, 0]
+        ]
+        direction = knight_move_indices[diff[0] + 2][diff[1] + 2]
+    else:
+        queen_move_dir = [
+            [7, 6, 5]
+            , [0, None, 4]
+            , [1, 2, 3]
+        ]
+        diff = np.divide(diff, np.abs(diff).max())
+
+        direction = queen_move_dir[int(diff[0]) + 1][int(diff[1]) + 1]
+
+
+    return direction
+
+
+def move_to_tensor(uci):
+    tensor = np.zeros((8, 8, 64))
+
+    coord1 = np.array([ord(uci[0].upper()) - ord("A"), 8 - int(uci[1])])
+    coord2 = np.array([ord(uci[2].upper()) - ord("A"), 8 - int(uci[3])])
+
+    direction = get_direction(coord1, coord2)
+
+    if direction < 0:
+        tensor[coord1[0], coord1[1], abs(direction) + 55] = 1
+    else:
+        diff = coord2 - coord1
+        tensor[coord1[0], coord1[1], np.abs(diff).max() * 8 + direction] = 1
+        print(coord1[0], coord1[1], (np.abs(diff).max() - 1) * 8 + direction)
+
+    return tensor
