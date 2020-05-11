@@ -8,7 +8,7 @@
 # python byte code directory
 __pycache__/*
 Interpreter/__pycache__/*
-MCTS_Statemodel/__pycache__/*
+MCTS_StateModel/__pycache__/*
 
 # VSCode config files
 .vscode
