@@ -7,6 +7,14 @@
 
 # python byte code directory
 __pycache__/*
+Interpreter/__pycache__/*
+MCTS_StateModel/__pycache__/*
 
 # VSCode config files
 .vscode
+
+# PyCharm
+.idea/*
+
+# Virtueal Environment
+venv/*

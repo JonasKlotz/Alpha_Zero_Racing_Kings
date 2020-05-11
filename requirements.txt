@@ -1,3 +1,4 @@
+numpy
 pillow
 python-chess
 cairosvg
@@ -31,11 +32,12 @@ pyasn1==0.1.9
 pycparser==2.20
 pycrypto==2.6.1
 pycurl==7.43.0
-pylint==2.5.0
+pylint==2.5.2
 pyparsing==2.4.7
 pytest==5.4.1
 python-telegram-bot==12.6.1
 pyxdg==0.25
+mcts
 requests==2.23.0
 SecretStorage==2.3.1
 six==1.14.0
