@@ -71,12 +71,11 @@ def fen_to_tensor(fen=std_fen):
 
     tensor = np.zeros((8, 8, 11))
     fen = fen.split()
-    board_fen = ""
 
     # replace digits by number of "1"s and split String into rows
     for i in range(2, 9):
-        board_fen = fen[0].replace(str(i), "1" * i).split("/")
-
+        fen[0] = fen[0].replace(str(i), "1" * i)
+    board_fen = fen[0].split("/")
     # check who is to move, set indices and tensor accordingly
     if fen[1] == "w":
         piece_indices = piece_indices_white
@@ -207,7 +206,7 @@ def move_to_tensor_indices(uci):
 
     else:
         diff = coord2 - coord1
-        indices = [coord1[0], coord1[1], np.abs(diff).max() * 8 + direction]
+        indices = [coord1[0], coord1[1], (np.abs(diff).max() - 1) * 8 + direction]
 
     return indices
 
@@ -232,6 +231,15 @@ def move_to_tensor(uci):
 
 
 def tensor_indices_to_move(indices):
+    """
+
+    Args:
+        indices: np.array with indices of move in tensor
+
+    Returns: str of move in UCI format
+
+    """
+
     # starting tile
     uci = chr(ord("A") + indices[0]).lower() + str(8 - indices[1])
 
@@ -267,7 +275,7 @@ def tensor_indices_to_move(indices):
         direction = indices[2] % 8
         distance = indices[2] // 8
 
-        diff = np.array(direction_to_move[direction]) * distance
+        diff = np.array(direction_to_move[direction]) * (distance + 1)
 
     # add ending tile
     uci += chr(ord("A") + indices[0] + int(diff[0])).lower() + str(8 - indices[1] - int(diff[1]))
@@ -276,7 +284,49 @@ def tensor_indices_to_move(indices):
 
 
 def tensor_to_move(tensor):
+    """
+
+    Args:
+        tensor: np.array representing the move in tensor notation
+
+    Returns: str of move in UCI format
+
+    """
+
     # find the max value and give indices to tensor_indices_to_move()
     uci = tensor_indices_to_move(np.array(np.unravel_index(tensor.argmax(), tensor.shape)))
+
+    return uci
+
+
+def move_from_two_tensors(from_tensor, to_tensor):
+    """
+
+    Args:
+        from_tensor: np.array representing the board before move in tensor notation
+        to_tensor: np.array representing the board after move in tensor notation
+
+    Returns: str of move in UCI format (no checking for legality)
+
+    """
+    converted_from_tensor = np.zeros((8, 8, 11))
+    if not from_tensor[0, 0, 10] == to_tensor[0, 0, 10]:
+        converted_from_tensor[:, :, :5] = from_tensor[:, :, 5:10]
+        converted_from_tensor[:, :, 5:10] = from_tensor[:, :, :5]
+        converted_from_tensor[:, :, 10] = from_tensor[:, :, 10]
+    else:
+        converted_from_tensor = from_tensor
+
+    diff = np.subtract(converted_from_tensor[:, :, :10], to_tensor[:, :, :10])
+    from_index = np.argwhere(diff == 1)
+    to_index = np.argwhere(diff == -1)
+
+    print(diff)
+
+    print(from_index)
+    print(to_index)
+
+    uci = chr(ord("A") + from_index[0][1]).lower() + str(8 - from_index[0][0])
+    uci += chr(ord("A") + to_index[0][1]).lower() + str(8 - to_index[0][0])
 
     return uci
