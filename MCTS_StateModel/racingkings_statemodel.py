@@ -1,6 +1,5 @@
-# from Interface.TensorNotation import TensorNotation
-# from Interpreter import game
-from tmp import game
+# from Interface import TensorNotation
+from Interpreter import game
 from copy import deepcopy
 from mcts import mcts
 
@@ -13,6 +12,10 @@ class RacingKingsState():
         self.game.player_to_move = 1
         # self.board = board
         self.currentPlayer = 1
+
+    # def __eq__(self, other):
+        # raise NotImplementedError()
+        # self
 
 # TODO: mcts expects this to be -1 or 1. game() expects this to be 0 or 1.
     def getCurrentPlayer(self):
@@ -47,9 +50,6 @@ class RacingKingsState():
             return -1
         return False
 
-    def __eq__(self, other):
-        raise NotImplementedError()
-
 
 class Action():
     def __init__(self, player, move):
@@ -60,14 +60,16 @@ class Action():
         return str(self.move)
 
     def __eq__(self, other):
-        raise NotImplementedError("eq in class Action() not implemented")
+        return self.__class__ == other.__class__ and self.move == other.move and self.player == other.player
 
     def __hash__(self):
-        return hash((self.player, self.move))
+        return hash(self.move)
 
 
-initialState = RacingKingsState()
-mcts = mcts(timeLimit=100)
-action = mcts.search(initialState=initialState)
+if __name__ == '__main__':
+    # unittest.main()
+    initialState = RacingKingsState()
+    mcts = mcts(timeLimit=1000)
+    action = mcts.search(initialState=initialState)
 
-print(action)
+    print(action)
