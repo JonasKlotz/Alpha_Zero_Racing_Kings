@@ -154,28 +154,31 @@ def get_direction(coord1, coord2):
 
     """
 
-    diff = coord2 - coord1
-    non_zero = np.count_nonzero(np.unique(np.abs(diff)))
     direction = 0
+    diff = coord2 - coord1
+    # check for knight-move
+    non_zero = np.count_nonzero(np.unique(np.abs(diff)))
 
+    # if knight-move
     if non_zero > 1:
-        knight_move_indices = [
+        knight_move_to_indices = [
             [0, -7, 0, -6, 0]
             , [-8, 0, 0, 0, -5]
             , [0, 0, 0, 0, 0]
             , [-1, 0, 0, 0, -4]
             , [0, -2, 0, -3, 0]
         ]
-        direction = knight_move_indices[diff[0] + 2][diff[1] + 2]
+        direction = knight_move_to_indices[diff[0] + 2][diff[1] + 2]
+
     else:
-        queen_move_dir = [
+        queen_move_to_dir = [
             [7, 6, 5]
             , [0, None, 4]
             , [1, 2, 3]
         ]
         diff = np.divide(diff, np.abs(diff).max())
 
-        direction = queen_move_dir[int(diff[0]) + 1][int(diff[1]) + 1]
+        direction = queen_move_to_dir[int(diff[0]) + 1][int(diff[1]) + 1]
 
     return direction
 
@@ -192,13 +195,16 @@ def move_to_tensor_indices(uci):
 
     indices = np.zeros(3)
 
+    # convert to tensor row and column coordinates
     coord1 = np.array([ord(uci[0].upper()) - ord("A"), 8 - int(uci[1])])
     coord2 = np.array([ord(uci[2].upper()) - ord("A"), 8 - int(uci[3])])
 
     direction = get_direction(coord1, coord2)
 
+    # if knight-move
     if direction < 0:
         indices = [coord1[0], coord1[1], abs(direction) + 55]
+
     else:
         diff = coord2 - coord1
         indices = [coord1[0], coord1[1], np.abs(diff).max() * 8 + direction]
@@ -223,3 +229,54 @@ def move_to_tensor(uci):
     tensor[indices[0], indices[1], indices[2]] = 1
 
     return tensor
+
+
+def tensor_indices_to_move(indices):
+    # starting tile
+    uci = chr(ord("A") + indices[0]).lower() + str(8 - indices[1])
+
+    diff = np.zeros(2)
+
+    # if knights move
+    if indices[2] >= 56:
+        knight_indices_to_move = [
+            [1, -2]
+            , [2, -1]
+            , [2, 1]
+            , [1, 2]
+            , [-1, 2]
+            , [-2, 1]
+            , [-2, -1]
+            , [-1, -2]
+        ]
+
+        diff = np.array(knight_indices_to_move[indices[2] - 56])
+
+    else:
+        direction_to_move = [
+            [0, -1]
+            , [1, -1]
+            , [1, 0]
+            , [1, 1]
+            , [0, 1]
+            , [-1, 1]
+            , [-1, 0]
+            , [-1, 1]
+        ]
+
+        direction = indices[2] % 8
+        distance = indices[2] // 8
+
+        diff = np.array(direction_to_move[direction]) * distance
+
+    # add ending tile
+    uci += chr(ord("A") + indices[0] + int(diff[0])).lower() + str(8 - indices[1] - int(diff[1]))
+
+    return uci
+
+
+def tensor_to_move(tensor):
+    # find the max value and give indices to tensor_indices_to_move()
+    uci = tensor_indices_to_move(np.array(np.unravel_index(tensor.argmax(), tensor.shape)))
+
+    return uci
