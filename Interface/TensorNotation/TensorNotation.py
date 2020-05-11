@@ -28,6 +28,32 @@ piece_indices_white = {
     , "n": 9
 }
 
+piece_letters_black = [
+    "k"
+    , "q"
+    , "r"
+    , "b"
+    , "n"
+    , "K"
+    , "Q"
+    , "R"
+    , "B"
+    , "N"
+]
+
+piece_letters_white = [
+    "K"
+    , "Q"
+    , "R"
+    , "B"
+    , "N"
+    , "k"
+    , "q"
+    , "r"
+    , "b"
+    , "n"
+]
+
 # start position
 std_fen = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
 
@@ -37,7 +63,7 @@ def fen_to_tensor(fen=std_fen):
     Converts FEN String to tensor notation
 
     Args:
-        fen: Board in FEN notation as String. If no FEN is provided the start position is used
+        fen: str representation of board in FEN notation. If no FEN is provided the start position is used
 
     Returns: np.array representing the board in tensor notation
 
@@ -63,3 +89,51 @@ def fen_to_tensor(fen=std_fen):
                 tensor[i, j, piece_indices[board_fen[i][j]]] = 1
 
     return tensor
+
+
+def tensor_to_fen(tensor):
+    """
+
+    Args:
+        tensor: np.array board in tensor notation
+
+    Returns: str representing the board in FEN notation
+
+    """
+    fen = ""
+
+    # find color
+    if tensor[0, 0, 10] == 0:
+        fen_color = "w"
+        piece_letters = piece_letters_white
+    else:
+        fen_color = "b"
+        piece_letters = piece_letters_black
+
+    # iterate through board
+    for i in range(8):
+        count_empty = 0  # count empty tiles
+        for j in range(8):
+            piece_found = False  # to help count empty tiles
+            for k in range(10):
+                # piece found
+                if tensor[i, j, k]:
+                    # add number for empty tiles before
+                    if count_empty > 0:
+                        fen += str(count_empty)
+                        count_empty = 0
+                    # add piece
+                    fen += piece_letters[k]
+                    piece_found = True
+            if not piece_found:
+                count_empty += 1
+        # add remaining empty tiles
+        if count_empty > 0:
+            fen += str(count_empty)
+        # add slash
+        if i < 7:
+            fen += "/"
+
+    fen += " " + fen_color + " - - 0 1"
+
+    return fen
