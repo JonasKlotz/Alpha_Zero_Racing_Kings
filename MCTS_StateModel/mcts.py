@@ -10,6 +10,8 @@ def randomPolicy(state):
         try:
             action = random.choice(state.getPossibleActions())
         except IndexError:
+            # state.show_board()
+            # print(state.getCurrentPlayer())
             raise Exception("Non-terminal state has no possible actions: " + str(state))
         state = state.takeAction(action)
     return state.getReward()

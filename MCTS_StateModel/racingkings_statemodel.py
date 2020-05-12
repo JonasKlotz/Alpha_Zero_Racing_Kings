@@ -50,6 +50,9 @@ class RacingKingsState():
             return -1
         return False
 
+    def show_board(self, path=None):
+        self.game.show_game(True, "./Debug_board4.png")
+
 
 class Action():
     def __init__(self, player, move):
