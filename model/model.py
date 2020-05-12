@@ -1,5 +1,7 @@
+import os
 import yaml
 import keras
+from time import time
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
 from keras.regularizers import l2
@@ -9,16 +11,20 @@ from config import Config
 
 
 class AZero:
-    ''' The AlphaZero Class
+    """ The AlphaZero Class
+
     Attributes:
         model_name (str): name of model given by config name and network depth
         model (Keras Model): The ResNet Model with two output heads
+
     Functions:
         read_config: reads in config file and builds model
         build_model: builds model
         summary: ouput config parameters and model summary
         plot_model: plot the network graph
-    '''
+        save_model:
+        load_model:
+    """
 
     def __init__(self, config_file=None):
         self.read_config(config_file)
@@ -36,7 +42,7 @@ class AZero:
                            stride=1,
                            activation='relu',
                            batch_normalization=True):
-            ''' A residual layer
+            """ A residual layer
             Args:
                 input (tensor): input tensor
                 num_filters (int): number of convolutional filters
@@ -46,7 +52,7 @@ class AZero:
                 batch_normalization (bool): apply batch normalization
             Returns:
                 x (tensor): output tensor of residual layer
-            '''
+            """
             x = input
             x = Conv2D(num_filters,
                        kernel_size=kernel_size,
@@ -169,3 +175,25 @@ class AZero:
         # graphviz (not a python package) has to be installed https://www.graphviz.org/
         plot_model(self.model, to_file='Model/%s.png' % self.model_name,
                    show_shapes=True, show_layer_names=True)
+
+    def save_model(self):  # (self, conf_path, weight_path):  Überlegen ob nur modell oder modell und weights save/load
+        """
+        :param conf_path: path to save configuration from
+        :param weight_path: path to save weights from
+        """
+        file_name = time() + ".h5"
+        path = os.path.join("Model", "Checkpoints", file_name)
+        # logger.debug(f"save model to {config_path}")
+        print("saving model to " + path)
+        self.model.save(path)
+        print("sucess")
+
+    def load_model(self, path):  # , conf_path, weight_path):
+        """
+        :param conf_path: path to load configuration from
+        :param weight_path: path to load weights from
+        """
+        print("loading model " + path)
+        # logger.debug(f"load model to {config_path}")
+        self.model = keras.models.load_model(path)
+        print("sucess")
