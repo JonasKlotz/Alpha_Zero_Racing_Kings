@@ -1,15 +1,11 @@
+import sys
 from copy import copy
 import io
-
-import enum
-
-Winner = enum.Enum("Winner", "black white draw")  # enumerator for winner
+import random
 
 # for svg rendering in pycharm
 from PIL import Image
 from cairosvg import svg2png
-import random
-
 import chess  # pip install python-chess
 import chess.variant
 import chess.engine
@@ -18,17 +14,22 @@ import chess.svg
 
 
 class Game:
+    # pylint: disable=too-many-instance-attributes
+    # Eight is reasonable in this case.
     std_fen = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
     engine = None  # TODO does not belong in this class
-
     move_count = 0
+    history = None  # Dict containing key : fen, value 0-3 for threefold repetition
 
     # init board either with fen or std fen string
-    def __init__(self, fen=std_fen):
+    def __init__(self):
         self.board = chess.variant.RacingKingsBoard()
-        self.player_to_move = 1
-        self.winner = None  # type: Winner
+        self.player_to_move = 1  # 1 weiß,-1 schwarz
         self.result = None
+        self.end = False
+        self.draw = False
+        self.history = {}
+
         # print(self.board)
 
     def reset(self):
@@ -38,9 +39,12 @@ class Game:
         """
         self.board = chess.variant.RacingKingsBoard()
         self.player_to_move = 1
-        self.winner = None  # type: Winner
         self.result = None
+        self.end = False
+        self.draw = False
         self.move_count = 0
+        self.history.clear()
+        self.history[self.std_fen] = 1
         return self
 
     def update(self, board):
@@ -50,7 +54,6 @@ class Game:
         :return game: self
         """
         self.board = chess.variant.RacingKingsBoard(board)
-        self.winner = None
         self.move_count = 0
         return self
 
@@ -84,10 +87,26 @@ class Game:
             double: score of current player on the current turn
             int: player who plays in the next turn
         """
-        self.board.push(move)
+        try:
+            self.board.push(move)
+            self.after_mode()
+        except:
+            self.show_game()
+            print("move" + move + "illegal")
+
+    def after_mode(self, ):
         self.move_count += 1
-        self.player_to_move = (self.player_to_move + 1) % 2  # kann man bestimmt schöner machen
-        self.is_won()
+        self.player_to_move *= -1
+
+        try:
+            if self.board.fen() in self.history:
+                self.history[self.board.fen()] += 1
+            else:
+                self.history[self.board.fen()] = 1
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+
+        self.end = self.board.is_variant_end() or self.is_draw() or self.is_won()
 
     def get_observation(self):
         """
@@ -117,27 +136,31 @@ class Game:
         Returns:
             boolean: False if game has not ended. True otherwise
         """
-        return self.board.is_variant_end()
+        return self.end
 
     def is_draw(self):
         """
         Returns:
             boolean: True if game ended in a draw, False otherwise
         """
-        return self.board.is_variant_draw()  #TODO Check 5fold repetition?
+        self.draw |= self.board.is_variant_draw() or self.get_movelist_size() == 0
+        if self.get_movelist_size() == 0: print("no valid move")
+        if self.history[self.board.fen()] > 2: print("repetition")
+        self.draw |= self.history[self.board.fen()] > 2
+        return self.draw
 
     def get_score(self, player):  # 0 for black, 1 for white
         """
         Input:
             player: current player
         Returns:
-            1, 0 or 1/2 if the game is over, depending on the plaer. Otherwise, the result is undetermined: *.
+            1, 0 or 1/2 if the game is over, depending on the player. Otherwise, the result is undetermined: *.
         """
         res = self.board.result()
-        if res is '*':
+        if res == '*':
             print("not Ended")
-            return -1
-        elif res == "1/2-1/2 ":
+            return None
+        if res == "1/2-1/2":
             return 0.5
         res = res.split('-')
         return float(res[player])
@@ -184,11 +207,25 @@ class Game:
         :return:
         """
         if not self.engine:
-            self.engine = chess.engine.SimpleEngine.popen_uci("engine/stockfish-x86_64")
+            self.engine = chess.engine.SimpleEngine.popen_uci("Engine/stockfish-x86_64")
         result = self.engine.play(self.board, chess.engine.Limit(time=limit))
         self.make_move(result.move)
 
 
-
-game = Game()
-print(game.get_moves_observation())
+score = [0] * 3
+for i in range(50):
+    game = Game()
+    while not game.is_ended():
+        try:
+            # game.play_stockfish(0.01)
+            game.play_random_move()
+        except:
+            game.show_game()
+            print("Fail")
+            break
+    s = game.get_score(1)
+    print("s ", s)
+    score[int(s * 2)] += 1
+game.show_game()
+print(score)
+game.engine.close()
