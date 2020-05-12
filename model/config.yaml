@@ -1,87 +1,90 @@
 ### YAML Config-File
 
+#name of the model
 name: 'AlphaZero'
+#the version should be updated whenever a change is made in the architecture of the model,
+#i.e. the old config looses compatibility
 version: 1
+#model parameters
 model:
-    # input feature dimensions
-    input_shape: !!python/tuple [8,8,11]    # could be read from data..
-    # total number of residual blocks
+    #input feature dimensions
+    input_shape: !!python/tuple [8,8,11]    #could be read from data..
+    #total number of residual blocks
     resnet_depth: 9
-    # residual block specifications
+    #residual block specifications
     residual_block:
-        # number of layers in residual block
+        #number of layers in residual block
         layers: 2
-        # number of filters per layer
+        #number of filters per layer
         num_filters: 128
-        # convolutional filter size: SxS
+        #convolutional filter size: SxS
         filter_size: 3
-        # stride of convolutional layer
+        #stride of convolutional layer
         filter_stride: 1
-        # add batch normalization
+        #activation function after conv layer
+        activation: 'relu'
+        #add batch normalization
         batch_normalization: True
     policy_head:
-        # policy head's residual layer specifications
+        #policy head's residual layer specifications
         residual_layer:
             num_filters: 192
             filter_size: 3
             filter_stride: 1
             batch_normalization: True
-        # policy head's fully connected layer specifications
+        #policy head's fully connected layer specifications
         dense_layer:
-            # number of output filters for dense layer
-            # this is also the number of valid moves (8x8xnum_filters)
+            #number of output filters for dense layer
+            #this is also the number of valid moves (8x8xnum_filters)
             num_filters: 64
-            # type of activation function
+            #type of activation function
             activation: 'relu'
     value_head:
-        # value head's residual layer specifications
+        #value head's residual layer specifications
         residual_layer:
             num_filters: 4
             filter_size: 3
             filter_stride: 1
             batch_normalization: True
-        # value head's fully connected layer specifications
+        #value head's fully connected layer specifications
         dense_layer:
-            # number of output filters for first dense layer
-            # !After Flatten(), downsampling from 8x8xres_num_filt -> num_filters
+            #number of output filters for first dense layer
+            #After Flatten()! Downsampling from 8x8xres_num_filt -> num_filters
             num_filters: 256
-            # type of activation function for second dense layer
+            #type of activation function for second dense layer
             activation: 'tanh'
 
 
-### Leela Zero Config ###
-# model:
-#     input_shape: !!python/tuple [8,8,64?]
-#     resnet_depth: 15
-#     residual_block:
-#         layers: 2
-#         filters: 192
-#         filter_size: 3
-#         filter_stride: 1
-#         batch_normalization: True
-#         skip_layer: True
-#     ...
-### Alpha Zero Config ###
-# model:
-#     input_shape: !!python/tuple [8,8,73]
-#     resnet_depth: 17
-#     residual_block:
-#         layers: 2
-#         filters: 256
-#         filter_size: 3
-#         filter_stride: 1
-#         batch_normalization: True
-#         skip_layer: True
-#     ...
-### Alpha Go Config ###
-# model:
-#     input_shape: !!python/tuple [8,8,?]
-#     resnet_depth: 40
-#     residual_block:
-#         layers: 2
-#         filters: 256
-#         filter_size: 3
-#         filter_stride: 1
-#         batch_normalization: True
-#         skip_layer: True
-#     ...
+# # # Leela Zero Config # # # 
+#model:
+#    input_shape: !!python/tuple [8,8,64?]
+#    resnet_depth: 15
+#    residual_block:
+#        layers: 2
+#        filters: 192
+#        filter_size: 3
+#        filter_stride: 1
+#        batch_normalization: True
+#    ...
+# # # Alpha Zero Config # # # 
+#model:
+#    input_shape: !!python/tuple [8,8,73]
+#    resnet_depth: 17
+#    residual_block:
+#        layers: 2
+#        filters: 256
+#        filter_size: 3
+#        filter_stride: 1
+#        batch_normalization: True
+#    ...
+# # # Alpha Go Config # # # 
+#model:
+#    input_shape: !!python/tuple [8,8,?]
+#    resnet_depth: 40
+#    residual_block:
+#        layers: 2
+#        filters: 256
+#        filter_size: 3
+#        filter_stride: 1
+#        batch_normalization: True
+#    ...
