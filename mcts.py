@@ -53,6 +53,7 @@ class Mcts():
             self.root.rollout()
 
     def _set_root_to(position):
+        pass
 
 
 
@@ -104,8 +105,35 @@ class Node():
             # for every legal move,
             # store list index which refers to
             # corresponding child node
-            legal_edges = self._all_legal_moves()
-            legal_edges[:,CHILDNODE] = np.arange(num_of_legal_moves)
+            self._indicate_legal_moves()
+
+    def __str__(self):
+        return self._print_tree()
+
+    def _print_tree(self, level = 0):
+
+        indent = "\t" * level
+        representation = ""
+
+
+        children = ""
+
+        for child in self.children:
+            if child:
+                children += child._print_tree(level + 1)
+
+        if level == 0:
+            representation = "root\n"
+        elif self.endposition:
+            representation = indent + "end\n"
+        elif children == "":
+            representation = indent + "leaf\n"
+        else:
+            representation = indent + "node\n"
+
+        representation += children 
+
+        return representation
 
     def rollout(self):
         '''
@@ -119,7 +147,7 @@ class Node():
             return self.evaluation
 
         i = self._index_of_best_move()
-        j = self.edges[i][CHILDNODE]
+        j = int(self.edges[i][CHILDNODE])
         nextnode = self.children[j]
         evaluation = 0
 
@@ -127,9 +155,10 @@ class Node():
             # terminate recursion
             # on leaf expansion
             # TODO: where do we get new position?
-            newposition = None
+            newposition = self.translator.get_legal_moves(None)
             leaf = Node(self.translator, self.model, newposition)
             evaluation = leaf.evaluation
+            self.children[j] = leaf
 
         else:
             # recursion
@@ -168,6 +197,16 @@ class Node():
         '''
         return self.edges[self.legal_move_indices]
 
+    def _indicate_legal_moves(self):
+        '''
+        initializes all legal moves
+        with the index where the
+        corresponding child node is
+        stored in self.children
+        '''
+        for i, j in enumerate(zip(*self.legal_move_indices)):
+            self.edges[(*j, CHILDNODE)] = i 
+
     def _legal_to_total_index(self, index):
         '''
         translates index to a move
@@ -179,3 +218,11 @@ class Node():
 
 
     # pylint: enable=C0326
+
+
+def set_up():
+    trans = MockTranslator()
+    model = MockModel()
+    x = trans.get_legal_moves(None)
+    node = Node(trans, model, x)
+    return trans, model, x, node
