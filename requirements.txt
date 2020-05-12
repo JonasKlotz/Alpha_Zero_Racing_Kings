@@ -1,5 +1,14 @@
+numpy
+pillow
+python-chess
+cairosvg
+python-docs-theme
 alabaster==0.7.12
-astroid==2.4.1
+pygments-pytest>=1.1.0
+sphinx>=1.8.2,<2.1
+sphinxcontrib-trio
+sphinx-removed-in>=0.2.0
+astroid==2.4.0
 attrs==19.3.0
 autopep8==1.5.2
 Babel==2.8.0
@@ -30,8 +39,6 @@ pycodestyle==2.5.0
 pycparser==2.20
 pycrypto==2.6.1
 pycurl==7.43.0
-Pygments==2.6.1
-pygments-pytest==2.0.0
 pylint==2.5.2
 pyparsing==2.4.7
 pytest==5.4.1
@@ -39,6 +46,7 @@ python-docs-theme==2020.1
 pytz==2020.1
 pyxdg==0.25
 PyYAML==5.3.1
+mcts
 requests==2.23.0
 rope==0.17.0
 scipy==1.4.1

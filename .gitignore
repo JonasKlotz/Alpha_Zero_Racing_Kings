@@ -11,5 +11,9 @@
 # VSCode config files
 .vscode
 
-# Venv
+# PyCharm
+.idea/*
+
+# Virtueal Environment
+venv/*
 .env
