@@ -112,28 +112,37 @@ class Node():
 
     def _print_tree(self, level = 0):
 
-        indent = "\t" * level
-        representation = ""
-
-
-        children = ""
-
-        for child in self.children:
-            if child:
-                children += child._print_tree(level + 1)
-
-        if level == 0:
-            representation = "root\n"
+        if level > 25:
+            return "..."
         elif self.endposition:
-            representation = indent + "end\n"
-        elif children == "":
-            representation = indent + "leaf\n"
-        else:
-            representation = indent + "node\n"
+            return "end: {:0.3f}".format(self.evaluation)
+        elif not any(self.children):
+            return "leaf: {:0.3f}".format(self.evaluation)
 
-        representation += children 
+        rep = []
+        for i in self.children:
+            if i:
+                rep.append(i._print_tree(level + 1))
 
-        return representation
+        for i, j in enumerate(rep):
+            # not last element
+            if i < len(rep) - 1:
+                if "\n" in j:
+                    j = j.replace("\n", "\n" + chr(9474) + " ") 
+                j = chr(9500) + chr(9472) + j
+            
+            else:
+                if "\n" in j:
+                    j = j.replace("\n", "\n" + "  ") 
+                j = chr(9492) + chr(9472) + j 
+            rep[i] = j
+
+        repstr = ""
+        for i in rep:
+            repstr += i + "\n" 
+
+        repstr = "node: {:0.3f}\n".format(self.evaluation) + repstr 
+        return repstr 
 
     def rollout(self):
         '''
