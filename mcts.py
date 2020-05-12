@@ -115,14 +115,14 @@ class Node():
         if level > 25:
             return "..."
         elif self.endposition:
-            return "end: {:0.3f}".format(self.evaluation)
+            return "end, {:0.3f}".format(self.evaluation)
         elif not any(self.children):
-            return "leaf: {:0.3f}".format(self.evaluation)
+            return "leaf, {:0.3f}".format(self.evaluation)
 
         rep = []
-        for i in self.children:
-            if i:
-                rep.append(i._print_tree(level + 1))
+        for i, j in enumerate(self.children):
+            if j:
+                rep.append(str(i) + ": " + j._print_tree(level + 1))
 
         for i, j in enumerate(rep):
             # not last element
@@ -141,7 +141,7 @@ class Node():
         for i in rep:
             repstr += i + "\n" 
 
-        repstr = "node: {:0.3f}\n".format(self.evaluation) + repstr 
+        repstr = "node, {:0.3f}\n".format(self.evaluation) + repstr 
         return repstr 
 
     def rollout(self):
