@@ -1,8 +1,6 @@
-numpy
 pillow
 python-chess
 cairosvg
-python-docs-theme
 alabaster==0.7.12
 pygments-pytest>=1.1.0
 sphinx>=1.8.2,<2.1
