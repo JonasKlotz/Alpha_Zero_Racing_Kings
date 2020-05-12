@@ -1,7 +1,7 @@
-data1 = []
-labels1 = []
-data2 = []
-labels2 = []
+pred_1 = []
+labels_1 = []
+pred_2 = []
+pred_2 = []
 
 def test_mse():
     #test if mse works as expected
