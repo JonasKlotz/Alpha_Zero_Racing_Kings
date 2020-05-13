@@ -144,8 +144,10 @@ class Game:
             boolean: True if game ended in a draw, False otherwise
         """
         self.draw |= self.board.is_variant_draw() or self.get_movelist_size() == 0
-        if self.get_movelist_size() == 0: print("no valid move")
-        if self.history[self.board.fen()] > 2: print("repetition")
+        if self.get_movelist_size() == 0:
+            print("no valid move")
+        if self.history[self.board.fen()] > 2:
+            print("repetition")
         self.draw |= self.history[self.board.fen()] > 2
         return self.draw
 
@@ -183,7 +185,8 @@ class Game:
             svg2png(bytestring=bytes(svg, 'UTF-8'), write_to=path)
         else:
             img = io.BytesIO()
-            svg2png(bytestring=bytes(svg, 'UTF-8'), write_to=img)  # valid_moves = game.get_move_list()
+            # valid_moves = game.get_move_list()
+            svg2png(bytestring=bytes(svg, 'UTF-8'), write_to=img)
             img = Image.open(img)
             img.show()
             img.close()
@@ -200,32 +203,35 @@ class Game:
             RuntimeError()
         self.make_move(rnd_move)
 
-    def play_stockfish(self, limit=1.0):  # if not working make engine/stockfish-x86_64 executable
+    # if not working make engine/stockfish-x86_64 executable
+    def play_stockfish(self, limit=1.0):
         """
         stockfish plays move
         :param limit:
         :return:
         """
         if not self.engine:
-            self.engine = chess.engine.SimpleEngine.popen_uci("Engine/stockfish-x86_64")
+            self.engine = chess.engine.SimpleEngine.popen_uci(
+                "Engine/stockfish-x86_64")
         result = self.engine.play(self.board, chess.engine.Limit(time=limit))
         self.make_move(result.move)
 
 
-score = [0] * 3
-for i in range(50):
-    game = Game()
-    while not game.is_ended():
-        try:
-            # game.play_stockfish(0.01)
-            game.play_random_move()
-        except:
-            game.show_game()
-            print("Fail")
-            break
-    s = game.get_score(1)
-    print("s ", s)
-    score[int(s * 2)] += 1
-game.show_game()
-print(score)
-game.engine.close()
+if __name__ == "__main__":
+    score = [0] * 3
+    for i in range(50):
+        game = Game()
+        while not game.is_ended():
+            try:
+                # game.play_stockfish(0.01)
+                game.play_random_move()
+            except:
+                game.show_game()
+                print("Fail")
+                break
+        s = game.get_score(1)
+        print("s ", s)
+        score[int(s * 2)] += 1
+    game.show_game()
+    print(score)
+    game.engine.close()
