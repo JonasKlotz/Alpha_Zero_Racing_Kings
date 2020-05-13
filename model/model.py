@@ -38,6 +38,8 @@ def build_model(cfg_model):
 
     policy_head = policy_head_model(body, policy_output_filters)
     value_head = value_head_model(body)
+    policy_head.name = 'policy'
+    value_head.name = 'value'
 
     # Do these share weights or will training
     # result in training 3 seperate models?
@@ -147,7 +149,7 @@ def policy_head_model(input, output_filters):
                padding='same',
                kernel_initializer='he_normal',
                kernel_regularizer=l2(1e-4))(x)
-    x = Activation('softmax', name='policy')   # Does this have to be a prob. dist.?
+    x = Activation('softmax')   # Does this have to be a prob. dist.?
     return x
 
 
@@ -175,5 +177,5 @@ def value_head_model(input):
               kernel_initializer='he_normal')
     x = Dense(output_size,
               activation='tanh',
-              kernel_initializer='he_normal', name='value')
+              kernel_initializer='he_normal')
     return x
