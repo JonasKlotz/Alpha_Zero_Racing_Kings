@@ -29,6 +29,7 @@ class Game:
         self.end = False
         self.draw = False
         self.history = {}
+        self.history[self.board.fen()] = 1
 
         # print(self.board)
 
@@ -106,7 +107,7 @@ class Game:
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
-        self.end = self.board.is_variant_end() or self.is_draw() or self.is_won()
+        self.end |= self.board.is_variant_end() or self.is_draw() or self.is_won()
 
     def get_observation(self):
         """
@@ -136,6 +137,7 @@ class Game:
         Returns:
             boolean: False if game has not ended. True otherwise
         """
+        self.end |= self.board.is_variant_end() or self.is_draw() or self.is_won()
         return self.end
 
     def is_draw(self):
@@ -213,7 +215,7 @@ class Game:
 
 
 score = [0] * 3
-for i in range(50):
+for i in range(100):
     game = Game()
     while not game.is_ended():
         try:
@@ -228,4 +230,4 @@ for i in range(50):
     score[int(s * 2)] += 1
 game.show_game()
 print(score)
-game.engine.close()
+# game.engine.close()
