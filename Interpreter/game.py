@@ -79,7 +79,7 @@ class Game:
         """
         return len(list(self.board.legal_moves))
 
-    def make_move(self, move):
+    def make_move(self, input):
         """
         must check if king landed on 8 rank
         Input:
@@ -88,12 +88,29 @@ class Game:
             double: score of current player on the current turn
             int: player who plays in the next turn
         """
+
+        try:
+            move = self.board.parse_uci(input)  # UCI
+        except:
+            pass
+        try:
+            move = self.board.parse_san(input)  # SAN
+        except:
+            pass
+        try:
+            self.board.push(input)  # Move as chessmove
+            self.after_mode()
+            return
+        except:
+            pass
         try:
             self.board.push(move)
             self.after_mode()
+            return
         except:
             self.show_game()
-            print("move" + move + "illegal")
+            print("move " + input + " illegal")
+            self.end = True
 
     def after_mode(self, ):
         self.move_count += 1
@@ -202,6 +219,7 @@ class Game:
             RuntimeError()
         self.make_move(rnd_move)
 
+
     def play_stockfish(self, limit=1.0):  # if not working make engine/stockfish-x86_64 executable
         """
         stockfish plays move
@@ -215,19 +233,24 @@ class Game:
 
 
 score = [0] * 3
-for i in range(100):
+for i in range(1):
     game = Game()
     while not game.is_ended():
         try:
             # game.play_stockfish(0.01)
             game.play_random_move()
+            # game.make_move("h2h3")
         except:
             game.show_game()
             print("Fail")
             break
     s = game.get_score(1)
     print("s ", s)
-    score[int(s * 2)] += 1
+    # score[int(s * 2)] += 1
 game.show_game()
 print(score)
 # game.engine.close()
+
+game = Game()
+game.make_move("h2h3")
+game.show_game()
