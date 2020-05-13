@@ -1,9 +1,10 @@
 # Wir legen fest, dass wir unser Programm mit Python in der Version 3.7 ausführen möchten.
-image: "python:3.6"
+image: "python:3.7"
 
 # Wir stellen sicher, dass unsere Umgebung für die Ausführung unseres Programms bereit ist.
 before_script:
   - python --version
+  - pip --version
   - pip install -r requirements.txt
 
 # Wir haben zwei Stages: Das Linting und das Testing
