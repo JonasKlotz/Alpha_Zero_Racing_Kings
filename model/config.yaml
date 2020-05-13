@@ -2,9 +2,11 @@
 
 #name of the model
 name: 'AlphaZero'
-#the version should be updated whenever a change is made in the architecture of the model,
+#the config version should be updated whenever a change is made in the architecture of the model,
 #i.e. the old config looses compatibility
-version: 1
+config_version: 1
+#model version is changed whenever the parameters are reconfigured
+model_version: 0
 #model parameters
 model:
     #input feature dimensions

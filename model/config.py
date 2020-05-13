@@ -67,13 +67,15 @@ class Options(object):
 class Config(Options):
     # set the defaults
     name = "AlphaZero"
-    version = 1
+    config_version = 1
+    model_version = 0
 
     model = Options()
     model.input_shape = (8, 8, 11)
     model.resnet_depth = 9
 
-    model_name = name + '%dv%d' % (model.resnet_depth, version)
+    model_name = name + \
+        '%dv%d.%d' % (model.resnet_depth, config_version, model_version)
 
     model.residual_block = Options()
     model.residual_block.layers = 2

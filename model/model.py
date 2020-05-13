@@ -1,13 +1,15 @@
 import os
-import yaml
+import numpy as np
 import keras
 from time import time
-from keras.models import Sequential
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
+from keras.optimizers import Adam
+from keras.callbacks import ModelCheckpoint, LearningRateScheduler
+from keras.callbacks import ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
 
-from config import Config
+from Model.config import Config
 
 
 class AZero:
@@ -28,11 +30,47 @@ class AZero:
 
     def __init__(self, config_file=None):
         self.read_config(config_file)
+        self.build_model()
+
+        self.model.compile(loss=self.loss,
+                           optimizer=Adam(learning_rate=1e-3),
+                           metrics=['accuracy'])
+
+    def prepare_callbacks(self):
+        save_dir = os.path.join(os.getcwd(), 'saved_models')
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+        checkpoint_filepath = os.path.join(
+            save_dir, self.model_name, "{epoch:02d}-{val_loss.2f}.hdf5")
+        checkpoint = ModelCheckpoint(filepath=checkpoint_filepath,
+                                     monitor='val_acc',
+                                     save_weights_only=True,
+                                     verbose=1,
+                                     save_best_only=False)
+
+        lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
+                                       cooldown=0,
+                                       patience=5,
+                                       min_lr=0.5e-6)
+        return [checkpoint, lr_reducer]
+
+    def train(self, x_train, y_train):
+        callbacks = self.prepare_callbacks()
+        self.model.fit(x_train, y_train,
+                       batch_size=64,
+                       epochs=120,
+                       #    validation_data=(x_test, y_test),
+                       shuffle=True,
+                       callbacks=callbacks)
 
     def read_config(self, config_file):
         self.config = Config(config_file)
         self.model_name = self.config.model_name
-        self.build_model()
+
+    def loss(self, x, y):
+        x_p, x_v = x
+        y_p, y_v = y
+        return (y_v - x_v)**2 - np.sum(y_p * np.log(x_p))
 
     def build_model(self):
 
