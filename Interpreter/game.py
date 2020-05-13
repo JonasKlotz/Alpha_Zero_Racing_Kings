@@ -91,10 +91,9 @@ class Game:
 
         try:
             move = self.board.parse_uci(input)  # UCI
-        except:
-            pass
-        try:
-            move = self.board.parse_san(input)  # SAN
+            self.board.push(move)
+            self.after_mode()
+            return
         except:
             pass
         try:
@@ -103,7 +102,9 @@ class Game:
             return
         except:
             pass
+
         try:
+            move = self.board.parse_san(input)  # SAN
             self.board.push(move)
             self.after_mode()
             return
@@ -233,7 +234,7 @@ class Game:
 
 
 score = [0] * 3
-for i in range(1):
+for i in range(100):
     game = Game()
     while not game.is_ended():
         try:
@@ -250,7 +251,3 @@ for i in range(1):
 game.show_game()
 print(score)
 # game.engine.close()
-
-game = Game()
-game.make_move("h2h3")
-game.show_game()
