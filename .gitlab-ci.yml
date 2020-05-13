@@ -1,11 +1,11 @@
 # Wir legen fest, dass wir unser Programm mit Python in der Version 3.7 ausführen möchten.
-image: "tensorflow/tensorflow:latest"
+image: "tensorflow/tensorflow:latest-py3"
 
 # Wir stellen sicher, dass unsere Umgebung für die Ausführung unseres Programms bereit ist.
 before_script:
   - python --version
   - pip --version
-  - pip install --no-cache-dir tensorflow
+ # - pip install --no-cache-dir tensorflow
   - pip install -r requirements.txt
 
 # Wir haben zwei Stages: Das Linting und das Testing
