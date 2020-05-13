@@ -1,4 +1,4 @@
-import keras
+from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, add
 from keras.regularizers import l2
@@ -147,7 +147,7 @@ def policy_head_model(input, output_filters):
                padding='same',
                kernel_initializer='he_normal',
                kernel_regularizer=l2(1e-4))(x)
-    x = Activation('softmax')   # Does this have to be a prob. dist.?
+    x = Activation('softmax', name='policy')   # Does this have to be a prob. dist.?
     return x
 
 
@@ -175,5 +175,5 @@ def value_head_model(input):
               kernel_initializer='he_normal')
     x = Dense(output_size,
               activation='tanh',
-              kernel_initializer='he_normal')
+              kernel_initializer='he_normal', name='value')
     return x
