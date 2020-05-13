@@ -68,7 +68,7 @@ def residual_layer(input,
                   strides=stride,
                   padding='same',
                   kernel_initializer='he_normal',
-                  kernel_regularizer=l2(1e-4))
+                  kernel_regularizer=l2(1e-4))  #is this all we need for regularisation?
     x = input
     x = conv(x)
     if batch_normalization:
