@@ -24,8 +24,11 @@ PPRIOR = 0
 NCOUNT = 1
 WACCUMVALUE = 2
 QMEANVALUE = 3
-CHILDNODE = 4
 
+MOVE_DTYPE = np.uint8
+POS_DTYPE = np.uint8
+EDGE_DTYPE = np.float16
+IDX_DTYPE = np.uint16
 
 
 class MockTranslator():
@@ -83,11 +86,11 @@ class Node():
         self.endposition = False
 
         self.position_shape = position.shape
-        self.position = np.where(position == 1)
+        self.position = self._compress_indices(position)
 
         legal_moves = translator.get_legal_moves(position)
         self.move_shape = legal_moves.shape
-        self.legal_move_indices = np.where(legal_moves == 1)
+        self.legal_move_indices = self._compress_indices(legal_moves)
         num_of_legal_moves = len(self.legal_move_indices[0])
         self.children = [None] * num_of_legal_moves
 
@@ -102,18 +105,14 @@ class Node():
 
             # initialise tensor to hold
             # 5 values per edge
-            entries_per_edge = 5
+            entries_per_edge = 4
             self.edges = np.zeros(
                     (*legal_moves[self.legal_move_indices].shape,
-                        entries_per_edge))
+                        entries_per_edge),
+                    dtype = EDGE_DTYPE)
 
             # only store prior values of legal moves
-            self.edges[:, PPRIOR] = policy[self.legal_move_indices]
-
-            # for every legal move,
-            # store list index which refers to
-            # corresponding child node
-            self.edges[:, CHILDNODE] = np.arange(num_of_legal_moves)
+            self.edges[:, PPRIOR] = policy[self.legal_move_indices] 
 
     def __str__(self):
         return self._print_tree()
@@ -156,6 +155,21 @@ class Node():
         repstr = "node, {:0.3f}\n".format(self.evaluation) + repstr 
         return repstr 
 
+    def _compress_indices(self, tensor):
+        '''
+        tensor is a positional tensor with
+        entries 0 and 1. compress indices
+        extracts the indices of entries 1 in
+        tensor and converts them into reduced
+        data type
+        '''
+        indices = np.where(tensor == 1)
+        compressed = []
+        for i in indices:
+            compressed.append(i.astype(IDX_DTYPE))
+
+        return tuple(compressed)
+
     def rollout(self):
         '''
         recursive traversal of game tree
@@ -168,8 +182,7 @@ class Node():
             return self.evaluation
 
         i = self._index_of_best_move()
-        j = int(self.edges[i][CHILDNODE])
-        nextnode = self.children[j]
+        nextnode = self.children[i]
         evaluation = 0
 
         if nextnode is None:
@@ -184,7 +197,7 @@ class Node():
             # * get resulting position
             leaf = Node(self.translator, self.model, newposition)
             evaluation = leaf.evaluation
-            self.children[j] = leaf
+            self.children[i] = leaf
 
         else:
             # recursion
@@ -205,7 +218,7 @@ class Node():
         '''
         returns the index of the best move
         which then can be used to access the
-        5 values P, N, W, Q and childnode
+        4 values P, N, W, Q
         '''
 
         U = self.edges[:,PPRIOR] / (self.edges[:,NCOUNT] + 1)
@@ -222,6 +235,44 @@ class Node():
         in all moves
         '''
         return tuple(np.array(self.legal_move_indices).T[index])    
+
+    def _position_as_tensor(self):
+        '''
+        this node represents a game
+        position, which is stored in
+        compressed form.
+        _position_as_tensor returns
+        the decompressed tensor notation
+        of that position.
+        '''
+        tensor = np.zeros(self.position_shape, dtype = POS_DTYPE)
+        tensor[self.position] = 1
+        return tensor
+
+    def _move_as_tensor(self, move_index):
+        '''
+        takes a move index which refers
+        to an edge in edges and converts
+        this single move to tensor notation.
+        tensor is of data type POS_DTYPE,
+        because entries are only zeros and
+        one 1 for the selected move.
+        '''
+        tensor = np.zeros(self.move_shape, dtype = POS_DTYPE)
+        i = self._legal_to_total_index(move_index)
+        tensor[i] = 1
+        return tensor
+
+    def _edges_as_tensor(self):
+        '''
+        return move recommendation
+        distribution over all legal
+        moves in one tensor according
+        to tensor notation of moves.
+        '''
+        tensor = np.zeros(self.move_shape, dtype = MOVE_DTYPE)
+        #TODO: actually put values there.
+        return tensor
 
 
     # pylint: enable=C0326
