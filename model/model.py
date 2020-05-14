@@ -1,20 +1,19 @@
 import os
-import yaml
+import numpy as np
 import keras
 from time import time
-from keras.models import Sequential
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
+from keras.optimizers import Adam
+from keras.callbacks import ModelCheckpoint, LearningRateScheduler
+from keras.callbacks import ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
-
-from config import Config
 
 
 class AZero:
     """ The AlphaZero Class
 
     Attributes:
-        model_name (str): name of model given by config name and network depth
         model (Keras Model): The ResNet Model with two output heads
 
     Functions:
@@ -26,13 +25,46 @@ class AZero:
         load_model:
     """
 
-    def __init__(self, config_file=None):
-        self.read_config(config_file)
+    def __init__(self, config):
 
-    def read_config(self, config_file):
-        self.config = Config(config_file)
-        self.model_name = self.config.model_name
+        assert config is not None, "ERROR! no config provided"
+
+        self.config = config
         self.build_model()
+
+        # dummy compile
+        self.model.compile(loss=self.loss,
+                           optimizer=Adam(learning_rate=1e-3),
+                           metrics=['accuracy'])
+
+    def prepare_callbacks(self):
+        # dummy callbacks
+        checkpoint_file = os.path.join(self.config.checkpoint_dir,
+                                       "{epoch:02d}-{val_loss.2f}.hdf5")
+        checkpoint = ModelCheckpoint(filepath=checkpoint_file,
+                                     monitor='val_acc',
+                                     save_weights_only=True,
+                                     verbose=1,
+                                     save_best_only=False)
+
+        lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
+                                       cooldown=0,
+                                       patience=5,
+                                       min_lr=0.5e-6)
+        return [checkpoint, lr_reducer]
+
+    def train(self, x_train, y_train):
+        # dummy train
+        callbacks = self.prepare_callbacks()
+        self.model.fit(x_train, y_train,
+                       batch_size=64,
+                       epochs=120,
+                       shuffle=True,
+                       callbacks=callbacks)
+
+    def loss(self, x, y):
+        # dummy loss
+        return keras.backend.sum(y)
 
     def build_model(self):
 
@@ -166,14 +198,14 @@ class AZero:
                                         outputs=[policy_head, value_head])
 
     def summary(self):
-        print("Model Name: " + self.model_name)
+        print("Model Name: " + self.config.model_name)
         print("Configuration Settings:")
         print(self.config)
         self.model.summary()
 
     def plot_model(self):
         # graphviz (not a python package) has to be installed https://www.graphviz.org/
-        plot_model(self.model, to_file='Model/%s.png' % self.model_name,
+        plot_model(self.model, to_file='Model/%s.png' % self.config.model_name,
                    show_shapes=True, show_layer_names=True)
 
     def save_model(self):  # (self, conf_path, weight_path):  Überlegen ob nur modell oder modell und weights save/load
