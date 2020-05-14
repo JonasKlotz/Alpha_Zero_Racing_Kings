@@ -144,7 +144,7 @@ class Game:
             boolean: True if game ended in a draw, False otherwise
         """
         self.draw |= self.board.is_variant_draw() or self.get_movelist_size() == 0
-        if self.get_movelist_size() == 0: print("no valid move")
+        # if self.get_movelist_size() == 0: print("no valid move")
         if self.history[self.board.fen()] > 2: print("repetition")
         self.draw |= self.history[self.board.fen()] > 2
         return self.draw
@@ -212,20 +212,20 @@ class Game:
         self.make_move(result.move)
 
 
-score = [0] * 3
-for i in range(50):
-    game = Game()
-    while not game.is_ended():
-        try:
-            # game.play_stockfish(0.01)
-            game.play_random_move()
-        except:
-            game.show_game()
-            print("Fail")
-            break
-    s = game.get_score(1)
-    print("s ", s)
-    score[int(s * 2)] += 1
-game.show_game()
-print(score)
-game.engine.close()
+# score = [0] * 3
+# for i in range(50):
+#     game = Game()
+#     while not game.is_ended():
+#         try:
+#             # game.play_stockfish(0.01)
+#             game.play_random_move()
+#         except:
+#             game.show_game()
+#             print("Fail")
+#             break
+#     s = game.get_score(1)
+#     print("s ", s)
+#     score[int(s * 2)] += 1
+# game.show_game()
+# print(score)
+# game.engine.close()

@@ -30,9 +30,10 @@ class RacingKingsState():
 
     def takeAction(self, action):
         new_state = deepcopy(self)
-        new_state.game.board.push(action.move)  #TODO: maybe this is better?
         # new_state.game.board = action.move   #TODO: right format?
-        new_state.game.player_to_move = (self.game.player_to_move + 1) % 2
+        # new_state.game.board.push(action.move)  #TODO: maybe this is better?
+        new_state.game.make_move(action.move)
+        # new_state.game.player_to_move = self.game.player_to_move * -1
         new_state.currentPlayer = self.currentPlayer * -1
         return new_state
 
@@ -51,7 +52,7 @@ class RacingKingsState():
         return False
 
     def show_board(self, path=None):
-        self.game.show_game(True, "./Debug_board4.png")
+        self.game.show_game()
 
 
 class Action():
@@ -66,13 +67,4 @@ class Action():
         return self.__class__ == other.__class__ and self.move == other.move and self.player == other.player
 
     def __hash__(self):
-        return hash(self.move)
-
-
-if __name__ == '__main__':
-    # unittest.main()
-    initialState = RacingKingsState()
-    mcts = mcts(timeLimit=1000)
-    action = mcts.search(initialState=initialState)
-
-    print(action)
+        return hash((self.player, self.move))
