@@ -14,6 +14,7 @@ node.legal_move_indices to
 reconstruct the corresponding move
 '''
 import numpy as np
+import StateMachine as sm
 
 # dimensions of mock object tensors
 DIMENSIONS = (3, 3, 3)
@@ -30,6 +31,11 @@ POS_DTYPE = np.uint8
 EDGE_DTYPE = np.float16
 IDX_DTYPE = np.uint16
 
+SELFPLAY = True
+
+WHITE = 1
+BLACK = -1
+SWAP = -1
 
 class MockTranslator():
     def get_legal_moves(self, position):
@@ -52,10 +58,10 @@ class Azts():
     Azts represents the
     alpha zero search tree.
     '''
-    def __init__(self, translator, model, position, sims_per_move=10):
-        self.translator = translator
+    def __init__(self, state_machine, model, position, sims_per_move=10):
+        self.state_machine = state_machine
         self.model = model
-        self.root = Node(translator, model, position)
+        self.root = Node(state_machine, model, position)
         self.sims_per_move = sims_per_move
 
     def _tree_search(self):
@@ -78,9 +84,11 @@ class Node():
     algorithm: N, W, Q, P.
     '''
     # pylint: disable=C0326
-    def __init__(self, translator, model, position):
+    def __init__(self, state_machine, model, position, color = WHITE):
 
-        self.translator = translator
+        self.color = color
+
+        self.state_machine = state_machine
         self.model = model
         self.evaluation = 0
         self.endposition = False
@@ -88,7 +96,12 @@ class Node():
         self.position_shape = position.shape
         self.position = self._compress_indices(position)
 
-        legal_moves = translator.get_legal_moves(position)
+        legal_moves = None
+        if SELFPLAY:
+            legal_moves = state_machine.get_legal_moves() 
+        else:
+            legal_moves = state_machine.get_legal_moves(position)
+
         self.move_shape = legal_moves.shape
         self.legal_move_indices = self._compress_indices(legal_moves)
         num_of_legal_moves = len(self.legal_move_indices[0])
@@ -96,7 +109,8 @@ class Node():
 
         if num_of_legal_moves == 0:
             # reached end of game
-            self.evaluation = translator.get_result(position)
+            result = state_machine.get_rollout_result()
+            self.evaluation = result * self.color
             self.endposition = True
 
         else:
@@ -183,19 +197,36 @@ class Node():
 
         i = self._index_of_best_move()
         nextnode = self.children[i]
+
+        newposition = None
+
+        move = self._move_as_tensor(i)
+        if SELFPLAY:
+            # in self-play, we let the state
+            # machine keep track of every move
+            # to catch move-repetitions as draws
+            # so that we get a realistic data set
+            newposition = self.state_machine.rollout_tensor_move(move)
+
         evaluation = 0
 
         if nextnode is None:
             # terminate recursion
             # on leaf expansion
-            # TODO: where do we get new position?
-            newposition = self.translator.get_legal_moves(None)
-            # * expand position to tensor
-            # * set translator to this position
-            # * expand node index to move tensor
-            # * set move to translator
-            # * get resulting position
-            leaf = Node(self.translator, self.model, newposition)
+            if not SELFPLAY:
+                # if not in self-play, we do not use
+                # the state machine, because all
+                # the conversions tensor-fen are
+                # quite expensive and evaluation
+                # depends on the model anyways
+                oldposition = self._position_as_tensor() 
+                newposition = self.state_machine.get_new_position(
+                        oldposition, move)
+
+            leaf = Node(self.state_machine,
+                    self.model, 
+                    newposition,
+                    self.color)
             evaluation = leaf.evaluation
             self.children[i] = leaf
 
@@ -279,9 +310,9 @@ class Node():
 
 
 def set_up():
-    trans = MockTranslator()
+    state_machine = sm.StateMachine()
     model = MockModel()
-    x = trans.get_legal_moves(None)
+    x = state_machine.get_legal_moves()
     node = Node(trans, model, x)
     return trans, model, x, node
 
