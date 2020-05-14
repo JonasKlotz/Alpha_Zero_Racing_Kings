@@ -29,6 +29,7 @@ class Game:
         self.end = False
         self.draw = False
         self.history = {}
+        self.history[self.board.fen()] = 1
 
         # print(self.board)
 
@@ -78,7 +79,7 @@ class Game:
         """
         return len(list(self.board.legal_moves))
 
-    def make_move(self, move):
+    def make_move(self, input):
         """
         must check if king landed on 8 rank
         Input:
@@ -87,12 +88,30 @@ class Game:
             double: score of current player on the current turn
             int: player who plays in the next turn
         """
+
         try:
+            move = self.board.parse_uci(input)  # UCI
             self.board.push(move)
             self.after_mode()
+            return
+        except:
+            pass
+        try:
+            self.board.push(input)  # Move as chessmove
+            self.after_mode()
+            return
+        except:
+            pass
+
+        try:
+            move = self.board.parse_san(input)  # SAN
+            self.board.push(move)
+            self.after_mode()
+            return
         except:
             self.show_game()
-            print("move" + move + "illegal")
+            print("move " + input + " illegal")
+            self.end = True
 
     def after_mode(self, ):
         self.move_count += 1
@@ -106,7 +125,7 @@ class Game:
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
-        self.end = self.board.is_variant_end() or self.is_draw() or self.is_won()
+        self.end |= self.board.is_variant_end() or self.is_draw() or self.is_won()
 
     def get_observation(self):
         """
@@ -136,6 +155,7 @@ class Game:
         Returns:
             boolean: False if game has not ended. True otherwise
         """
+        self.end |= self.board.is_variant_end() or self.is_draw() or self.is_won()
         return self.end
 
     def is_draw(self):
@@ -200,6 +220,7 @@ class Game:
             RuntimeError()
         self.make_move(rnd_move)
 
+
     def play_stockfish(self, limit=1.0):  # if not working make engine/stockfish-x86_64 executable
         """
         stockfish plays move
@@ -228,4 +249,5 @@ class Game:
 #     score[int(s * 2)] += 1
 # game.show_game()
 # print(score)
+
 # game.engine.close()
