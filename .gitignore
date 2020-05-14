@@ -17,3 +17,6 @@
 # Virtueal Environment
 venv/*
 .env
+
+# Data Folder
+_Data
