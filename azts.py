@@ -17,7 +17,7 @@ import numpy as np
 import StateMachine as sm
 
 # dimensions of mock object tensors
-DIMENSIONS = (3, 3, 3)
+DIMENSIONS = (8, 8, 64)
 
 # index of values that get stored
 # in each edge
@@ -58,15 +58,27 @@ class Azts():
     Azts represents the
     alpha zero search tree.
     '''
-    def __init__(self, state_machine, model, position, sims_per_move=10):
+    def __init__(self, 
+            state_machine,
+            model,
+            position,
+            color,
+            sims_per_move=10):
+
+        self.color = color
+
         self.state_machine = state_machine
         self.model = model
-        self.root = Node(state_machine, model, position)
+        self.root = Node(state_machine,
+                model,
+                state_machine.get_actual_position(),
+                color)
         self.sims_per_move = sims_per_move
 
     def _tree_search(self):
         for i in range(self.sims_per_move):
             self.root.rollout()
+            self.state_machine.reset_to_actual_game()
 
     def _set_root_to(position):
         pass
@@ -98,6 +110,7 @@ class Node():
 
         legal_moves = None
         if SELFPLAY:
+            print(f"collecting legal moves for new node ...")
             legal_moves = state_machine.get_legal_moves() 
         else:
             legal_moves = state_machine.get_legal_moves(position)
@@ -312,15 +325,18 @@ class Node():
 def set_up():
     state_machine = sm.StateMachine()
     model = MockModel()
-    x = state_machine.get_legal_moves()
-    node = Node(trans, model, x)
-    return trans, model, x, node
+    node = Node(state_machine,
+            model,
+            state_machine.get_actual_position())
+
+    return state_machine, model, node
 
 
 
 if __name__ == "__main__":
-    trans, model, x, node = set_up()
-    for i in range(200):
+    state_machine, model, node = set_up()
+    for i in range(5):
         node.rollout()
+        state_machine.reset_to_actual_game()
 
     print(node)

@@ -44,6 +44,9 @@ class StateMachine():
     
     def get_legal_moves(self):
         moves = self.rollout_game.get_moves_observation()
+
+        print(f"\n\nlegal moves in fen: {moves}") 
+
         tensor = np.zeros(self.move_shape)
         
         for move in moves:
@@ -72,8 +75,12 @@ class StateMachine():
         new_fen = rollout_game.board.fen()
         return tn.fen_to_tensor(new_fen)
 
+    def get_actual_position(self):
+        return tn.fen_to_tensor(self.actual_game.board.fen())
+
     def rollout_tensor_move(self, move_tensor):
         move_fen = tn.tensor_to_move(move_tensor)
+        print(f"\n\nselected move {move_fen}")
         try:
             self.rollout_game.make_move(move_fen)
         except:
