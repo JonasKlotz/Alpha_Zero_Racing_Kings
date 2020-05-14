@@ -6,9 +6,7 @@
 */.DS_Store
 
 # python byte code directory
-__pycache__/*
-Interpreter/__pycache__/*
-MCTS_StateModel/__pycache__/*
+**/__pycache__/
 
 # VSCode config files
 .vscode
@@ -18,3 +16,4 @@ MCTS_StateModel/__pycache__/*
 
 # Virtueal Environment
 venv/*
+.env
