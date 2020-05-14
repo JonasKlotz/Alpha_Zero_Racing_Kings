@@ -5,6 +5,13 @@ the mcts module is the entry
 point and the actual tree is
 built with node objects defined
 in the node module.  
+TODO: Actually we dont need to
+store the whole tensor of possible
+moves in node.edges; legal moves
+alone suffice. To make this work,
+we'll have to reference
+node.legal_move_indices to
+reconstruct the corresponding move
 '''
 import numpy as np
 
@@ -79,6 +86,7 @@ class Node():
         self.position = np.where(position == 1)
 
         legal_moves = translator.get_legal_moves(position)
+        self.move_shape = legal_moves.shape
         self.legal_move_indices = np.where(legal_moves == 1)
         num_of_legal_moves = len(self.legal_move_indices[0])
         self.children = [None] * num_of_legal_moves
@@ -89,28 +97,32 @@ class Node():
             self.endposition = True
 
         else:
-            # expanding leaf node
+            # expansion of node
             policy, self.evaluation = model.inference(position)
-            p_legal = policy * legal_moves
 
             # initialise tensor to hold
             # 5 values per edge
             entries_per_edge = 5
-            self.edges = np.zeros((*legal_moves.shape, entries_per_edge))
+            self.edges = np.zeros(
+                    (*legal_moves[self.legal_move_indices].shape,
+                        entries_per_edge))
 
-            # store prior values from
-            # p_legal in edges
-            self.edges[:, :, :, PPRIOR] = p_legal
+            # only store prior values of legal moves
+            self.edges[:, PPRIOR] = policy[self.legal_move_indices]
 
             # for every legal move,
             # store list index which refers to
             # corresponding child node
-            self._indicate_legal_moves()
+            self.edges[:, CHILDNODE] = np.arange(num_of_legal_moves)
 
     def __str__(self):
         return self._print_tree()
 
     def _print_tree(self, level = 0):
+        l_shape = chr(9492)
+        t_shape = chr(9500)
+        i_shape = chr(9474)
+        minus_shape = chr(9472)
 
         if level > 25:
             return "..."
@@ -128,13 +140,13 @@ class Node():
             # not last element
             if i < len(rep) - 1:
                 if "\n" in j:
-                    j = j.replace("\n", "\n" + chr(9474) + " ") 
-                j = chr(9500) + chr(9472) + j
+                    j = j.replace("\n", "\n" + i_shape + " ") 
+                j = t_shape + minus_shape + j
             
             else:
                 if "\n" in j:
                     j = j.replace("\n", "\n" + "  ") 
-                j = chr(9492) + chr(9472) + j 
+                j = l_shape + minus_shape + j 
             rep[i] = j
 
         repstr = ""
@@ -165,6 +177,11 @@ class Node():
             # on leaf expansion
             # TODO: where do we get new position?
             newposition = self.translator.get_legal_moves(None)
+            # * expand position to tensor
+            # * set translator to this position
+            # * expand node index to move tensor
+            # * set move to translator
+            # * get resulting position
             leaf = Node(self.translator, self.model, newposition)
             evaluation = leaf.evaluation
             self.children[j] = leaf
@@ -191,30 +208,11 @@ class Node():
         5 values P, N, W, Q and childnode
         '''
 
-        legal_moves = self._all_legal_moves()
+        U = self.edges[:,PPRIOR] / (self.edges[:,NCOUNT] + 1)
+        Q = self.edges[:,QMEANVALUE]
+        best_move_index = (Q + U).argmax()
 
-        U = legal_moves[:,PPRIOR] / (legal_moves[:,NCOUNT] + 1)
-        Q = legal_moves[:,QMEANVALUE]
-        best_move = (Q + U).argmax()
-        move_index = self._legal_to_total_index(best_move)
-
-        return move_index
-
-    def _all_legal_moves(self):
-        '''
-        returns only the legal moves
-        '''
-        return self.edges[self.legal_move_indices]
-
-    def _indicate_legal_moves(self):
-        '''
-        initializes all legal moves
-        with the index where the
-        corresponding child node is
-        stored in self.children
-        '''
-        for i, j in enumerate(zip(*self.legal_move_indices)):
-            self.edges[(*j, CHILDNODE)] = i 
+        return best_move_index
 
     def _legal_to_total_index(self, index):
         '''
