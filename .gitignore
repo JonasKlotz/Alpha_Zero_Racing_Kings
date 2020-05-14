@@ -6,6 +6,7 @@
 */.DS_Store
 
 # python byte code directory
+*/__pycache__/*
 __pycache__/*
 Interpreter/__pycache__/*
 MCTS_StateModel/__pycache__/*
