@@ -335,7 +335,7 @@ def set_up():
 
 if __name__ == "__main__":
     state_machine, model, node = set_up()
-    for i in range(5):
+    for i in range(10):
         node.rollout()
         state_machine.reset_to_actual_game()
 
