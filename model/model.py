@@ -9,14 +9,11 @@ from keras.callbacks import ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
 
-from Model.config import Config
-
 
 class AZero:
     """ The AlphaZero Class
 
     Attributes:
-        model_name (str): name of model given by config name and network depth
         model (Keras Model): The ResNet Model with two output heads
 
     Functions:
@@ -28,21 +25,23 @@ class AZero:
         load_model:
     """
 
-    def __init__(self, config_file=None):
-        self.read_config(config_file)
+    def __init__(self, config):
+
+        assert config is not None, "ERROR! no config provided"
+
+        self.config = config
         self.build_model()
 
+        # dummy compile
         self.model.compile(loss=self.loss,
                            optimizer=Adam(learning_rate=1e-3),
                            metrics=['accuracy'])
 
     def prepare_callbacks(self):
-        save_dir = os.path.join(os.getcwd(), 'saved_models')
-        if not os.path.isdir(save_dir):
-            os.makedirs(save_dir)
-        checkpoint_filepath = os.path.join(
-            save_dir, self.model_name, "{epoch:02d}-{val_loss.2f}.hdf5")
-        checkpoint = ModelCheckpoint(filepath=checkpoint_filepath,
+        # dummy callbacks
+        checkpoint_file = os.path.join(self.config.checkpoint_dir,
+                                       "{epoch:02d}-{val_loss.2f}.hdf5")
+        checkpoint = ModelCheckpoint(filepath=checkpoint_file,
                                      monitor='val_acc',
                                      save_weights_only=True,
                                      verbose=1,
@@ -55,22 +54,17 @@ class AZero:
         return [checkpoint, lr_reducer]
 
     def train(self, x_train, y_train):
+        # dummy train
         callbacks = self.prepare_callbacks()
         self.model.fit(x_train, y_train,
                        batch_size=64,
                        epochs=120,
-                       #    validation_data=(x_test, y_test),
                        shuffle=True,
                        callbacks=callbacks)
 
-    def read_config(self, config_file):
-        self.config = Config(config_file)
-        self.model_name = self.config.model_name
-
     def loss(self, x, y):
-        x_p, x_v = x
-        y_p, y_v = y
-        return (y_v - x_v)**2 - np.sum(y_p * np.log(x_p))
+        # dummy loss
+        return keras.backend.sum(y)
 
     def build_model(self):
 
@@ -204,14 +198,14 @@ class AZero:
                                         outputs=[policy_head, value_head])
 
     def summary(self):
-        print("Model Name: " + self.model_name)
+        print("Model Name: " + self.config.model_name)
         print("Configuration Settings:")
         print(self.config)
         self.model.summary()
 
     def plot_model(self):
         # graphviz (not a python package) has to be installed https://www.graphviz.org/
-        plot_model(self.model, to_file='Model/%s.png' % self.model_name,
+        plot_model(self.model, to_file='Model/%s.png' % self.config.model_name,
                    show_shapes=True, show_layer_names=True)
 
     def save_model(self):  # (self, conf_path, weight_path):  Überlegen ob nur modell oder modell und weights save/load

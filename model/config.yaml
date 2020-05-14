@@ -7,6 +7,8 @@ name: 'AlphaZero'
 config_version: 1
 #model version is changed whenever the parameters are reconfigured
 model_version: 0
+#folder to save checkpoints and training data
+data_dir: "_Data"
 #model parameters
 model:
     #input feature dimensions

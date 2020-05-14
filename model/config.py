@@ -1,4 +1,5 @@
 import yaml
+import os
 
 
 def load_yaml(file):
@@ -70,12 +71,22 @@ class Config(Options):
     config_version = 1
     model_version = 0
 
+    data_dir = "_Data"
+
     model = Options()
     model.input_shape = (8, 8, 11)
     model.resnet_depth = 9
 
     model_name = name + \
         '%dv%d.%d' % (model.resnet_depth, config_version, model_version)
+
+    checkpoint_dir = os.path.join(data_dir, "model_checkpoints", model_name)
+    train_data_dir = os.path.join(data_dir, "training_data", model_name)
+
+    if not os.path.exists(checkpoint_dir):
+        os.makedirs(checkpoint_dir)
+    if not os.path.exists(train_data_dir):
+        os.makedirs(train_data_dir)
 
     model.residual_block = Options()
     model.residual_block.layers = 2

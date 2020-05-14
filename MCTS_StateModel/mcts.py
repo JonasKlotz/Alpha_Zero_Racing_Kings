@@ -3,6 +3,7 @@ from __future__ import division
 import time
 import math
 import random
+import MCTS_StateModel.racingkings_statemodel as state_model
 
 
 def randomPolicy(state):
@@ -10,6 +11,8 @@ def randomPolicy(state):
         try:
             action = random.choice(state.getPossibleActions())
         except IndexError:
+            state.show_board()
+            print(state.getCurrentPlayer())
             raise Exception("Non-terminal state has no possible actions: " + str(state))
         state = state.takeAction(action)
     return state.getReward()
@@ -108,3 +111,12 @@ class mcts():
         for action, node in root.children.items():
             if node is bestChild:
                 return action
+
+
+if __name__ == '__main__':
+    # unittest.main()
+    initialState = state_model.RacingKingsState()
+    mcts = mcts(timeLimit=100000)
+    action = mcts.search(initialState=initialState)
+
+    print(action)
