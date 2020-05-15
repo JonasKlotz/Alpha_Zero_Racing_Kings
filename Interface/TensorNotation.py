@@ -269,7 +269,7 @@ def tensor_indices_to_move(indices):
             , [0, 1]
             , [-1, 1]
             , [-1, 0]
-            , [-1, 1]
+            , [-1, -1]
         ]
 
         direction = indices[2] % 8
