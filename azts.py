@@ -110,7 +110,6 @@ class Node():
 
         legal_moves = None
         if SELFPLAY:
-            print(f"collecting legal moves for new node ...")
             legal_moves = state_machine.get_legal_moves() 
         else:
             legal_moves = state_machine.get_legal_moves(position)
@@ -335,7 +334,7 @@ def set_up():
 
 if __name__ == "__main__":
     state_machine, model, node = set_up()
-    for i in range(10):
+    for i in range(100):
         node.rollout()
         state_machine.reset_to_actual_game()
 
