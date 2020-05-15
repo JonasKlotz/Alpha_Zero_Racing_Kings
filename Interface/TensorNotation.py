@@ -1,5 +1,7 @@
 import numpy as np
 
+DATATYPE = np.uint8
+
 # which piece to put in which plane when black is to move
 piece_indices_black = {
     "k": 0
@@ -69,7 +71,7 @@ def fen_to_tensor(fen=std_fen):
 
     """
 
-    tensor = np.zeros((8, 8, 11))
+    tensor = np.zeros((8, 8, 11)).astype(DATATYPE)
     fen = fen.split()
 
     # replace digits by number of "1"s and split String into rows
@@ -223,7 +225,7 @@ def move_to_tensor(uci):
 
     indices = move_to_tensor_indices(uci)
 
-    tensor = np.zeros((8, 8, 64))
+    tensor = np.zeros((8, 8, 64)).astype(DATATYPE)
 
     tensor[indices[0], indices[1], indices[2]] = 1
 
