@@ -141,25 +141,36 @@ class Node():
             self.edges[:, PPRIOR] = policy[self.legal_move_indices] 
 
     def __str__(self):
-        return self._print_tree()
+        metrics, tree_string = self._print_tree(0)
+        num_of_nodes = metrics[0] + metrics[1] + metrics[2]
+        metric_string = "\nMORE than " if metrics[3] else "\n"
+        metric_string += f"{num_of_nodes} nodes in total:\n" \
+                + f"\t{metrics[1]} leaf nodes\n" \
+                + f"\t{metrics[2]} end positions\n" \
+                + f"\t{metrics[0]} normal tree nodes\n" 
 
-    def _print_tree(self, level = 0):
+        return tree_string + metric_string
+
+    def _print_tree(self, level):
         l_shape = chr(9492)
         t_shape = chr(9500)
         i_shape = chr(9474)
         minus_shape = chr(9472)
 
         if level > 25:
-            return "..."
+            return (0, 0, 0, 1), "..."
         elif self.endposition:
-            return "end, {:0.3f}".format(self.evaluation)
+            return (0, 0, 1, 0), "end, {:0.3f}".format(self.evaluation)
         elif not any(self.children):
-            return "leaf, {:0.3f}".format(self.evaluation)
+            return (0, 1, 0, 0), "leaf, {:0.3f}".format(self.evaluation)
 
         rep = []
+        metrics = (1, 0, 0, 0)
         for i, j in enumerate(self.children):
             if j:
-                rep.append(str(i) + ": " + j._print_tree(level + 1))
+                child_metrics, string = j._print_tree(level + 1)
+                metrics = [k + l for k, l in zip(metrics, child_metrics)]
+                rep.append(str(i) + ": " + string)
 
         for i, j in enumerate(rep):
             # not last element
@@ -179,7 +190,7 @@ class Node():
             repstr += i + "\n" 
 
         repstr = "node, {:0.3f}\n".format(self.evaluation) + repstr 
-        return repstr 
+        return metrics, repstr 
 
     def _compress_indices(self, tensor):
         '''
