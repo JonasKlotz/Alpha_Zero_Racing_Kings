@@ -119,7 +119,7 @@ class SelfPlay():
 
 if __name__ == "__main__":
     play = SelfPlay()
-    play.start(2)
+    play.start(50)
 
 
 
