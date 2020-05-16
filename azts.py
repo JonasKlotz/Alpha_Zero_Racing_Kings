@@ -100,14 +100,14 @@ class Azts():
     def get_policy_tensor(self):
         return self.root.get_policy_tensor()
 
-    def receive_move(self):
+    def receive_move(self, move):
         self.state_machine.actual_fen_move(move)
 
         del self.root
         self._init_tree()
 
     def get_position(self):
-        return self.root.position()
+        return self.root.get_position()
 
 
     def _tree_search(self, runs = 10):
@@ -252,6 +252,7 @@ class Node():
 
     def get_policy_tensor(self):
         num_of_rollouts = self.edges[:,NCOUNT].sum()
+        num_of_rollouts = max(1, num_of_rollouts)
         policy_weights = self.edges[:,NCOUNT] / num_of_rollouts
         policy_tensor = np.zeros(self.move_shape, EDGE_DTYPE)
         policy_tensor[self.legal_move_indices] = policy_weights

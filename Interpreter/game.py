@@ -194,6 +194,13 @@ class Game:
         """
         return copy(self)
 
+    def render_game(self):
+        svg = chess.svg.board(board=self.board)
+        img = io.BytesIO()
+        svg2png(bytestring=bytes(svg, 'UTF-8'), write_to=img)
+        img = Image.open(img)
+        return img
+
     def show_game(self, save=False, path=None):
         """
         converts game svg to png
