@@ -4,11 +4,12 @@ import StateMachine as sm
 import Screen
 import time
 import pickle
+import os.path
 
 WHITE = 1
 BLACK = -1
 SHOW_GAME = False
-RUNS_PER_MOVE = 200
+RUNS_PER_MOVE = 100
 REPORT_CYCLE = 25
 
 class Player():
@@ -91,13 +92,35 @@ class SelfMatch():
             i[2] = result
         
 
+class SelfPlay():
+    def __init__(self):
+        self.match = SelfMatch()
+
+    def start(self, iterations = 100):
+        for i in range(iterations):
+            self.match.simulate()
+            data = [tuple(j) for j in self.match.data_collection]
+
+            filenumber = i
+
+            filenumberstring = str(filenumber).zfill(4)
+            filename = f"game_{filenumberstring}.pkl"
+            while os.path.isfile(filename):
+                filenumber += 1
+                filenumberstring = str(filenumber).zfill(4)
+                filename = f"game_{filenumberstring}.pkl"
+
+            pickle.dump(data, open(filename, "wb"))
+
+            del self.match
+            self.match = SelfMatch()
+
+
 
 if __name__ == "__main__":
-    match = SelfMatch()
-    time1 = time.time()
-    match.simulate()
-    time2 = time.time()
+    play = SelfPlay()
+    play.start(2)
 
-    print(f"finished simulation in {str(time2 - time1)[0:8]} seconds.")
+
 
 
