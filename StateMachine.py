@@ -25,7 +25,7 @@ class StateMachine():
         '''
         self.rollout_game = copy.deepcopy(self.actual_game)
 
-    def get_legal_moves(self, position):
+    def get_legal_moves_from(self, position):
         '''
         Input is a position in tensor notation
         Output is a move tensor with all zeros
@@ -70,7 +70,7 @@ class StateMachine():
             raise ValueError(f"move {move_fen} \
                     not possible in position {old_fen}")
 
-        new_fen = rollout_game.board.fen()
+        new_fen = self.rollout_game.board.fen()
         return tn.fen_to_tensor(new_fen)
 
     def get_actual_position(self):

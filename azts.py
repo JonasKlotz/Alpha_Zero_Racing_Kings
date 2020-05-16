@@ -15,6 +15,7 @@ reconstruct the corresponding move
 '''
 import numpy as np
 import StateMachine as sm
+import time
 
 # dimensions of mock object tensors
 DIMENSIONS = (8, 8, 64)
@@ -28,10 +29,13 @@ QMEANVALUE = 3
 
 MOVE_DTYPE = np.uint8
 POS_DTYPE = np.uint8
+# np.float16:
+# no overflow in -65500 .. 65500
 EDGE_DTYPE = np.float16
 IDX_DTYPE = np.uint16
 
-SELFPLAY = True
+SELFPLAY = False
+EXPLORATION = 0.1
 
 WHITE = 1
 BLACK = -1
@@ -48,7 +52,7 @@ class MockTranslator():
 class MockModel():
     def inference(self, position):
         policy = np.random.rand(*DIMENSIONS)
-        evaluation = np.random.rand(1)[0]
+        evaluation = np.random.rand(1)[0] - 0.5
 
         return (policy, evaluation)
 
@@ -112,7 +116,7 @@ class Node():
         if SELFPLAY:
             legal_moves = state_machine.get_legal_moves() 
         else:
-            legal_moves = state_machine.get_legal_moves(position)
+            legal_moves = state_machine.get_legal_moves_from(position)
 
         self.move_shape = legal_moves.shape
         self.legal_move_indices = self._compress_indices(legal_moves)
@@ -147,7 +151,8 @@ class Node():
         metric_string += f"{num_of_nodes} nodes in total:\n" \
                 + f"\t{metrics[1]} leaf nodes\n" \
                 + f"\t{metrics[2]} end positions\n" \
-                + f"\t{metrics[0]} normal tree nodes\n" 
+                + f"\t{metrics[0]} normal tree nodes\n" \
+                + f"\t{metrics[4]} was maximal tree depth\n"
 
         return tree_string + metric_string
 
@@ -157,20 +162,24 @@ class Node():
         i_shape = chr(9474)
         minus_shape = chr(9472)
 
-        if level > 25:
-            return (0, 0, 0, 1), "..."
+        if level > 1000:
+            return (0, 0, 0, 1, level), "..."
         elif self.endposition:
-            return (0, 0, 1, 0), "end, {:0.3f}".format(self.evaluation)
+            return (0, 0, 1, 0, level), "end, {:0.3f}".format(self.evaluation)
         elif not any(self.children):
-            return (0, 1, 0, 0), "leaf, {:0.3f}".format(self.evaluation)
+            return (0, 1, 0, 0, level), "leaf, {:0.3f}".format(self.evaluation)
 
         rep = []
-        metrics = (1, 0, 0, 0)
+        metrics = (1, 0, 0, 0, level)
+        maxlevel = level
         for i, j in enumerate(self.children):
             if j:
                 child_metrics, string = j._print_tree(level + 1)
                 metrics = [k + l for k, l in zip(metrics, child_metrics)]
+                maxlevel = max(maxlevel, child_metrics[4])
                 rep.append(str(i) + ": " + string)
+
+        metrics[4] = maxlevel
 
         for i, j in enumerate(rep):
             # not last element
@@ -206,6 +215,18 @@ class Node():
             compressed.append(i.astype(IDX_DTYPE))
 
         return tuple(compressed)
+
+    def get_policy_tensor(self):
+        num_of_rollouts = self.edges[:,NCOUNT].sum()
+        policy_weights = self.edges[:,NCOUNT] / num_of_rollouts
+        policy_tensor = np.zeros(self.move_shape, EDGE_DTYPE)
+        policy_tensor[self.legal_move_indices] = policy_weights
+        return policy_tensor
+
+    def get_move(self):
+        i = np.argmax(self.edges[:,NCOUNT])
+        i = self._legal_to_total_index(i)
+        
 
     def rollout(self):
         '''
@@ -276,6 +297,7 @@ class Node():
         '''
 
         U = self.edges[:,PPRIOR] / (self.edges[:,NCOUNT] + 1)
+        U *= EXPLORATION
         Q = self.edges[:,QMEANVALUE]
         best_move_index = (Q + U).argmax()
 
@@ -339,14 +361,24 @@ def set_up():
             model,
             state_machine.get_actual_position())
 
+    np.set_printoptions(suppress=True, precision=3)
+
     return state_machine, model, node
 
 
 
 if __name__ == "__main__":
     state_machine, model, node = set_up()
-    for i in range(100):
+    num_of_rollouts = 1000
+
+    time1 = time.time()
+    for i in range(num_of_rollouts):
         node.rollout()
         state_machine.reset_to_actual_game()
+    time2 = time.time()
 
     print(node)
+    mode = "selfplay" if SELFPLAY else "tournament"
+    print(f"doing {num_of_rollouts} rollouts " \
+            + f"in {mode} mode took {time2 - time1} seconds.\n")
+
