@@ -36,6 +36,7 @@ IDX_DTYPE = np.uint16
 
 SELFPLAY = False
 EXPLORATION = 0.1
+AMPLIFY_RESULT = 100
 
 WHITE = 1
 BLACK = -1
@@ -157,7 +158,7 @@ class Node():
         if num_of_legal_moves == 0:
             # reached end of game
             result = state_machine.get_rollout_result()
-            self.evaluation = result * self.color
+            self.evaluation = result * self.color * AMPLIFY_RESULT
             self.endposition = True
 
         else:
@@ -405,7 +406,7 @@ def set_up():
             model,
             WHITE,
             None,
-            100)
+            200)
 
     np.set_printoptions(suppress=True, precision=3)
 
@@ -414,17 +415,16 @@ def set_up():
 
 
 if __name__ == "__main__":
-    state_machine, model, node = set_up()
-    num_of_rollouts = 1000
+    state_machine, model, tree = set_up()
 
+    print(f"Calculating first move...") 
     time1 = time.time()
-    for i in range(num_of_rollouts):
-        node.rollout()
+    print(f"First move is {tree.make_move()}.") 
     time2 = time.time()
 
-    print(node)
+    print(tree)
     mode = "selfplay" if SELFPLAY else "tournament"
-    print(f"doing {num_of_rollouts} rollouts " \
+    print(f"doing {tree.runs_per_move} rollouts " \
             + f"in {mode} mode took " \
             + f"{str(time2 - time1)[0:5]} seconds.\n")
 
