@@ -112,14 +112,14 @@ class Node():
         self.position_shape = position.shape
         self.position = self._compress_indices(position)
 
-        legal_moves = None
-        if SELFPLAY:
-            legal_moves = state_machine.get_legal_moves() 
-        else:
-            legal_moves = state_machine.get_legal_moves_from(position)
+        self.move_shape = state_machine.move_shape
+        # in selfplay, state machine tracks state
+        # in tournament, we expand the tree independently
+        # and only set state at leafs to a position
+        self.legal_move_indices = \
+                state_machine.get_legal_moves() if SELFPLAY else \
+                state_machine.get_legal_moves_from(position) 
 
-        self.move_shape = legal_moves.shape
-        self.legal_move_indices = self._compress_indices(legal_moves)
         num_of_legal_moves = len(self.legal_move_indices[0])
         self.children = [None] * num_of_legal_moves
 
@@ -134,11 +134,10 @@ class Node():
             policy, self.evaluation = model.inference(position)
 
             # initialise tensor to hold
-            # 5 values per edge
+            # 4 values per edge
             entries_per_edge = 4
             self.edges = np.zeros(
-                    (*legal_moves[self.legal_move_indices].shape,
-                        entries_per_edge),
+                    (num_of_legal_moves, entries_per_edge),
                     dtype = EDGE_DTYPE)
 
             # only store prior values of legal moves
@@ -228,7 +227,7 @@ class Node():
         i = self._legal_to_total_index(i)
         
 
-    def rollout(self):
+    def rollout(self, level = 0):
         '''
         recursive traversal of game tree
         updates P, N, W, Q of all travelled
@@ -240,21 +239,21 @@ class Node():
             return self.evaluation
 
         i = self._index_of_best_move()
-        nextnode = self.children[i]
+        next_node = self.children[i]
 
-        newposition = None
+        next_position = None
 
-        move = self._move_as_tensor(i)
+        move_idx = self._legal_to_total_index(i)
         if SELFPLAY:
             # in self-play, we let the state
             # machine keep track of every move
             # to catch move-repetitions as draws
             # so that we get a realistic data set
-            newposition = self.state_machine.rollout_tensor_move(move)
+            next_position = self.state_machine.rollout_idx_move(move_idx)
 
         evaluation = 0
 
-        if nextnode is None:
+        if next_node is None:
             # terminate recursion
             # on leaf expansion
             if not SELFPLAY:
@@ -263,20 +262,20 @@ class Node():
                 # the conversions tensor-fen are
                 # quite expensive and evaluation
                 # depends on the model anyways
-                oldposition = self._position_as_tensor() 
-                newposition = self.state_machine.get_new_position(
-                        oldposition, move)
+                current_position = self._position_as_tensor() 
+                next_position = self.state_machine.get_new_position(
+                        current_position, move_idx)
 
             leaf = Node(self.state_machine,
                     self.model, 
-                    newposition,
+                    next_position,
                     self.color)
             evaluation = leaf.evaluation
             self.children[i] = leaf
 
         else:
             # recursion
-            evaluation = nextnode.rollout()
+            evaluation = next_node.rollout(level + 1)
 
         # calculate edge stats
         count = self.edges[i][NCOUNT] + 1
@@ -286,6 +285,9 @@ class Node():
         self.edges[i][QMEANVALUE] = accum / count
         self.edges[i][NCOUNT] = count
         self.edges[i][WACCUMVALUE] = accum
+
+        if SELFPLAY and level == 0:
+            self.state_machine.reset_to_actual_game() 
 
         return evaluation
 
@@ -374,11 +376,11 @@ if __name__ == "__main__":
     time1 = time.time()
     for i in range(num_of_rollouts):
         node.rollout()
-        state_machine.reset_to_actual_game()
     time2 = time.time()
 
     print(node)
     mode = "selfplay" if SELFPLAY else "tournament"
     print(f"doing {num_of_rollouts} rollouts " \
-            + f"in {mode} mode took {time2 - time1} seconds.\n")
+            + f"in {mode} mode took " \
+            + f"{str(time2 - time1)[0:5]} seconds.\n")
 

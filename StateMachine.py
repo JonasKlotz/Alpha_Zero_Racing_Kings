@@ -26,34 +26,23 @@ class StateMachine():
         self.rollout_game = copy.deepcopy(self.actual_game)
 
     def get_legal_moves_from(self, position):
-        '''
-        Input is a position in tensor notation
-        Output is a move tensor with all zeros
-        except the legal moves which are ones.
-        ''' 
         fen = tn.tensor_to_fen(position)
         self.rollout_game.board = chess.variant.RacingKingsBoard(fen) 
 
-        moves = self.rollout_game.get_moves_observation()
-        tensor = np.zeros(self.move_shape)
-        
-        for move in moves:
-            tensor += tn.move_to_tensor(move)
-
-        return tensor
+        return self.get_legal_moves()
     
     def get_legal_moves(self):
         moves = self.rollout_game.get_moves_observation()
 
-        tensor = np.zeros(self.move_shape)
+        legal_move_indices = np.zeros((len(moves), 3), dtype=np.uint16) 
         
-        for move in moves:
-            tensor += tn.move_to_tensor(move)
+        for i, move in enumerate(moves):
+            legal_move_indices[i] = tn.move_to_tensor_indices(move)
 
-        return tensor
+        return tuple(legal_move_indices.T)
 
 
-    def get_new_position(self, old_pos, move_tensor):
+    def get_new_position(self, old_pos, move_idx):
         '''
         get new position from an
         old position and a move
@@ -62,7 +51,7 @@ class StateMachine():
         old_fen = tn.tensor_to_fen(old_pos)
         self.rollout_game.board = chess.variant.RacingKingsBoard(old_fen)
         
-        move_fen = tn.tensor_to_move(move_tensor) 
+        move_fen = tn.tensor_indices_to_move(move_idx) 
 
         try:
             self.rollout_game.make_move(move_fen)
@@ -76,8 +65,8 @@ class StateMachine():
     def get_actual_position(self):
         return tn.fen_to_tensor(self.actual_game.board.fen())
 
-    def rollout_tensor_move(self, move_tensor):
-        move_fen = tn.tensor_to_move(move_tensor)
+    def rollout_idx_move(self, move_idx):
+        move_fen = tn.tensor_indices_to_move(move_idx)
         try:
             self.rollout_game.make_move(move_fen)
         except:
@@ -86,8 +75,8 @@ class StateMachine():
                     {self.rollout_game.board.fen()}")
         return tn.fen_to_tensor(self.rollout_game.board.fen())
 
-    def actual_tensor_move(self, move_tensor):
-        move_fen = tn.tensor_to_move(move_tensor)
+    def actual_idx_move(self, move_idx):
+        move_fen = tn.tensor_indices_to_move(move_idx)
         try:
             self.actual_game.make_move(move_fen)
         except:
