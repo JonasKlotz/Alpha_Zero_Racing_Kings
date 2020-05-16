@@ -17,6 +17,12 @@ class StateMachine():
         exemplary_pos = self.actual_game.board.fen()
         self.position_shape = tn.fen_to_tensor(exemplary_pos).shape
 
+    def set_to_fen_position(fen_position):
+        self.actual_game.board.set_board_fen(fen_position) 
+
+    def move_index_to_fen(self, move_idx):
+        return tn.tensor_indices_to_move(move_idx) 
+
     def reset_to_actual_game(self):
         '''
         after each rollout, set game
@@ -64,6 +70,11 @@ class StateMachine():
 
     def get_actual_position(self):
         return tn.fen_to_tensor(self.actual_game.board.fen())
+
+    def get_player_color(self):
+        if self.actual_game.board.turn:
+            return 1
+        return -1 
 
     def rollout_idx_move(self, move_idx):
         move_fen = tn.tensor_indices_to_move(move_idx)

@@ -65,24 +65,55 @@ class Azts():
     def __init__(self, 
             state_machine,
             model,
-            position,
             color,
-            sims_per_move=10):
+            position,
+            runs_per_move=10):
 
         self.color = color
 
         self.state_machine = state_machine
         self.model = model
-        self.root = Node(state_machine,
-                model,
-                state_machine.get_actual_position(),
-                color)
-        self.sims_per_move = sims_per_move
+        self.runs_per_move = runs_per_move
+        self._init_tree(position)
 
-    def _tree_search(self):
-        for i in range(self.sims_per_move):
+    def _init_tree(self, position = None):
+        if position:
+            self.state_machine.set_to_fen_position(position)
+        self.root = Node(self.state_machine,
+                self.model,
+                self.state_machine.get_actual_position(),
+                self.color)
+
+    def __str__(self):
+        return self.root.__str__()
+
+    def make_move(self):
+        move = ""
+        if self.color == self.state_machine.get_player_color(): 
+            self._tree_search(self.runs_per_move)
+            move = self.root.get_move()
+            self.state_machine.actual_fen_move(move) 
+        else:
+            raise Exception("Other players turn")
+        return move
+
+    def get_policy_tensor(self):
+        return self.root.get_policy_tensor()
+
+    def receive_move(self):
+        self.state_machine.actual_fen_move(move)
+
+        del self.root
+        self._init_tree()
+
+    def get_position(self):
+        return self.root.position()
+
+
+    def _tree_search(self, runs = 10):
+        for i in range(runs):
             self.root.rollout()
-            self.state_machine.reset_to_actual_game()
+
 
     def _set_root_to(position):
         pass
@@ -146,12 +177,15 @@ class Node():
     def __str__(self):
         metrics, tree_string = self._print_tree(0)
         num_of_nodes = metrics[0] + metrics[1] + metrics[2]
+        avg_num_of_move_possibilities = metrics[5] / num_of_nodes
         metric_string = "\nMORE than " if metrics[3] else "\n"
         metric_string += f"{num_of_nodes} nodes in total:\n" \
                 + f"\t{metrics[1]} leaf nodes\n" \
                 + f"\t{metrics[2]} end positions\n" \
                 + f"\t{metrics[0]} normal tree nodes\n" \
-                + f"\t{metrics[4]} was maximal tree depth\n"
+                + f"\t{metrics[4]} was maximal tree depth\n"\
+                + f"\t{str(avg_num_of_move_possibilities)[0:5]}" \
+                + f" was average number of move possibilities per move"
 
         return tree_string + metric_string
 
@@ -162,14 +196,15 @@ class Node():
         minus_shape = chr(9472)
 
         if level > 1000:
-            return (0, 0, 0, 1, level), "..."
+            return (0, 0, 0, 1, level, 0), "..."
         elif self.endposition:
-            return (0, 0, 1, 0, level), "end, {:0.3f}".format(self.evaluation)
+            return (0, 0, 1, 0, level, 0), "end, {:0.3f}".format(self.evaluation)
         elif not any(self.children):
-            return (0, 1, 0, 0, level), "leaf, {:0.3f}".format(self.evaluation)
+            return (0, 1, 0, 0, level, len(self.children)), \
+                    "leaf, {:0.3f}".format(self.evaluation)
 
         rep = []
-        metrics = (1, 0, 0, 0, level)
+        metrics = (1, 0, 0, 0, level, len(self.children))
         maxlevel = level
         for i, j in enumerate(self.children):
             if j:
@@ -225,6 +260,7 @@ class Node():
     def get_move(self):
         i = np.argmax(self.edges[:,NCOUNT])
         i = self._legal_to_total_index(i)
+        return self.state_machine.move_index_to_fen(i)
         
 
     def rollout(self, level = 0):
@@ -352,6 +388,11 @@ class Node():
         #TODO: actually put values there.
         return tensor
 
+    def get_position(self):
+        board = np.zeros(self.position_shape, dtype = POS_DTYPE)
+        board[self.position] = 1
+        return board
+        
 
     # pylint: enable=C0326
 
@@ -359,13 +400,15 @@ class Node():
 def set_up():
     state_machine = sm.StateMachine()
     model = MockModel()
-    node = Node(state_machine,
+    azts = Azts(state_machine,
             model,
-            state_machine.get_actual_position())
+            WHITE,
+            None,
+            100)
 
     np.set_printoptions(suppress=True, precision=3)
 
-    return state_machine, model, node
+    return state_machine, model, azts
 
 
 
