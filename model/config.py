@@ -3,21 +3,21 @@ import os
 
 
 def load_yaml(file):
-    ''' Loads a configuration file
+    """ Loads a configuration file
     Args:
         file (string): the yaml configuration file's name
-    '''
+    """
     try:
-        return yaml.load(stream=open(file, 'r'))
+        return yaml.safe_load(stream=open(file, 'r'))
     except yaml.YAMLError as ex:
         print(ex)
 
 
 class Options(object):
-    '''Options Class
+    """ Options Class
     able to parse yaml config settings
     while checking for correct data types and unknown settings
-    '''
+    """
 
     def __init__(self, file=None, d=None):
         if file is not None:
@@ -74,7 +74,7 @@ class Config(Options):
     data_dir = "_Data"
 
     model = Options()
-    model.input_shape = (8, 8, 11)
+    model.input_shape = [8, 8, 11]
     model.resnet_depth = 9
 
     model_name = name + \
