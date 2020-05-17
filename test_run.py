@@ -1,9 +1,6 @@
 import time
 import pickle
 
-from Model.model import AZero
-from Model.config import Config
-
 
 def timing(func):
     """ wrapper for timing functions
@@ -35,11 +32,17 @@ def timing(func):
 
 
 if __name__ == "__main__":
+
+    from Model.model import AZero
+    from Model.config import Config
+
     print("===== Executing Test Run =====")
+
     config = Config('Model/config.yaml')
     azero = AZero(config)
     FILE = '_Data/training_data/dataset_685_games.pkl'
     #FILE = '_Data/training_data/game_0000.pkl'
+
     with open(FILE, 'rb') as f:
         train_data = pickle.load(f)
 
