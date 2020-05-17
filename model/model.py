@@ -1,4 +1,5 @@
 import os
+import re
 import numpy as np
 import keras
 from time import time
@@ -32,15 +33,13 @@ class AZero:
         self.config = config
         self.build_model()
         self.compile_model()
+        self.remember_model_architecture()
+        self.initial_epoch = 0
+        self.restore_weights()
 
-    def compile_model(self):
-        losses = {"policy_head": "categorical_crossentropy",
-                  "value_head": "mean_squared_error"}
-        self.model.compile(loss=losses,
-                           optimizer=Adam(learning_rate=1e-3),
-                           metrics=['accuracy'])
-
-    def train(self, train_data):
+    def train(self, train_data, batch_size=64, epochs=10, initial_epoch=0):
+        """ enters the training loop
+        """
         # prepare data
         x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
         x_train = np.stack(x_train.flatten(), axis=0)
@@ -53,7 +52,7 @@ class AZero:
         checkpoint_file = os.path.join(self.config.checkpoint_dir,
                                        "{epoch:02d}-{loss:.2f}.hdf5")
         checkpoint = ModelCheckpoint(filepath=checkpoint_file,
-                                     monitor='val_acc',
+                                     # monitor='val_acc',
                                      save_weights_only=True,
                                      verbose=1,
                                      save_best_only=False)
@@ -67,12 +66,78 @@ class AZero:
 
         # begin training
         self.model.fit(x_train, y_train,
-                       batch_size=64,
-                       epochs=120,
+                       batch_size=batch_size,
+                       epochs=self.initial_epoch + epochs,
                        shuffle=True,
-                       callbacks=callbacks)
+                       callbacks=callbacks,
+                       initial_epoch=self.initial_epoch)
+        self.initial_epoch += epochs
+
+    def summary(self):
+        """ prints a summary of the model architecture
+        """
+        print("Model Name: " + self.config.model_name)
+        print("Configuration Settings:")
+        print(self.config)
+        self.model.summary()
+
+    def plot_model(self):
+        """ plots the whole model architecture as a graph
+        """
+        # graphviz (not a python package) has to be installed https://www.graphviz.org/
+        plot_model(self.model, to_file='Model/%s.png' % self.config.model_name,
+                   show_shapes=True, show_layer_names=True)
+
+    def remember_model_architecture(self):
+        """ makes sure that the architecture and config file
+        are stored once per model version
+        """
+        # save model
+        model_file = os.path.join(
+            self.config.checkpoint_dir, "architecture.yaml")
+        if not os.path.isfile(model_file):
+            with open(model_file, 'w') as f:
+                f.write(self.model.to_yaml())
+
+        # save config
+        config_file = os.path.join(self.config.checkpoint_dir, "config.yaml")
+        if not os.path.isfile(config_file):
+            self.config.dump_yaml(config_file)
+
+    def restore_weights(self, checkpoint_file=None):
+        """ Checks for latest model checkpoint and restores
+        unless a checkpoint is given
+        """
+        if checkpoint_file is None:
+            chk_dir = self.config.checkpoint_dir
+            self.initial_epoch = 0
+            for file_name in reversed(sorted(os.listdir(chk_dir))):
+                file = os.path.join(chk_dir, file_name)
+                if os.path.isfile(file):
+                    reg = re.search("^0*(\d+).*?\.hdf5", file_name)
+                    if reg is not None:
+                        self.initial_epoch = int(reg.group(1))
+                        checkpoint_file = file
+                        break
+
+        if checkpoint_file is not None:
+            print("restoring from checkpoint " + checkpoint_file)
+            self.model.load_weights(checkpoint_file)
+        else:
+            print("no previous checkpoint found")
+
+    def compile_model(self):
+        """ compiles the model
+        """
+        losses = {"policy_head": "categorical_crossentropy",
+                  "value_head": "mean_squared_error"}
+        self.model.compile(loss=losses,
+                           optimizer=Adam(learning_rate=1e-3),
+                           metrics=['accuracy'])
 
     def build_model(self):
+        """ Builds the ResNet model via config parameters
+        """
 
         def residual_layer(input,
                            num_filters,
@@ -205,36 +270,3 @@ class AZero:
         self.model = keras.models.Model(inputs=[input],
                                         outputs=[policy_head, value_head],
                                         name=self.config.model_name)
-
-    def summary(self):
-        print("Model Name: " + self.config.model_name)
-        print("Configuration Settings:")
-        print(self.config)
-        self.model.summary()
-
-    def plot_model(self):
-        # graphviz (not a python package) has to be installed https://www.graphviz.org/
-        plot_model(self.model, to_file='Model/%s.png' % self.config.model_name,
-                   show_shapes=True, show_layer_names=True)
-
-    def save_model(self):  # (self, conf_path, weight_path):  Überlegen ob nur modell oder modell und weights save/load
-        """
-        :param conf_path: path to save configuration from
-        :param weight_path: path to save weights from
-        """
-        file_name = time() + ".h5"
-        path = os.path.join("Model", "Checkpoints", file_name)
-        # logger.debug(f"save model to {config_path}")
-        print("saving model to " + path)
-        self.model.save(path)
-        print("sucess")
-
-    def load_model(self, path):  # , conf_path, weight_path):
-        """
-        :param conf_path: path to load configuration from
-        :param weight_path: path to load weights from
-        """
-        print("loading model " + path)
-        # logger.debug(f"load model to {config_path}")
-        self.model = keras.models.load_model(path)
-        print("sucess")

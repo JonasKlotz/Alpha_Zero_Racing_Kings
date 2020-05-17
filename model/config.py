@@ -2,17 +2,6 @@ import yaml
 import os
 
 
-def load_yaml(file):
-    """ Loads a configuration file
-    Args:
-        file (string): the yaml configuration file's name
-    """
-    try:
-        return yaml.safe_load(stream=open(file, 'r'))
-    except yaml.YAMLError as ex:
-        print(ex)
-
-
 class Options(object):
     """ Options Class
     able to parse yaml config settings
@@ -51,7 +40,20 @@ class Options(object):
         return [attr for attr in dir(self) if not callable(getattr(self, attr)) and "__" not in attr]
 
     def read_from_yaml(self, file):
-        self.load_options_safe(load_yaml(file))
+        """ Loads a configuration file
+        Args:
+            file (string): the yaml configuration file's name
+        """
+        try:
+            self.yaml = yaml.safe_load(stream=open(file, 'r'))
+        except yaml.YAMLError as ex:
+            print(ex)
+            return
+        self.load_options_safe(self.yaml)
+
+    def dump_yaml(self, file):
+        with open(file, 'w') as f:
+            yaml.dump(self.yaml, f)
 
     def __str__(self, indent=""):
         out = ""
@@ -66,10 +68,16 @@ class Options(object):
 
 
 class Config(Options):
+    """ contains the default config settings
+    attributes of interest:
+        checkpoint_dir
+        self_play_dir
+        train_data_dir
+    """
     # set the defaults
     name = "AlphaZero"
     config_version = 1
-    model_version = 0
+    model_revision = 0
 
     data_dir = "_Data"
 
@@ -78,13 +86,16 @@ class Config(Options):
     model.resnet_depth = 9
 
     model_name = name + \
-        '%dv%d.%d' % (model.resnet_depth, config_version, model_version)
+        '%dv%dr%d' % (model.resnet_depth, config_version, model_revision)
 
     checkpoint_dir = os.path.join(data_dir, "model_checkpoints", model_name)
-    train_data_dir = os.path.join(data_dir, "training_data", model_name)
+    self_play_dir = os.path.join(data_dir, "selfplay", model_name)
+    train_data_dir = os.path.join(data_dir, "training_data")
 
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
+    if not os.path.exists(self_play_dir):
+        os.makedirs(self_play_dir)
     if not os.path.exists(train_data_dir):
         os.makedirs(train_data_dir)
 
