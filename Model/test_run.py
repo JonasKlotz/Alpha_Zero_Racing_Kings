@@ -29,8 +29,8 @@ if __name__ == "__main__":
     print("===== Executing Test Run =====")
     config = Config('Model/config.yaml')
     azero = AZero(config)
-    #file = '_Data/training_data/dataset_685_games.pkl'
-    file = '_Data/training_data/game_0000.pkl'
+    file = '_Data/training_data/dataset_685_games.pkl'
+    #file = '_Data/training_data/game_0000.pkl'
     with open(file, 'rb') as f:
         train_data = pickle.load(f)
 
