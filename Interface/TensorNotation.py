@@ -3,7 +3,7 @@ import numpy as np
 DATATYPE = np.uint8
 
 # which piece to put in which plane when black is to move
-piece_indices_black = {
+PIECE_INDICES_BLACK = {
     "k": 0
     , "q": 1
     , "r": 2
@@ -17,7 +17,7 @@ piece_indices_black = {
 }
 
 # which piece to put in which plane when white is to move
-piece_indices_white = {
+PIECE_INDICES_WHITE = {
     "K": 0
     , "Q": 1
     , "R": 2
@@ -30,7 +30,7 @@ piece_indices_white = {
     , "n": 9
 }
 
-piece_letters_black = [
+PIECE_LETTERS_BLACK = [
     "k"
     , "q"
     , "r"
@@ -43,7 +43,7 @@ piece_letters_black = [
     , "N"
 ]
 
-piece_letters_white = [
+PIECE_LETTERS_WHITE = [
     "K"
     , "Q"
     , "R"
@@ -57,15 +57,16 @@ piece_letters_white = [
 ]
 
 # start position
-std_fen = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
+STD_FEN = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
 
 
-def fen_to_tensor(fen=std_fen):
+def fen_to_tensor(fen=STD_FEN):
     """
     Converts FEN String to tensor notation
 
     Args:
-        fen: str representation of board in FEN notation. If no FEN is provided the start position is used
+        fen: str representation of board in FEN notation.
+              If no FEN is provided the start position is used
 
     Returns: np.array representing the board in tensor notation
 
@@ -80,9 +81,9 @@ def fen_to_tensor(fen=std_fen):
     board_fen = fen[0].split("/")
     # check who is to move, set indices and tensor accordingly
     if fen[1] == "w":
-        piece_indices = piece_indices_white
+        piece_indices = PIECE_INDICES_WHITE
     else:
-        piece_indices = piece_indices_black
+        piece_indices = PIECE_INDICES_BLACK
         tensor[:8, :8, 10].fill(1)
 
     # iterate through board and fill tensor
@@ -109,10 +110,10 @@ def tensor_to_fen(tensor):
     # find color
     if tensor[0, 0, 10] == 0:
         fen_color = "w"
-        piece_letters = piece_letters_white
+        piece_letters = PIECE_LETTERS_WHITE
     else:
         fen_color = "b"
-        piece_letters = piece_letters_black
+        piece_letters = PIECE_LETTERS_BLACK
 
     # iterate through board
     for i in range(8):

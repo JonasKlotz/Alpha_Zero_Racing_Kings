@@ -17,7 +17,7 @@ stages:
 linting:
   stage: Lint
   script:
-    - pylint *.py
+    - pylint AlphaZero-Gruppe1
 
 # Wir lassen alle Tests laufen. Die Dateien dafür beginnen mit "test". 
 unittest:

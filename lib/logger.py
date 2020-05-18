@@ -1,16 +1,14 @@
 """
 Logging helper methods
-"""
 
-from logging import StreamHandler, basicConfig, DEBUG, getLogger, Formatter
-
-"""
 we need to setup logger with a standard logging path
 then add :
 logger = getLogger(__name__)
 
 in every class we want to log
 """
+
+from logging import StreamHandler, basicConfig, DEBUG, getLogger, Formatter
 
 
 def setup_logger(log_filename):

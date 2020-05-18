@@ -1,5 +1,9 @@
-import numpy as np
+"""
+Generates dummy data as input for testing our model.
+"""
+
 import pickle
+import numpy as np
 
 DIM_POS = (8, 8, 11)
 DIM_MOVE = (8, 8, 64)
@@ -32,7 +36,7 @@ def outcome():
     else:
         return 0
 
-def dataset(size = 100):
+def dataset(size=100):
     data = []
     for i in range(size):
         data.append((position(), distribution(), outcome()))
@@ -42,6 +46,3 @@ def dataset(size = 100):
 if __name__ == "__main__":
     data = dataset()
     pickle.dump(data, open("dummy_data.pkl", "wb"))
-
-
-
