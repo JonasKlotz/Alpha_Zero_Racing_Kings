@@ -31,40 +31,46 @@ class AZero:
 
         self.config = config
         self.build_model()
+        self.compile_model()
 
-        # dummy compile
-        self.model.compile(loss=self.loss,
+    def compile_model(self):
+        losses = {"policy_head": "categorical_crossentropy",
+                  "value_head": "mean_squared_error"}
+        self.model.compile(loss=losses,
                            optimizer=Adam(learning_rate=1e-3),
                            metrics=['accuracy'])
 
-    def prepare_callbacks(self):
-        # dummy callbacks
+    def train(self, train_data):
+        # prepare data
+        x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
+        x_train = np.stack(x_train.flatten(), axis=0)
+        y_train_p = np.stack(y_train_p.flatten(), axis=0)
+        y_train_v = np.stack(y_train_v.flatten(), axis=0)
+        y_train = {"policy_head": y_train_p,
+                   "value_head":  y_train_v}
+
+        # Callbacks
         checkpoint_file = os.path.join(self.config.checkpoint_dir,
-                                       "{epoch:02d}-{val_loss.2f}.hdf5")
+                                       "{epoch:02d}-{loss:.2f}.hdf5")
         checkpoint = ModelCheckpoint(filepath=checkpoint_file,
                                      monitor='val_acc',
                                      save_weights_only=True,
                                      verbose=1,
                                      save_best_only=False)
 
-        lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
-                                       cooldown=0,
-                                       patience=5,
-                                       min_lr=0.5e-6)
-        return [checkpoint, lr_reducer]
+        # lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
+        #                                cooldown=0,
+        #                                patience=5,
+        #                                min_lr=0.5e-6)
+        # callbacks = [checkpoint, lr_reducer]
+        callbacks = [checkpoint]
 
-    def train(self, x_train, y_train):
-        # dummy train
-        callbacks = self.prepare_callbacks()
+        # begin training
         self.model.fit(x_train, y_train,
                        batch_size=64,
                        epochs=120,
                        shuffle=True,
                        callbacks=callbacks)
-
-    def loss(self, x, y):
-        # dummy loss
-        return keras.backend.sum(y)
 
     def build_model(self):
 
@@ -154,7 +160,8 @@ class AZero:
                                batch_normalization=res_batch_normalization)
             x = Dense(dense_num_filters,
                       activation=dense_activation,
-                      kernel_initializer='he_normal')(x)
+                      kernel_initializer='he_normal',
+                      name="policy_head")(x)
             return x
 
         def value_head_model(self, input):
@@ -182,7 +189,8 @@ class AZero:
                       kernel_initializer='he_normal')(x)
             x = Dense(1,
                       activation=dense_activation,
-                      kernel_initializer='he_normal')(x)
+                      kernel_initializer='he_normal',
+                      name="value_head")(x)
             return x
 
         # define input tensor
@@ -195,7 +203,8 @@ class AZero:
         value_head = value_head_model(self, body)
 
         self.model = keras.models.Model(inputs=[input],
-                                        outputs=[policy_head, value_head])
+                                        outputs=[policy_head, value_head],
+                                        name=self.config.model_name)
 
     def summary(self):
         print("Model Name: " + self.config.model_name)

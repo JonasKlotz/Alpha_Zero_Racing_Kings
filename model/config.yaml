@@ -12,7 +12,7 @@ data_dir: "_Data"
 #model parameters
 model:
     #input feature dimensions
-    input_shape: !!python/tuple [8,8,11]    #could be read from data..
+    input_shape: [8,8,11]
     #total number of residual blocks
     resnet_depth: 9
     #residual block specifications
@@ -61,7 +61,7 @@ model:
 
 # # # Leela Zero Config # # # 
 #model:
-#    input_shape: !!python/tuple [8,8,64?]
+#    input_shape: [8,8,64?]
 #    resnet_depth: 15
 #    residual_block:
 #        layers: 2
@@ -72,7 +72,7 @@ model:
 #    ...
 # # # Alpha Zero Config # # # 
 #model:
-#    input_shape: !!python/tuple [8,8,73]
+#    input_shape: [8,8,73]
 #    resnet_depth: 17
 #    residual_block:
 #        layers: 2
@@ -83,7 +83,7 @@ model:
 #    ...
 # # # Alpha Go Config # # # 
 #model:
-#    input_shape: !!python/tuple [8,8,?]
+#    input_shape: [8,8,?]
 #    resnet_depth: 40
 #    residual_block:
 #        layers: 2
