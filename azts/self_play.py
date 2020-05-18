@@ -1,27 +1,31 @@
-import azts
-from Interpreter import game
-import StateMachine as sm
-import Screen
+"""
+This module simulates games of RacingsKings.
+"""
+
+import os.path
 import time
 import pickle
-import os.path
+import azts
+from Interpreter import game
+import state_machine as sm
+import screen
+import config
 
 WHITE = 1
 BLACK = -1
-SHOW_GAME = False
-RUNS_PER_MOVE = 100
 REPORT_CYCLE = 25
 
+
 class Player():
-    def __init__(self, color, num_of_runs = 100):
+    def __init__(self, color, runs_per_move=100):
         self.state_machine = sm.StateMachine()
         self.model = azts.MockModel()
         self.tree = azts.Azts(self.state_machine, \
-                self.model, \
-                color, \
-                None, \
-                num_of_runs)
-    
+                              self.model, \
+                              color, \
+                              None, \
+                              runs_per_move)
+
     def make_move(self):
         return self.tree.make_move()
 
@@ -34,28 +38,26 @@ class Player():
                 None]
 
 
-
-
 class SelfMatch():
     def __init__(self):
-        self.p1 = Player(WHITE, RUNS_PER_MOVE)
+        self.p1 = Player(WHITE, config.RUNS_PER_MOVE)
         self.p2 = Player(BLACK)
-        self.game = game.Game() 
-        self.screen = Screen.Screen()
+        self.game = game.Game()
+        self.screen = screen.Screen()
         self.data_collection = []
 
     def simulate(self):
         moves = 0
         time1 = time.time()
         while not self.game.is_ended():
-            
+
             if moves % REPORT_CYCLE == 0:
                 time2 = time.time()
                 elapsed = time2 - time1
                 avg_per_move = elapsed / REPORT_CYCLE
                 print(f"played {moves} moves in {str(elapsed)[0:5]} " \
-                        + f"seconds, average of {str(avg_per_move)[0:4]} " \
-                        + f"second per move.")
+                      + f"seconds, average of {str(avg_per_move)[0:4]} " \
+                      + f"second per move.")
                 time1 = time.time()
 
             moves += 1
@@ -63,21 +65,19 @@ class SelfMatch():
             self.game.make_move(white_move)
             self.data_collection.append(self.p1.dump_data())
 
-            if SHOW_GAME:
+            if config.SHOW_GAME:
                 img = self.game.render_game()
                 self.screen.show_img(img)
 
-
             if self.game.is_ended():
-                break 
-
+                break
 
             self.p2.receive_move(white_move)
             black_move = self.p2.make_move()
             self.game.make_move(black_move)
             self.data_collection.append(self.p2.dump_data())
 
-            if SHOW_GAME:
+            if config.SHOW_GAME:
                 img = self.game.render_game()
                 self.screen.show_img(img)
 
@@ -85,18 +85,18 @@ class SelfMatch():
 
         result = self.game.board.result()
         print(f"game ended after {moves} " \
-                + f"moves with {result}.")
+              + f"moves with {result}.")
         translate = {"*": 0, "1-0": 1, "0-1": -1, "1/2-1/2": 0}
         result = translate[result]
         for i in self.data_collection:
             i[2] = result
-        
+
 
 class SelfPlay():
     def __init__(self):
         self.match = SelfMatch()
 
-    def start(self, iterations = 100):
+    def start(self, iterations=100):
         for i in range(iterations):
             self.match.simulate()
             data = [tuple(j) for j in self.match.data_collection]
@@ -110,17 +110,12 @@ class SelfPlay():
                 filenumberstring = str(filenumber).zfill(4)
                 filename = f"game_{filenumberstring}.pkl"
 
-            pickle.dump(data, open(filename, "wb"))
+            pickle.dump(data, open(config.GAMEDIR + "/" + filename, "wb"))
 
             del self.match
             self.match = SelfMatch()
 
 
-
 if __name__ == "__main__":
     play = SelfPlay()
     play.start(50)
-
-
-
-

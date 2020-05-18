@@ -47,7 +47,7 @@ pyparsing==2.4.7
 pytest==5.4.1
 python-chess==0.31.1
 python-docs-theme==2020.1
-python-telegram-bot==12.6.1
+# python-telegram-bot==12.6.1
 pytz==2020.1
 pyxdg==0.25
 PyYAML==5.3.1
@@ -74,3 +74,6 @@ wcwidth==0.1.9
 webencodings==0.5.1
 wrapt==1.12.1
 zipp==1.2.0
+
+matplotlib~=3.2.1
+setuptools~=40.8.0

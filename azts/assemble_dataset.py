@@ -1,16 +1,15 @@
 import os
 import pickle
-
-GAMEDIR = "games"
+import config
 
 
 dataset = []
 
 
 counter = 0
-for filename in os.listdir(GAMEDIR):
+for filename in os.listdir(config.GAMEDIR):
     if "game_" in filename and filename.endswith(".pkl"):
-        filename = GAMEDIR + "/" + filename
+        filename = config.GAMEDIR + "/" + filename
         counter += 1
         game_data = pickle.load(open(filename, "rb"))
         for i in game_data:
@@ -32,5 +31,3 @@ print(f"verified integrity of file.\n" \
         + f"with {len(test_load[0])} entries of type\n" \
         + f"{type(test_load[0][0])}, {type(test_load[0][1])}, " \
         + f"{type(test_load[0][2])}.")
-
-

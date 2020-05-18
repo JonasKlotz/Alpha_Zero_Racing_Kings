@@ -1,5 +1,10 @@
-import matplotlib.pyplot as plt 
+"""
+Shows boards from game.
+"""
+
+import matplotlib.pyplot as plt
 from PIL import Image
+
 
 class Screen():
     def __init__(self):
@@ -14,7 +19,4 @@ class Screen():
 
 
 if __name__ == "__main__":
-    screen = Screen()
-        
-        
-
+    SCREEN = Screen()

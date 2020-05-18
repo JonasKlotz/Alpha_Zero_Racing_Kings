@@ -1,4 +1,4 @@
-
+import pytest
 from Interface import TensorNotation as tn
 
 moves = ['h2h3', 'h2g3', 'g2g8', 'g2g7',\
@@ -11,4 +11,4 @@ for i in moves:
     tensor = tn.move_to_tensor(i)
     fen = tn.tensor_to_move(tensor)
     if fen != i:
-        print(f"mismatch: original {i}, back-translated {fen}")
+    	raise ValueError(f"mismatch: original {i}, back-translated {fen}")
