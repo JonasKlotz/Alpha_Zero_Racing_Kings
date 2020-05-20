@@ -7,7 +7,7 @@ import time
 import pickle
 import azts
 from Interpreter import game
-import state_machine as sm
+import stateMachine as sm
 import screen
 import config
 
