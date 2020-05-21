@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     # wrap training loop for time test
     @timing
-    def time_test():
+    def time_train():
         azero.train(train_data)
 
-    time_test()
+    time_train()
