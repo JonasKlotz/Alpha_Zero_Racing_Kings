@@ -40,8 +40,8 @@ if __name__ == "__main__":
 
     config = Config('Model/config.yaml')
     azero = AZero(config)
-    FILE = '_Data/training_data/dataset_685_games.pkl'
-    #FILE = '_Data/training_data/game_0000.pkl'
+    # FILE = '_Data/training_data/dataset_685_games.pkl'
+    FILE = 'Model/game_0000.pkl'
 
     with open(FILE, 'rb') as f:
         train_data = pickle.load(f)
