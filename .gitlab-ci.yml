@@ -12,11 +12,12 @@ stages:
   - Test
 
 # Wir prüfen, ob der eingecheckte Code auch den PEP-8-Richtlinien entspricht.
-# Scores >= 8.0/10.0 erlaubt
+# Scores >= 7.0/10.0 erlaubt
+# Config kann in .pylintrc angepasst werden.
 linting:
   stage: Lint
   script:
-    - pylint *.py #--evaluation= min(10.0, 12.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10))
+    - pylint AlphaZero-Gruppe1
 
 # Wir lassen alle Tests laufen. Die Dateien dafür beginnen mit "test". 
 unittest:

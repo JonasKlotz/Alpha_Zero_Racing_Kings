@@ -3,14 +3,14 @@ from copy import copy
 import io
 import random
 
-# for svg rendering in pycharm
-from PIL import Image
-from cairosvg import svg2png
 import chess  # pip install python-chess
 import chess.variant
 import chess.engine
-
 import chess.svg
+
+# for svg rendering in pycharm
+from cairosvg import svg2png
+from PIL import Image
 
 
 class Game:
@@ -176,7 +176,8 @@ class Game:
         Input:
             player: current player
         Returns:
-            1, 0 or 1/2 if the game is over, depending on the player. Otherwise, the result is undetermined: *.
+            1, 0 or 1/2 if the game is over, depending on the player.
+            Otherwise, the result is undetermined: *.
         """
         res = self.board.result()
         if res == '*':
@@ -193,6 +194,13 @@ class Game:
             Game: a deep clone of current Game object
         """
         return copy(self)
+
+    def render_game(self):
+        svg = chess.svg.board(board=self.board)
+        img = io.BytesIO()
+        svg2png(bytestring=bytes(svg, 'UTF-8'), write_to=img)
+        img = Image.open(img)
+        return img
 
     def show_game(self, save=False, path=None):
         """

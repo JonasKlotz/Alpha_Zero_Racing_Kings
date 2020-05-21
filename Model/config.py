@@ -1,5 +1,5 @@
-import yaml
 import os
+import yaml
 
 
 class Options(object):
@@ -37,7 +37,8 @@ class Options(object):
                 print("!Warning: ignoring unknown parameter %r" % attr)
 
     def get_members(self):
-        return [attr for attr in dir(self) if not callable(getattr(self, attr)) and "__" not in attr]
+        return [attr for attr in dir(self) if not callable(getattr(self, attr))
+                and "__" not in attr]
 
     def read_from_yaml(self, file):
         """ Loads a configuration file

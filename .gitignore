@@ -7,7 +7,7 @@
 
 # python byte code directory
 **/__pycache__/
-*.pyc
+**.pyc
 
 # VSCode config files
 .vscode
