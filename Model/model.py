@@ -2,13 +2,14 @@ import os
 import re
 import numpy as np
 import keras
-from time import time
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras.callbacks import ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
+
+from lib.timing import timing
 
 
 class AZero:
