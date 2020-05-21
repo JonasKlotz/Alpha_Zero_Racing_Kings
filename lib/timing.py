@@ -7,32 +7,42 @@ then add "@timing" to wrap any function that should be timed:
 def function_to_be_timed():
     ...
 """
+
 import time
+
+
+def prettify(seconds):
+    """ converts seconds to human readable time
+    Args:
+        seconds (float)
+    Returns:
+        (string): time in pretty output format
+    """
+    hour = int(seconds / 3600)
+    min = int((seconds % 3600) / 60)
+    sec = int((seconds % 60))
+    if hour > 0:
+        return "{}h {}m {}s".format(hour, min, sec)
+    elif min > 0:
+        return "{}m {}s".format(min, sec)
+    elif sec > 0:
+        return "{:.2f}s".format(time)
+    else:
+        return "{:d}ms".format(time * 1000)
 
 
 def timing(func):
     """ wrapper for timing functions
-    usage:
+    Usage:
     @timing
     def function_to_be_timed():
         ...
     """
     def wrap(*args, **kwargs):
-        time1 = time.process_time()
+        start_time = time.perf_counter()
         ret = func(*args, **kwargs)
-        total = time.process_time() - time1
-        hours = int(total / 3600)
-        minutes = int((total % 3600) / 60)
-        seconds = int((total % 60))
-        if hours is not 0:
-            print('{:s}() took {}h {}m {}s'.format(
-                func.__name__, hours, minutes, seconds))
-        elif minutes is not 0:
-            print('{:s}() took {}m {}s'.format(
-                func.__name__, minutes, seconds))
-        elif seconds is not 0:
-            print('{:s}() took {:.2f}s'.format(func.__name__, total))
-        else:
-            print('{:s}() took {:.2f}ms'.format(func.__name__, total * 1000))
+        total = time.perf_counter() - start_time
+        print('took {}s'.format(total))
+        print('{:s}() took {:s}'.format(func.__name__, prettify(total)))
         return ret
     return wrap
