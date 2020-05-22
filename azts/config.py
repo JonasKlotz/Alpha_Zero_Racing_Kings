@@ -10,7 +10,7 @@ GAMEDIR = "games"  # directory for self_play to store datasets in.
 SELFPLAY = True
 
 # Misc
-RUNS_PER_MOVE = 100  # Sets the number of mcts runs
+RUNS_PER_MOVE = 100  # Sets the number of azts runs
 SHOW_GAME = False  # If True boards will be shown in self_play
 
 # Enum Types representing

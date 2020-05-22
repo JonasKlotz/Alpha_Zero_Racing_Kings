@@ -1,9 +1,15 @@
+import aztsTree as at
+import stateMachine as sm
+import mockModel
+
+from config import *
+
 
 class Player():
-    def __init__(self, color, runs_per_move=100):
+    def __init__(self, color, runs_per_move = RUNS_PER_MOVE):
         self.state_machine = sm.StateMachine()
-        self.model = azts.MockModel()
-        self.tree = azts.Azts(self.state_machine, \
+        self.model = mockModel.MockModel()
+        self.tree = at.AztsTree(self.state_machine, \
                               self.model, \
                               color, \
                               None, \
@@ -19,3 +25,8 @@ class Player():
         return [self.tree.get_position(), \
                 self.tree.get_policy_tensor(), \
                 None]
+
+
+if __name__ == "__main__":
+    player = Player(WHITE)
+    print(f"First move of white player is {player.make_move()}.")
