@@ -20,6 +20,12 @@ class StateMachine():
 
     def set_to_fen_position(self, fen_position):
         self.actual_game.board.set_board_fen(fen_position)
+        self.reset_to_actual_game()
+
+    def set_to_fen_state(self, fen_state):
+        self.actual_game.board.set_fen(fen_state)
+        self.reset_to_actual_game()
+
 
     def move_index_to_fen(self, move_idx):
         return tn.tensor_indices_to_move(move_idx)
