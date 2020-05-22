@@ -21,3 +21,6 @@ venv/*
 
 # Data Folder
 _Data
+
+# Pickle Files
+*.pkl

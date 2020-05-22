@@ -1,9 +1,19 @@
+"""
+Node of the Alpha Zero Tree Search.
+Each node represents a game state
+and holds all possible moves as
+edges to other states. Edges keep
+track of the variables of the
+algorithm: N, W, Q, P.
+"""
+import numpy as np
 import state_machine
 import mock_model
-import numpy as np
 
-from config import *
+from config import WHITE, POS_DTYPE,\
+        EDGE_DTYPE, IDX_DTYPE, SELFPLAY
 
+# pylint: disable=W0621
 # index of values that get stored
 # in each edge
 PPRIOR = 0
@@ -12,8 +22,22 @@ WACCUMVALUE = 2
 QMEANVALUE = 3
 
 EXPLORATION = 0.1
-AMPLIFY_RESULT = 100 
+AMPLIFY_RESULT = 100
 
+def compress_indices(tensor):
+    """
+    tensor is a positional tensor with
+    entries 0 and 1. compress indices
+    extracts the indices of entries 1 in
+    tensor and converts them into reduced
+    data type
+    """
+    indices = np.where(tensor == 1)
+    compressed = []
+    for i in indices:
+        compressed.append(i.astype(IDX_DTYPE))
+
+    return tuple(compressed)
 
 class AztsNode():
     """
@@ -26,9 +50,9 @@ class AztsNode():
     """
 
     # pylint: disable=C0326
-    def __init__(self, state_machine, model, position, color=WHITE):
+    def __init__(self, statemachine, model, position, color=WHITE):
         """
-        :param StateMachine state_machine: is a state machine that 
+        :param StateMachine state_machine: is a state machine that
         translates from tensor indices to fen/uci notation and
         keeps track of state; also translates back to tensor notation
         :param model: trained keras model that does inference on
@@ -41,13 +65,13 @@ class AztsNode():
 
         self.color = color
 
-        self.state_machine = state_machine
+        self.state_machine = statemachine
         self.model = model
         self.evaluation = 0
         self.endposition = False
 
         self.position_shape = position.shape
-        self.position = self._compress_indices(position)
+        self.position = compress_indices(position)
 
         self.move_shape = state_machine.move_shape
         # in selfplay, state machine tracks state
@@ -91,7 +115,7 @@ class AztsNode():
                          + f"\t{metrics[0]} normal tree nodes\n" \
                          + f"\t{metrics[4]} was maximal tree depth\n" \
                          + f"\t{str(avg_num_of_move_possibilities)[0:5]}" \
-                         + f" was average number of move possibilities per move"
+                         + " was average number of move possibilities per move"
 
         return tree_string + metric_string
 
@@ -103,9 +127,9 @@ class AztsNode():
 
         if level > 1000:
             return (0, 0, 0, 1, level, 0), "..."
-        elif self.endposition:
+        if self.endposition:
             return (0, 0, 1, 0, level, 0), "end, {:0.3f}".format(self.evaluation)
-        elif not any(self.children):
+        if not any(self.children):
             return (0, 1, 0, 0, level, len(self.children)), \
                    "leaf, {:0.3f}".format(self.evaluation)
 
@@ -114,10 +138,12 @@ class AztsNode():
         maxlevel = level
         for i, j in enumerate(self.children):
             if j:
+                # pylint: disable=W0212
                 child_metrics, string = j._print_tree(level + 1)
                 metrics = [k + l for k, l in zip(metrics, child_metrics)]
                 maxlevel = max(maxlevel, child_metrics[4])
                 rep.append(str(i) + ": " + string)
+                # pylint: enable=W0212
 
         metrics[4] = maxlevel
 
@@ -141,22 +167,14 @@ class AztsNode():
         repstr = "node, {:0.3f}\n".format(self.evaluation) + repstr
         return metrics, repstr
 
-    def _compress_indices(self, tensor):
-        """
-        tensor is a positional tensor with
-        entries 0 and 1. compress indices
-        extracts the indices of entries 1 in
-        tensor and converts them into reduced
-        data type
-        """
-        indices = np.where(tensor == 1)
-        compressed = []
-        for i in indices:
-            compressed.append(i.astype(IDX_DTYPE))
-
-        return tuple(compressed)
-
     def get_policy_tensor(self):
+        """
+        :return: tensor with distributions from
+        alpha zero tree search, that is the number of
+        rollouts for each move divided by total number
+        of rollouts in one move tensor
+        :rtype: np.array
+        """
         num_of_rollouts = self.edges[:, NCOUNT].sum()
         num_of_rollouts = max(1, num_of_rollouts)
         policy_weights = self.edges[:, NCOUNT] / num_of_rollouts
@@ -165,6 +183,11 @@ class AztsNode():
         return policy_tensor
 
     def get_move(self):
+        """
+        :return: best move according to current state of
+        tree search in fen notation
+        :rtype: str
+        """
         i = np.argmax(self.edges[:, NCOUNT])
         i = self._legal_to_total_index(i)
         return self.state_machine.move_index_to_fen(i)
@@ -209,9 +232,9 @@ class AztsNode():
                     current_position, move_idx)
 
             leaf = AztsNode(self.state_machine,
-                        self.model,
-                        next_position,
-                        self.color)
+                            self.model,
+                            next_position,
+                            self.color)
             evaluation = leaf.evaluation
             self.children[i] = leaf
 
@@ -263,27 +286,6 @@ class AztsNode():
         tensor[self.position] = 1
         return tensor
 
-    def _move_as_tensor(self, move_index):
-        """
-        :param int move index: referring to a legal move
-        :return: move in tensor notation
-        :rtype: np.array
-        """
-        tensor = np.zeros(self.move_shape, dtype=POS_DTYPE)
-        i = self._legal_to_total_index(move_index)
-        tensor[i] = 1
-        return tensor
-
-    def _edges_as_tensor(self):
-        """
-        :return: move recommendation
-        distribution over all legal moves
-        :rtype: np.array
-        """
-        tensor = np.zeros(self.move_shape, dtype=MOVE_DTYPE)
-        # TODO: actually put values there.
-        return tensor
-
     def get_position(self):
         """
         :return: current position in tensor notation
@@ -303,7 +305,4 @@ if __name__ == "__main__":
         node.rollout()
 
     print(node)
-
-
-
-
+# pylint: enable=W0621
