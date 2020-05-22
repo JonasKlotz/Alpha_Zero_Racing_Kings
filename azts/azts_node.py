@@ -1,5 +1,5 @@
-import stateMachine
-import mockModel
+import state_machine
+import mock_model
 import numpy as np
 
 from config import *
@@ -296,8 +296,8 @@ class AztsNode():
     # pylint: enable=C0326
 
 if __name__ == "__main__":
-    state_machine = stateMachine.StateMachine()
-    mock_model = mockModel.MockModel()
+    state_machine = state_machine.StateMachine()
+    mock_model = mock_model.MockModel()
     node = AztsNode(state_machine, mock_model, state_machine.get_actual_position())
     for i in range(25):
         node.rollout()

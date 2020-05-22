@@ -1,14 +1,14 @@
-import aztsTree as at
-import stateMachine as sm
-import mockModel
+import azts_tree as at
+import state_machine as sm
+import mock_model
 
-from config import *
+from config import RUNS_PER_MOVE, WHITE
 
 
 class Player():
     def __init__(self, color, runs_per_move = RUNS_PER_MOVE):
         self.state_machine = sm.StateMachine()
-        self.model = mockModel.MockModel()
+        self.model = mock_model.MockModel()
         self.tree = at.AztsTree(self.state_machine, \
                               self.model, \
                               color, \

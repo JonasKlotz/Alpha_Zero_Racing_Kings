@@ -15,9 +15,9 @@ reconstruct the corresponding move
 """
 import time
 import numpy as np
-import stateMachine as sm
-import aztsNode as an
-import mockModel
+import state_machine as sm
+import azts_node as an
+import mock_model
 
 from config import *
 
@@ -85,7 +85,7 @@ class AztsTree():
 
 def set_up():
     state_machine = sm.StateMachine()
-    model = mockModel.MockModel()
+    model = mock_model.MockModel()
     azts_tree = AztsTree(state_machine,
                 model,
                 WHITE,

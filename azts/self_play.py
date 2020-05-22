@@ -7,7 +7,8 @@ import time
 import pickle
 import azts
 from Interpreter import game
-import stateMachine as sm
+import state_machine as sm
+import self_match
 import screen
 from config import *
 
@@ -17,7 +18,7 @@ REPORT_CYCLE = 25
 
 class SelfPlay():
     def __init__(self):
-        self.match = SelfMatch()
+        self.match = self_match.SelfMatch()
 
     def start(self, iterations=100):
         for i in range(iterations):
