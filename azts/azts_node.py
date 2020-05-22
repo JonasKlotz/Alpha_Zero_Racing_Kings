@@ -7,10 +7,11 @@ track of the variables of the
 algorithm: N, W, Q, P.
 """
 import numpy as np
-import state_machine
-import mock_model
 
-from config import WHITE, POS_DTYPE,\
+from azts import state_machine
+from azts import mock_model
+
+from azts.config import WHITE, POS_DTYPE,\
         EDGE_DTYPE, IDX_DTYPE, SELFPLAY
 
 # pylint: disable=W0621
@@ -73,20 +74,21 @@ class AztsNode():
         self.position_shape = position.shape
         self.position = compress_indices(position)
 
-        self.move_shape = state_machine.move_shape
+        self.move_shape = statemachine.move_shape
         # in selfplay, state machine tracks state
         # in tournament, we expand the tree independently
         # and only set state at leafs to a position
         self.legal_move_indices = \
-            state_machine.get_legal_moves() if SELFPLAY else \
-                state_machine.get_legal_moves_from(position)
+            statemachine.get_legal_moves() if SELFPLAY else \
+                statemachine.get_legal_moves_from(position)
 
         num_of_legal_moves = len(self.legal_move_indices[0])
         self.children = [None] * num_of_legal_moves
 
         if num_of_legal_moves == 0:
+            # TODO: probably no sufficient check!
             # reached end of game
-            result = state_machine.get_rollout_result()
+            result = statemachine.get_rollout_result()
             self.evaluation = result * self.color * AMPLIFY_RESULT
             self.endposition = True
 
@@ -298,9 +300,9 @@ class AztsNode():
     # pylint: enable=C0326
 
 if __name__ == "__main__":
-    state_machine = state_machine.StateMachine()
+    statemachine = state_machine.StateMachine()
     mock_model = mock_model.MockModel()
-    node = AztsNode(state_machine, mock_model, state_machine.get_actual_position())
+    node = AztsNode(statemachine, mock_model, statemachine.get_actual_position())
     for i in range(25):
         node.rollout()
 
