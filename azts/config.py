@@ -7,7 +7,7 @@ import numpy as np
 
 # Paths
 GAMEDIR = "games"  # directory for self_play to store datasets in.
-SELFPLAY = False
+SELFPLAY = True
 
 # Misc
 RUNS_PER_MOVE = 100  # Sets the number of mcts runs

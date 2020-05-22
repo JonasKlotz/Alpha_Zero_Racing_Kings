@@ -27,6 +27,17 @@ class AztsNode():
 
     # pylint: disable=C0326
     def __init__(self, state_machine, model, position, color=WHITE):
+        """
+        :param StateMachine state_machine: is a state machine that 
+        translates from tensor indices to fen/uci notation and
+        keeps track of state; also translates back to tensor notation
+        :param model: trained keras model that does inference on
+        position tensors s and returns move priors pi and position
+        evaluation z
+        :param np.array position: game state that is represented by
+        this node in tensor notation
+        :param int color: -1 for black, 1 for white
+        """
 
         self.color = color
 
@@ -224,9 +235,8 @@ class AztsNode():
 
     def _index_of_best_move(self):
         """
-        returns the index of the best move
-        which then can be used to access the
-        4 values P, N, W, Q
+        :return: index of best move
+        :rtype: int
         """
 
         U = self.edges[:, PPRIOR] / (self.edges[:, NCOUNT] + 1)
@@ -238,21 +248,16 @@ class AztsNode():
 
     def _legal_to_total_index(self, index):
         """
-        translates index to a move
-        in the legal move selection
-        to an index to the same move
-        in all moves
+        :param int index: index of a move in legal moves list
+        :return: index of same move in move tensor notation
+        :rtype: tuple
         """
         return tuple(np.array(self.legal_move_indices).T[index])
 
     def _position_as_tensor(self):
         """
-        this node represents a game
-        position, which is stored in
-        compressed form.
-        _position_as_tensor returns
-        the decompressed tensor notation
-        of that position.
+        :return: tensor notation of current position
+        :rtype: np.array
         """
         tensor = np.zeros(self.position_shape, dtype=POS_DTYPE)
         tensor[self.position] = 1
@@ -260,12 +265,9 @@ class AztsNode():
 
     def _move_as_tensor(self, move_index):
         """
-        takes a move index which refers
-        to an edge in edges and converts
-        this single move to tensor notation.
-        tensor is of data type POS_DTYPE,
-        because entries are only zeros and
-        one 1 for the selected move.
+        :param int move index: referring to a legal move
+        :return: move in tensor notation
+        :rtype: np.array
         """
         tensor = np.zeros(self.move_shape, dtype=POS_DTYPE)
         i = self._legal_to_total_index(move_index)
@@ -274,16 +276,19 @@ class AztsNode():
 
     def _edges_as_tensor(self):
         """
-        return move recommendation
-        distribution over all legal
-        moves in one tensor according
-        to tensor notation of moves.
+        :return: move recommendation
+        distribution over all legal moves
+        :rtype: np.array
         """
         tensor = np.zeros(self.move_shape, dtype=MOVE_DTYPE)
         # TODO: actually put values there.
         return tensor
 
     def get_position(self):
+        """
+        :return: current position in tensor notation
+        :rtype: np.array
+        """
         board = np.zeros(self.position_shape, dtype=POS_DTYPE)
         board[self.position] = 1
         return board
