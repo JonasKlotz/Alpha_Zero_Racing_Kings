@@ -1,3 +1,7 @@
+""" handles configuration parsing from yaml
+combines default settings, warning for unknown settings
+and type checking
+"""
 import os
 import yaml
 
@@ -6,6 +10,7 @@ class Options(object):
     """ Options Class
     able to parse yaml config settings
     while checking for correct data types and unknown settings
+    (that aren't contained in the derived class' attributes)
     """
 
     def __init__(self, file=None, d=None):
@@ -15,35 +20,50 @@ class Options(object):
             self.load_options_force(d)
 
     def load_options_force(self, d):
+        """ set member attributes of Options class
+        Args: d (dict): dictionary containing attribute, value to be set
+                        if value is a dictionary itself, another Options class
+                        with dictionary values will be added recursively
+        """
         for attr, value in d.items():
-            if type(value) is dict:
+            if isinstance(value, dict):
                 setattr(self, attr, Options(d=value))
             else:
                 setattr(self, attr, value)
 
     def load_options_safe(self, d):
+        """ safely set member attributes of Options class
+            while using default attributes (that are already set in instantiated object),
+            type-assertion for overridden values
+            and warning for unknown parameters (assuming unset members are unused)
+        Args: d (dict): dictionary containing attribute, value to be set
+                        if value is a dictionary itself, another Options class
+                        with dictionary values will be added recursively
+        """
         for member in self.get_members():
             if member in d:
                 member_value = getattr(self, member)
                 dict_value = d[member]
-                if type(member_value) is Options and type(dict_value) is dict:
+                if isinstance(member_value, Options) and isinstance(dict_value, dict):
                     member_value.load_options_safe(dict_value)
                 else:
-                    assert type(member_value) == type(
-                        dict_value), "attempted to set member %r to incorrect type: %r" % (member, dict_value)
+                    assert isinstance(member_value, type(
+                        dict_value)), "attempted to set member %r to incorrect type: %r" % (member, dict_value)
                     setattr(self, member, dict_value)
         for attr in d:
             if not hasattr(self, attr):
                 print("!Warning: ignoring unknown parameter %r" % attr)
 
     def get_members(self):
+        """ returns a list of member attributes
+        """
         return [attr for attr in dir(self) if not callable(getattr(self, attr))
                 and "__" not in attr]
 
     def read_from_yaml(self, file):
         """ Loads a configuration file
         Args:
-            file (string): the yaml configuration file's name
+            file (str): the yaml configuration file's name
         """
         try:
             self.yaml = yaml.safe_load(stream=open(file, 'r'))
@@ -53,15 +73,18 @@ class Options(object):
         self.load_options_safe(self.yaml)
 
     def dump_yaml(self, file):
-        with open(file, 'w') as f:
-            yaml.dump(self.yaml, f)
+        """ dump yaml to a file
+        Args: file (str): path to file
+        """
+        with open(file, 'w') as _f:
+            yaml.dump(self.yaml, _f)
 
     def __str__(self, indent=""):
         out = ""
         for member in self.get_members():
             value = getattr(self, member)
             out += indent + member + ": "
-            if type(value) == Options:
+            if isinstance(value, Options):
                 out += "\n" + value.__str__(indent=indent + "    ")
             else:
                 out += value.__str__() + "\n"
