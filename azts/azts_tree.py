@@ -65,6 +65,8 @@ class AztsTree():
         of new state
         '''
         self.statemachine.set_to_fen_state(fen_state)
+        del self.root
+        self._init_tree()
 
     def make_move(self):
         move = ""

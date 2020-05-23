@@ -143,6 +143,7 @@ class Game:
         return [move.uci() for move in ml]
 
     def get_game_state(self):
+        self.is_draw()
         self.is_ended()
         return self.state
 
@@ -179,10 +180,19 @@ class Game:
             boolean: True if game ended in a draw, False otherwise
         """
         self.draw |= self.board.is_variant_draw() or self.get_movelist_size() == 0
+
+        white_finish = self.board.king(True) > 55
+        black_finish = self.board.king(False) > 55
+        both_finish = white_finish and black_finish
+
+
         if self.get_movelist_size() == 0:
-            print("no valid move")
-            self.state = "draw by stale mate"
+            if both_finish:
+                self.state = "draw by two finishes in one turn"
+            else:
+                self.state = "draw by stale mate"
             self.end = True
+
         try:
             if self.history[self.board.fen()] > 2:
                 print("repetition")

@@ -74,7 +74,7 @@ class StateMachine():
     def get_legal_moves(self):
         '''
         get legal moves for current
-        rollout state
+        rollout state in tensor notation
         '''
         moves = self.rollout_game.get_moves_observation()
 

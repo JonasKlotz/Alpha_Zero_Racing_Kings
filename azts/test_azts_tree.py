@@ -47,6 +47,16 @@ def tree_won():
     tree.set_to_fen_state(win_position)
     return tree
 
+@pytest.fixture
+def suspension_draw():
+    statemachine = state_machine.StateMachine()
+    model = mock_model.MockModel()
+    tree = azts_tree.AztsTree(statemachine, \
+            model, BLACK, 10)
+    suspended_draw = "7K/k7/7R/8/8/8/8/1R6 b - - 10 20"
+    tree.set_to_fen_state(suspended_draw)
+    return tree
+
 def test_tree_and_root_share_statemachine(\
         tree_white_start):
     assert tree_white_start.statemachine \
@@ -140,4 +150,12 @@ def test_won_result(tree_won):
 def test_won_game_state(tree_won):
     assert tree_won.game_state() == "black won"
 
+def test_suspension_draw_game_not_over(suspension_draw):
+    assert suspension_draw.game_over() == False
+
+def test_suspension_draw_game_state_running(suspension_draw):
+    assert suspension_draw.game_state() == "running"
+
+def test_suspension_draw_number_of_node_children(suspension_draw):
+    assert len(suspension_draw.root.children) == 1
 # pylint: enable=C0116

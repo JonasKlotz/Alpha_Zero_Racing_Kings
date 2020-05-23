@@ -38,6 +38,13 @@ def sm_noblacksuspense():
     statemachine.set_to_fen_state(no_black_suspense)
     return statemachine 
 
+@pytest.fixture
+def suspension_draw():
+    suspended_draw = "7K/k7/7R/8/8/8/8/1R6 b - - 10 20"
+    statemachine = state_machine.StateMachine()
+    statemachine.set_to_fen_state(suspended_draw)
+    return statemachine
+
 def test_two_games_are_independent(statemachine_init):
     assert statemachine_init.actual_game is not \
         statemachine_init.rollout_game
@@ -139,4 +146,26 @@ def test_black_suspended_is_win(sm_noblacksuspense):
 def test_black_suspended_game_over(sm_noblacksuspense):
     assert sm_noblacksuspense.actual_game_over() == True
 
+def test_suspended_draw_legal_moves_len(suspension_draw):
+    legal_moves = suspension_draw.rollout_game.get_moves_observation()
+    assert len(legal_moves) == 1
+
+def test_suspended_draw_legal_moves(suspension_draw):
+    actual_legal_moves = ["a7a8"]
+    legal_moves = suspension_draw.rollout_game.get_moves_observation()
+    assert legal_moves == actual_legal_moves
+
+def test_suspended_draw_game_state(suspension_draw):
+    assert suspension_draw.get_actual_state() == "running"
+
+def test_suspended_draw_is_not_over(suspension_draw):
+    assert suspension_draw.game_over() == False
+
+def test_suspended_draw_finish_move_game_over(suspension_draw):
+    suspension_draw.actual_fen_move("a7a8")
+    assert suspension_draw.game_over() == True
+
+def test_suspended_draw_finish_move_game_state(suspension_draw):
+    suspension_draw.actual_fen_move("a7a8")
+    assert suspension_draw.get_actual_state() == "draw by two finishes in one turn"
 # pylint: enable=C0116
