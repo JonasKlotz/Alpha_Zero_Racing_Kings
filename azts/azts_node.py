@@ -1,25 +1,21 @@
 """
-azts module containing classes
-for the alpha zero tree search.
-the azts module is the entry
-point and the actual tree is
-built with node objects defined
-in the node module.
-TODO: Actually we dont need to
-store the whole tensor of possible
-moves in node.edges; legal moves
-alone suffice. To make this work,
-we'll have to reference
-node.legal_move_indices to
-reconstruct the corresponding move
+Node of the Alpha Zero Tree Search.
+Each node represents a game state
+and holds all possible moves as
+edges to other states. Edges keep
+track of the variables of the
+algorithm: N, W, Q, P.
 """
-import time
 import numpy as np
-import stateMachine as sm
 
-# dimensions of mock object tensors
-DIMENSIONS = (8, 8, 64)
+from azts import state_machine
+from azts import mock_model
 
+from azts.config import WHITE, POS_DTYPE,\
+        EDGE_DTYPE, IDX_DTYPE, SELFPLAY, \
+        AMPLIFY_RESULT, EXPLORATION
+
+# pylint: disable=W0621
 # index of values that get stored
 # in each edge
 PPRIOR = 0
@@ -27,99 +23,23 @@ NCOUNT = 1
 WACCUMVALUE = 2
 QMEANVALUE = 3
 
-MOVE_DTYPE = np.uint8
-POS_DTYPE = np.uint8
-# np.float16:
-# no overflow in -65500 .. 65500
-EDGE_DTYPE = np.float16
-IDX_DTYPE = np.uint16
 
-SELFPLAY = False
-EXPLORATION = 0.1
-AMPLIFY_RESULT = 100
-
-WHITE = 1
-BLACK = -1
-
-
-class MockTranslator():
-    def get_legal_moves(self, position):
-        legal_moves = np.random.rand(*DIMENSIONS)
-        legal_moves[legal_moves > 0.5] = 1
-        legal_moves[legal_moves < 0.6] = 0
-        return legal_moves
-
-
-class MockModel():
-    def inference(self, position):
-        policy = np.random.rand(*DIMENSIONS)
-        evaluation = np.random.rand(1)[0] - 0.5
-
-        return (policy, evaluation)
-
-
-class Azts():
+def compress_indices(tensor):
     """
-    Azts represents the
-    alpha zero search tree.
+    tensor is a positional tensor with
+    entries 0 and 1. compress indices
+    extracts the indices of entries 1 in
+    tensor and converts them into reduced
+    data type
     """
+    indices = np.where(tensor == 1)
+    compressed = []
+    for i in indices:
+        compressed.append(i.astype(IDX_DTYPE))
 
-    def __init__(self,
-                 state_machine,
-                 model,
-                 color,
-                 position,
-                 runs_per_move=10):
+    return tuple(compressed)
 
-        self.color = color
-
-        self.state_machine = state_machine
-        self.model = model
-        self.runs_per_move = runs_per_move
-        self._init_tree(position)
-
-    def _init_tree(self, position=None):
-        if position:
-            self.state_machine.set_to_fen_position(position)
-        self.root = Node(self.state_machine,
-                         self.model,
-                         self.state_machine.get_actual_position(),
-                         self.color)
-
-    def __str__(self):
-        return self.root.__str__()
-
-    def make_move(self):
-        move = ""
-        if self.color == self.state_machine.get_player_color():
-            self._tree_search(self.runs_per_move)
-            move = self.root.get_move()
-            self.state_machine.actual_fen_move(move)
-        else:
-            raise Exception("Other players turn")
-        return move
-
-    def get_policy_tensor(self):
-        return self.root.get_policy_tensor()
-
-    def receive_move(self, move):
-        self.state_machine.actual_fen_move(move)
-
-        del self.root
-        self._init_tree()
-
-    def get_position(self):
-        return self.root.get_position()
-
-    def _tree_search(self, runs=10):
-        for i in range(runs):
-            self.root.rollout()
-
-    def _set_root_to(self, position):
-        pass
-
-
-class Node():
+class AztsNode():
     """
     Node of the Alpha Zero Tree Search.
     Each node represents a game state
@@ -130,32 +50,44 @@ class Node():
     """
 
     # pylint: disable=C0326
-    def __init__(self, state_machine, model, position, color=WHITE):
+    def __init__(self, statemachine, model, position, color=WHITE):
+        """
+        :param StateMachine state_machine: is a state machine that
+        translates from tensor indices to fen/uci notation and
+        keeps track of state; also translates back to tensor notation
+        :param model: trained keras model that does inference on
+        position tensors s and returns move priors pi and position
+        evaluation z
+        :param np.array position: game state that is represented by
+        this node in tensor notation
+        :param int color: -1 for black, 1 for white
+        """
 
         self.color = color
 
-        self.state_machine = state_machine
+        self.state_machine = statemachine
         self.model = model
         self.evaluation = 0
         self.endposition = False
 
         self.position_shape = position.shape
-        self.position = self._compress_indices(position)
+        self.position = compress_indices(position)
 
-        self.move_shape = state_machine.move_shape
+        self.move_shape = statemachine.move_shape
         # in selfplay, state machine tracks state
         # in tournament, we expand the tree independently
         # and only set state at leafs to a position
         self.legal_move_indices = \
-            state_machine.get_legal_moves() if SELFPLAY else \
-                state_machine.get_legal_moves_from(position)
+            statemachine.get_legal_moves() if SELFPLAY else \
+                statemachine.get_legal_moves_from(position)
 
         num_of_legal_moves = len(self.legal_move_indices[0])
         self.children = [None] * num_of_legal_moves
 
         if num_of_legal_moves == 0:
+            # TODO: probably no sufficient check!
             # reached end of game
-            result = state_machine.get_rollout_result()
+            result = statemachine.get_rollout_result()
             self.evaluation = result * self.color * AMPLIFY_RESULT
             self.endposition = True
 
@@ -184,7 +116,7 @@ class Node():
                          + f"\t{metrics[0]} normal tree nodes\n" \
                          + f"\t{metrics[4]} was maximal tree depth\n" \
                          + f"\t{str(avg_num_of_move_possibilities)[0:5]}" \
-                         + f" was average number of move possibilities per move"
+                         + " was average number of move possibilities per move"
 
         return tree_string + metric_string
 
@@ -196,9 +128,9 @@ class Node():
 
         if level > 1000:
             return (0, 0, 0, 1, level, 0), "..."
-        elif self.endposition:
+        if self.endposition:
             return (0, 0, 1, 0, level, 0), "end, {:0.3f}".format(self.evaluation)
-        elif not any(self.children):
+        if not any(self.children):
             return (0, 1, 0, 0, level, len(self.children)), \
                    "leaf, {:0.3f}".format(self.evaluation)
 
@@ -207,10 +139,12 @@ class Node():
         maxlevel = level
         for i, j in enumerate(self.children):
             if j:
+                # pylint: disable=W0212
                 child_metrics, string = j._print_tree(level + 1)
                 metrics = [k + l for k, l in zip(metrics, child_metrics)]
                 maxlevel = max(maxlevel, child_metrics[4])
                 rep.append(str(i) + ": " + string)
+                # pylint: enable=W0212
 
         metrics[4] = maxlevel
 
@@ -234,22 +168,14 @@ class Node():
         repstr = "node, {:0.3f}\n".format(self.evaluation) + repstr
         return metrics, repstr
 
-    def _compress_indices(self, tensor):
-        """
-        tensor is a positional tensor with
-        entries 0 and 1. compress indices
-        extracts the indices of entries 1 in
-        tensor and converts them into reduced
-        data type
-        """
-        indices = np.where(tensor == 1)
-        compressed = []
-        for i in indices:
-            compressed.append(i.astype(IDX_DTYPE))
-
-        return tuple(compressed)
-
     def get_policy_tensor(self):
+        """
+        :return: tensor with distributions from
+        alpha zero tree search, that is the number of
+        rollouts for each move divided by total number
+        of rollouts in one move tensor
+        :rtype: np.array
+        """
         num_of_rollouts = self.edges[:, NCOUNT].sum()
         num_of_rollouts = max(1, num_of_rollouts)
         policy_weights = self.edges[:, NCOUNT] / num_of_rollouts
@@ -258,6 +184,11 @@ class Node():
         return policy_tensor
 
     def get_move(self):
+        """
+        :return: best move according to current state of
+        tree search in fen notation
+        :rtype: str
+        """
         i = np.argmax(self.edges[:, NCOUNT])
         i = self._legal_to_total_index(i)
         return self.state_machine.move_index_to_fen(i)
@@ -301,10 +232,10 @@ class Node():
                 next_position = self.state_machine.get_new_position(
                     current_position, move_idx)
 
-            leaf = Node(self.state_machine,
-                        self.model,
-                        next_position,
-                        self.color)
+            leaf = AztsNode(self.state_machine,
+                            self.model,
+                            next_position,
+                            self.color)
             evaluation = leaf.evaluation
             self.children[i] = leaf
 
@@ -328,9 +259,8 @@ class Node():
 
     def _index_of_best_move(self):
         """
-        returns the index of the best move
-        which then can be used to access the
-        4 values P, N, W, Q
+        :return: index of best move
+        :rtype: int
         """
 
         U = self.edges[:, PPRIOR] / (self.edges[:, NCOUNT] + 1)
@@ -342,83 +272,38 @@ class Node():
 
     def _legal_to_total_index(self, index):
         """
-        translates index to a move
-        in the legal move selection
-        to an index to the same move
-        in all moves
+        :param int index: index of a move in legal moves list
+        :return: index of same move in move tensor notation
+        :rtype: tuple
         """
         return tuple(np.array(self.legal_move_indices).T[index])
 
     def _position_as_tensor(self):
         """
-        this node represents a game
-        position, which is stored in
-        compressed form.
-        _position_as_tensor returns
-        the decompressed tensor notation
-        of that position.
+        :return: tensor notation of current position
+        :rtype: np.array
         """
         tensor = np.zeros(self.position_shape, dtype=POS_DTYPE)
         tensor[self.position] = 1
         return tensor
 
-    def _move_as_tensor(self, move_index):
-        """
-        takes a move index which refers
-        to an edge in edges and converts
-        this single move to tensor notation.
-        tensor is of data type POS_DTYPE,
-        because entries are only zeros and
-        one 1 for the selected move.
-        """
-        tensor = np.zeros(self.move_shape, dtype=POS_DTYPE)
-        i = self._legal_to_total_index(move_index)
-        tensor[i] = 1
-        return tensor
-
-    def _edges_as_tensor(self):
-        """
-        return move recommendation
-        distribution over all legal
-        moves in one tensor according
-        to tensor notation of moves.
-        """
-        tensor = np.zeros(self.move_shape, dtype=MOVE_DTYPE)
-        # TODO: actually put values there.
-        return tensor
-
     def get_position(self):
+        """
+        :return: current position in tensor notation
+        :rtype: np.array
+        """
         board = np.zeros(self.position_shape, dtype=POS_DTYPE)
         board[self.position] = 1
         return board
 
     # pylint: enable=C0326
 
-
-def set_up():
-    state_machine = sm.StateMachine()
-    model = MockModel()
-    azts = Azts(state_machine,
-                model,
-                WHITE,
-                None,
-                200)
-
-    np.set_printoptions(suppress=True, precision=3)
-
-    return state_machine, model, azts
-
-
 if __name__ == "__main__":
-    state_machine, model, tree = set_up()
+    statemachine = state_machine.StateMachine()
+    mock_model = mock_model.MockModel()
+    node = AztsNode(statemachine, mock_model, statemachine.get_actual_position())
+    for i in range(25):
+        node.rollout()
 
-    print(f"Calculating first move...")
-    time1 = time.time()
-    print(f"First move is {tree.make_move()}.")
-    time2 = time.time()
-
-    print(tree)
-    mode = "selfplay" if SELFPLAY else "tournament"
-    print(f"doing {tree.runs_per_move} rollouts " \
-          + f"in {mode} mode took " \
-          + f"{str(time2 - time1)[0:5]} seconds.\n")
+    print(node)
+# pylint: enable=W0621

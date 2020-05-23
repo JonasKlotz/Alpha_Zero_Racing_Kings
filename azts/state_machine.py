@@ -20,6 +20,11 @@ class StateMachine():
 
     def set_to_fen_position(self, fen_position):
         self.actual_game.board.set_board_fen(fen_position)
+        self.reset_to_actual_game()
+
+    def set_to_fen_state(self, fen_state):
+        self.actual_game.board.set_fen(fen_state)
+        self.reset_to_actual_game() 
 
     def move_index_to_fen(self, move_idx):
         return tn.tensor_indices_to_move(move_idx)
@@ -89,20 +94,23 @@ class StateMachine():
 
     def actual_idx_move(self, move_idx):
         move_fen = tn.tensor_indices_to_move(move_idx)
-        try:
-            self.actual_game.make_move(move_fen)
-        except:
-            raise ValueError(f"actual move: move {move_fen} \
-                    not possible in position \
-                    {self.actual_game.board.fen()}")
+        self._actual_move(move_fen)
 
     def actual_fen_move(self, move_fen):
+        self._actual_move(move_fen)
+
+    def _actual_move(self, move_fen):
+        """
+        commits a move in both actual_game and rollout_game
+        :param str move_fen: move in uci notation
+        """
         try:
             self.actual_game.make_move(move_fen)
         except:
             raise ValueError(f"actual move: move {move_fen} \
                     not possible in position \
                     {self.actual_game.board.fen()}")
+        self.reset_to_actual_game()
 
     def get_rollout_result(self):
         result = self.rollout_game.board.result()
