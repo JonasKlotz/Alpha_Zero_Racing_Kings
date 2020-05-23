@@ -12,7 +12,8 @@ from azts import state_machine
 from azts import mock_model
 
 from azts.config import WHITE, POS_DTYPE,\
-        EDGE_DTYPE, IDX_DTYPE, SELFPLAY
+        EDGE_DTYPE, IDX_DTYPE, SELFPLAY, \
+        AMPLIFY_RESULT, EXPLORATION
 
 # pylint: disable=W0621
 # index of values that get stored
@@ -22,8 +23,6 @@ NCOUNT = 1
 WACCUMVALUE = 2
 QMEANVALUE = 3
 
-EXPLORATION = 0.1
-AMPLIFY_RESULT = 100
 
 def compress_indices(tensor):
     """

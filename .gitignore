@@ -24,3 +24,7 @@ _Data
 
 # Pickle Files
 *.pkl
+
+# pytest coverage reports
+*.coverage
+*coverage-report*
