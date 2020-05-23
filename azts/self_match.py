@@ -4,16 +4,17 @@ from azts import player
 from azts import screen
 from Interpreter import game
 
-from azts.config import WHITE, BLACK, RUNS_PER_MOVE, SHOW_GAME
+from azts.config import WHITE, BLACK, \
+        RUNS_PER_MOVE, SHOW_GAME, TO_STRING
 
 REPORT_CYCLE = 10
 
 
 class SelfMatch():
-    def __init__(self):
+    def __init__(self, runs_per_move = RUNS_PER_MOVE):
         self.players = []
-        self.players.append(player.Player(WHITE, RUNS_PER_MOVE))
-        self.players.append(player.Player(BLACK, RUNS_PER_MOVE))
+        self.players.append(player.Player(WHITE, runs_per_move))
+        self.players.append(player.Player(BLACK, runs_per_move))
         self.game = game.Game()
         self.screen = screen.Screen()
         self.data_collection = []
@@ -50,7 +51,7 @@ class SelfMatch():
         result = self.game.board.result()
         state = self.game.get_game_state()
         print(f"game ended after {moves} " \
-              + f"moves with {result} ({state}).")
+              + f"moves with {result} ({TO_STRING[state]}).")
         translate = {"*": 0, "1-0": 1, "0-1": -1, "1/2-1/2": 0}
         score = translate[result] 
 

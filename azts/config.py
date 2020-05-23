@@ -29,6 +29,7 @@ DRAW = 3
 DRAW_BY_REP = 4
 DRAW_BY_STALE_MATE = 5
 DRAW_BY_TWO_WINS = 6
+NUM_OF_OUTCOMES = 7
 
 PAYOFFS = {WHITE_WINS: 1, \
         BLACK_WINS: -1, \
@@ -37,7 +38,8 @@ PAYOFFS = {WHITE_WINS: 1, \
         DRAW_BY_STALE_MATE: 0, \
         DRAW_BY_TWO_WINS: 0}
 
-TO_STRING = {WHITE_WINS: "white won", \
+TO_STRING = {0: "undefined", \
+        WHITE_WINS: "white won", \
         BLACK_WINS: "black won", \
         DRAW: "draw", \
         DRAW_BY_REP: "draw by repetition", \
