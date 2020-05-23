@@ -1,3 +1,9 @@
+'''
+State machine to keep track of current
+game state, to facilitate rollouts and
+to translate from tensor to fen notation
+and back.
+'''
 import copy
 import chess.variant
 import numpy as np
@@ -8,6 +14,22 @@ from Interface import TensorNotation as tn
 
 
 class StateMachine():
+    '''
+    State machine to keep track of current
+    game state, to facilitate rollouts and
+    to translate from tensor to fen notation
+    and back.
+    State machine keeps track of TWO games:
+    the actual game, from which rollouts can
+    be made; and the state of a rollout.
+    self.reset_to_actual_game() sets the
+    rollout game back to the state of the
+    actual game.
+
+    All functions are polling the rollout
+    game unless the function name contains
+    "actual" in its name.
+    '''
     def __init__(self):
         self.actual_game = game.Game()
         self.rollout_game = game.Game()
@@ -38,12 +60,22 @@ class StateMachine():
         self.rollout_game = copy.deepcopy(self.actual_game)
 
     def get_legal_moves_from(self, position):
+        '''
+        get legal moves for a given
+        position
+        :param str position: position in
+        fen notation
+        '''
         fen = tn.tensor_to_fen(position)
         self.rollout_game.board = chess.variant.RacingKingsBoard(fen)
 
         return self.get_legal_moves()
 
     def get_legal_moves(self):
+        '''
+        get legal moves for current
+        rollout state
+        '''
         moves = self.rollout_game.get_moves_observation()
 
         legal_move_indices = np.zeros((len(moves), 3), dtype=np.uint16)
@@ -74,6 +106,9 @@ class StateMachine():
         new_fen = self.rollout_game.board.fen()
         return tn.fen_to_tensor(new_fen)
 
+    def get_position(self):
+        return tn.fen_to_tensor(self.rollout_game.board.fen())
+
     def get_actual_position(self):
         return tn.fen_to_tensor(self.actual_game.board.fen())
 
@@ -82,7 +117,7 @@ class StateMachine():
             return 1
         return -1
 
-    def rollout_idx_move(self, move_idx):
+    def idx_move(self, move_idx):
         move_fen = tn.tensor_indices_to_move(move_idx)
         try:
             self.rollout_game.make_move(move_fen)
@@ -112,7 +147,10 @@ class StateMachine():
                     {self.actual_game.board.fen()}")
         self.reset_to_actual_game()
 
-    def get_rollout_result(self):
+    def get_result(self):
+        """
+        get result from rollout game
+        """
         result = self.rollout_game.board.result()
         translate = {"*": 0, "1-0": 1, "0-1": -1, "1/2-1/2": 0}
         return translate[result]
@@ -125,7 +163,10 @@ class StateMachine():
     def actual_has_ended(self):
         return self.actual_game.is_ended()
 
-    def rollout_has_ended(self):
+    def has_ended(self):
+        """
+        check if rollout game has ended
+        """
         return self.rollout_game.is_ended()
 
 

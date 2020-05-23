@@ -6,6 +6,9 @@ statemachine = state_machine.StateMachine()
 
 NUM_OF_LEGAL_MOVES_FROM_START = 21
 
+def test_correct_tensor_dimensions_for_position():
+    assert statemachine.get_position().shape == (8, 8, 11)
+
 def test_get_player_color_from_start():
     assert statemachine.get_player_color() == WHITE
 
@@ -17,7 +20,7 @@ def test_get_legal_moves_right_number_of_moves():
     assert len(moves[0]) == NUM_OF_LEGAL_MOVES_FROM_START
 
 def test_get_rollout_result_from_start():
-    assert statemachine.get_rollout_result() == 0
+    assert statemachine.get_result() == 0
 
 def test_get_actual_result_from_start():
     assert statemachine.get_actual_result() == 0
@@ -33,7 +36,7 @@ SECOND_MOVE = [0, 6, 0]
 SECOND_RESULT_STATE = "8/8/8/8/8/k6K/1rbnNBR1/qrbnNBRQ w - - 2 2"
 
 def test_rollout_idx_move_from_second():
-    statemachine.rollout_idx_move(SECOND_MOVE)
+    statemachine.idx_move(SECOND_MOVE)
     assert statemachine.rollout_game.board.fen() == SECOND_RESULT_STATE
 
 def test_actual_state_is_unaffected_by_rollout_move():
@@ -59,7 +62,7 @@ def test_get_legal_moves_in_no_valid_position():
     assert len(moves[0]) == NUM_OF_LEGAL_MOVES_FROM_NEW_STATE
 
 def test_get_rollout_result_from_no_valid_move():
-    assert statemachine.get_rollout_result() == 0
+    assert statemachine.get_result() == 0
 
 def test_get_actual_result_from_no_valid_move():
     assert statemachine.get_actual_result() == 0
@@ -88,7 +91,7 @@ NO_BLACK_SUSPENSE = "7k/K7/8/8/8/8/R7/8 w - - 10 20"
 no_suspense_statemachine = state_machine.StateMachine()
 no_suspense_statemachine.set_to_fen_state(NO_BLACK_SUSPENSE)
 
-def test_black_suspended_win():
+def test_black_suspended_is_win():
     assert no_suspense_statemachine.get_actual_result() == BLACK
 
 def test_black_suspended_has_ended():

@@ -9,7 +9,8 @@ import numpy as np
 # pylint: disable=R0903
 
 # dimensions of mock object tensors
-DIMENSIONS = (8, 8, 64)
+MOVE_DIMENSIONS = (8, 8, 64)
+POS_DIMENSIONS = (8, 8, 11)
 
 class MockModel():
     """
@@ -17,7 +18,8 @@ class MockModel():
     until we have real models
     """
     def inference(self, position):
-        policy = np.random.rand(*DIMENSIONS)
+        assert position.shape == POS_DIMENSIONS
+        policy = np.random.rand(*MOVE_DIMENSIONS)
         evaluation = np.random.rand(1)[0] - 0.5
 
         return (policy, evaluation)
