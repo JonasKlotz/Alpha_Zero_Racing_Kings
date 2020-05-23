@@ -1,3 +1,4 @@
+# pylint: disable=C0116
 import numpy as np
 from mockito import when, mock, unstub
 
@@ -7,7 +8,6 @@ from azts import mock_model
 
 from azts.config import BLACK, AMPLIFY_RESULT, WHITE
 
-# pylint: disable=C0116
 TEST_INDICES = (np.array([1, 4, 4, 2, 1]), \
         np.array([1, 0, 0, 1, 3]), \
         np.array([1, 0, 3, 1, 4]))

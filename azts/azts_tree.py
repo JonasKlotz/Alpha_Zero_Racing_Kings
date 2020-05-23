@@ -15,11 +15,11 @@ reconstruct the corresponding move
 """
 import time
 import numpy as np
-import state_machine as sm
-import azts_node as an
-import mock_model
+from azts import state_machine
+from azts import azts_node
+from azts import mock_model
 
-from config import *
+from azts.config import *
 
 
 
@@ -27,9 +27,11 @@ class AztsTree():
     """
     AztsTree represents the
     alpha zero search tree.
+    :param str position: Game state in FEN-notation
+    or None.
     """ 
     def __init__(self,
-                 state_machine,
+                 statemachine,
                  model,
                  color,
                  position,
@@ -37,17 +39,17 @@ class AztsTree():
 
         self.color = color
 
-        self.state_machine = state_machine
+        self.statemachine = statemachine
         self.model = model
         self.runs_per_move = runs_per_move
         self._init_tree(position)
 
     def _init_tree(self, position=None):
         if position:
-            self.state_machine.set_to_fen_position(position)
-        self.root = an.AztsNode(self.state_machine,
+            self.statemachine.set_to_fen_state(position)
+        self.root = azts_node.AztsNode(self.statemachine,
                          self.model,
-                         self.state_machine.get_actual_position(),
+                         self.statemachine.get_actual_position(),
                          self.color)
 
     def __str__(self):
@@ -55,10 +57,10 @@ class AztsTree():
 
     def make_move(self):
         move = ""
-        if self.color == self.state_machine.get_player_color():
+        if self.color == self.statemachine.get_player_color():
             self._tree_search(self.runs_per_move)
             move = self.root.get_move()
-            self.state_machine.actual_fen_move(move)
+            self.statemachine.actual_fen_move(move)
         else:
             raise Exception("Other players turn")
         return move
@@ -67,7 +69,7 @@ class AztsTree():
         return self.root.get_policy_tensor()
 
     def receive_move(self, move):
-        self.state_machine.actual_fen_move(move)
+        self.statemachine.actual_fen_move(move)
 
         del self.root
         self._init_tree()
@@ -84,9 +86,9 @@ class AztsTree():
 
 
 def set_up():
-    state_machine = sm.StateMachine()
+    statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    azts_tree = AztsTree(state_machine,
+    azts_tree = AztsTree(statemachine,
                 model,
                 WHITE,
                 None,
@@ -94,11 +96,11 @@ def set_up():
 
     np.set_printoptions(suppress=True, precision=3)
 
-    return state_machine, model, azts_tree
+    return statemachine, model, azts_tree
 
 
 if __name__ == "__main__":
-    state_machine, model, tree = set_up()
+    statemachine, model, tree = set_up()
 
     print(f"Calculating first move...")
     time1 = time.time()

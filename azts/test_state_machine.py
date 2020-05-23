@@ -1,7 +1,6 @@
-from azts import state_machine 
-from azts.config import WHITE, BLACK
-
 # pylint: disable=C0116
+from azts import state_machine 
+from azts.config import WHITE, BLACK 
 
 statemachine = state_machine.StateMachine()
 
