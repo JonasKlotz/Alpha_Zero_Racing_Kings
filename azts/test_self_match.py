@@ -1,7 +1,7 @@
 import pytest
 from azts import self_match
 
-from azts.config import WHITE, BLACK
+from azts.config import *
 
 @pytest.fixture
 def stalemate():
@@ -46,19 +46,19 @@ def suspension_draw():
     return match
 
 def test_end_on_stalemate(stalemate):
-    assert stalemate.simulate() == "draw by stale mate"
+    assert stalemate.simulate() == DRAW_BY_STALE_MATE
 
 def test_end_on_repetition(repetition):
-    assert repetition.simulate() == "draw by repetition"
+    assert repetition.simulate() == DRAW_BY_REP
 
 def test_end_on_black_win(black_win):
-    assert black_win.simulate() == "black won"
+    assert black_win.simulate() == BLACK_WINS
 
 def test_end_on_white_win(white_win):
-    assert white_win.simulate() == "white won"
+    assert white_win.simulate() == WHITE_WINS
 
 def test_suspended_white_win(suspension):
-    assert suspension.simulate() == "white won"
+    assert suspension.simulate() == WHITE_WINS
 
 def test_suspended_draw(suspension_draw):
-    assert suspension_draw.simulate() == "draw by two finishes in one turn"
+    assert suspension_draw.simulate() == DRAW_BY_TWO_WINS

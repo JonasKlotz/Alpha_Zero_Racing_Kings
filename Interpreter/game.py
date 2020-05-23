@@ -12,6 +12,8 @@ import chess.svg
 from cairosvg import svg2png
 from PIL import Image
 
+from azts.config import *
+
 
 class Game:
     # pylint: disable=too-many-instance-attributes
@@ -30,7 +32,7 @@ class Game:
         self.draw = False
         self.history = {}
         self.history[self.board.fen()] = 1
-        self.state = "running"
+        self.state = RUNNING
 
         # print(self.board)
 
@@ -154,9 +156,9 @@ class Game:
         won = self.board.is_variant_win()
         if won:
             if self.get_score() == "1-0":
-                self.state = "white won"
+                self.state = WHITE_WINS
             if self.get_score() == "0-1":
-                self.state = "black won"
+                self.state = BLACK_WINS
         return won
 
     def is_ended(self):
@@ -168,9 +170,9 @@ class Game:
         ended = self.board.is_variant_end()
         if ended:
             if self.board.result() == "1-0":
-                self.state = "white won"
+                self.state = WHITE_WINS
             if self.board.result() == "0-1":
-                self.state = "black won"
+                self.state = BLACK_WINS
         self.end |= ended or self.is_draw() or self.is_won()
         return self.end
 
@@ -188,15 +190,14 @@ class Game:
 
         if self.get_movelist_size() == 0:
             if both_finish:
-                self.state = "draw by two finishes in one turn"
+                self.state = DRAW_BY_TWO_WINS
             else:
-                self.state = "draw by stale mate"
+                self.state = DRAW_BY_STALE_MATE
             self.end = True
 
         try:
             if self.history[self.board.fen()] > 2:
-                print("repetition")
-                self.state = "draw by repetition"
+                self.state = DRAW_BY_REP
                 self.end = True
             self.draw |= self.history[self.board.fen()] > 2
         except:

@@ -8,7 +8,7 @@ from azts import azts_node
 from azts import state_machine
 from azts import mock_model
 
-from azts.config import BLACK, AMPLIFY_RESULT, WHITE
+from azts.config import *
 
 @pytest.fixture
 def tree_white_start():
@@ -93,7 +93,7 @@ def test_game_start_not_over(\
 
 def test_game_state_running(\
         tree_white_start):
-    assert tree_white_start.game_state() == "running"
+    assert tree_white_start.game_state() == RUNNING
 
 def test_game_start_result_zero(\
         tree_white_start):
@@ -128,7 +128,7 @@ def test_exception_on_stale_mate(tree_stale_mate):
         tree_stale_mate.make_move()
 
 def test_game_state_on_stale_mate(tree_stale_mate):
-    assert tree_stale_mate.game_state() == "draw by stale mate"
+    assert tree_stale_mate.game_state() == DRAW_BY_STALE_MATE
 
 def test_stalemate_game_over(\
         tree_stale_mate):
@@ -148,13 +148,13 @@ def test_won_result(tree_won):
     assert tree_won.game_result() == BLACK
 
 def test_won_game_state(tree_won):
-    assert tree_won.game_state() == "black won"
+    assert tree_won.game_state() == BLACK_WINS
 
 def test_suspension_draw_game_not_over(suspension_draw):
     assert suspension_draw.game_over() == False
 
 def test_suspension_draw_game_state_running(suspension_draw):
-    assert suspension_draw.game_state() == "running"
+    assert suspension_draw.game_state() == RUNNING
 
 def test_suspension_draw_number_of_node_children(suspension_draw):
     assert len(suspension_draw.root.children) == 1

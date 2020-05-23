@@ -28,7 +28,6 @@ class SelfMatch():
         while True:
             # check break condition: 
             if self.game.is_ended():
-                print("game over")
                 break
             # select players
             select = 0 if self.game.get_current_player() else 1 
@@ -79,8 +78,6 @@ class SelfMatch():
 if __name__ == "__main__":
     SHOW_GAME = True
     RUNS_PER_MOVE = 10
-    stale_mate = "8/8/8/8/8/8/R7/5K1k b - - 10 20" 
     match = SelfMatch()
-    match.set_game_state(stale_mate)
     match.simulate()
 

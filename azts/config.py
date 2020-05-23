@@ -20,6 +20,29 @@ SHOW_GAME = False  # If True boards will be shown in self_play
 WHITE = 1
 BLACK = -1
 
+# Enum Types representing
+# all possible game states
+RUNNING = 0
+WHITE_WINS = 1
+BLACK_WINS = 2
+DRAW = 3
+DRAW_BY_REP = 4
+DRAW_BY_STALE_MATE = 5
+DRAW_BY_TWO_WINS = 6
+
+PAYOFFS = {WHITE_WINS: 1, \
+        BLACK_WINS: -1, \
+        DRAW: 0, \
+        DRAW_BY_REP: 0, \
+        DRAW_BY_STALE_MATE: 0, \
+        DRAW_BY_TWO_WINS: 0}
+
+TO_STRING = {WHITE_WINS: "white won", \
+        BLACK_WINS: "black won", \
+        DRAW: "draw", \
+        DRAW_BY_REP: "draw by repetition", \
+        DRAW_BY_STALE_MATE: "draw by stale mate", \
+        DRAW_BY_TWO_WINS: "draw by simultaneous finish"}
 
 # Data types for size of
 # np.arrays

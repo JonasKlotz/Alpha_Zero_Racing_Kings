@@ -2,7 +2,7 @@
 import pytest
 
 from azts import state_machine 
-from azts.config import WHITE, BLACK 
+from azts.config import *
 
 statemachine = state_machine.StateMachine()
 
@@ -156,7 +156,7 @@ def test_suspended_draw_legal_moves(suspension_draw):
     assert legal_moves == actual_legal_moves
 
 def test_suspended_draw_game_state(suspension_draw):
-    assert suspension_draw.get_actual_state() == "running"
+    assert suspension_draw.get_actual_state() == RUNNING
 
 def test_suspended_draw_is_not_over(suspension_draw):
     assert suspension_draw.game_over() == False
@@ -167,5 +167,5 @@ def test_suspended_draw_finish_move_game_over(suspension_draw):
 
 def test_suspended_draw_finish_move_game_state(suspension_draw):
     suspension_draw.actual_fen_move("a7a8")
-    assert suspension_draw.get_actual_state() == "draw by two finishes in one turn"
+    assert suspension_draw.get_actual_state() == DRAW_BY_TWO_WINS
 # pylint: enable=C0116

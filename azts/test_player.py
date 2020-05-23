@@ -1,7 +1,7 @@
 import pytest
 from azts import player
 
-from azts.config import WHITE, BLACK
+from azts.config import *
 
 @pytest.fixture
 def player_white():
@@ -37,7 +37,7 @@ def test_game_not_over(player_white):
     assert player_white.game_over() == False
 
 def test_game_running(player_white):
-    assert player_white.game_state() == "running"
+    assert player_white.game_state() == RUNNING
 
 def test_dont_receive_move(player_white):
     move = "a2a3"
@@ -58,13 +58,13 @@ def test_dont_accept_illegal_move(other_players_turn):
 def test_accept_legal_move(other_players_turn):
     move = "h2h3"
     other_players_turn.receive_move(move)
-    assert other_players_turn.game_state() == "running"
+    assert other_players_turn.game_state() == RUNNING
 
 def test_stale_mate_game_over(stale_mate):
     assert stale_mate.game_over()
 
 def test_stale_mate_game_state(stale_mate):
-    assert stale_mate.game_state() == "draw by stale mate"
+    assert stale_mate.game_state() == DRAW_BY_STALE_MATE
 
 def test_no_move_in_stale_mate(stale_mate):
     with pytest.raises(Exception):
@@ -84,7 +84,7 @@ def test_game_over_in_win_position(win_position):
     assert win_position.game_over()
 
 def test_game_state_in_win_position(win_position):
-    assert win_position.game_state() == "black won"
+    assert win_position.game_state() == BLACK_WINS
 
 def test_won_no_move(win_position):
     with pytest.raises(Exception):
