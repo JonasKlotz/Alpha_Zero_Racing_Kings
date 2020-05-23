@@ -26,7 +26,7 @@ class Player():
     def game_state(self):
         return self.tree.game_state()
 
-    def set_game_state(self, fen_posititon):
+    def set_game_state(self, fen_position):
         self.tree.set_to_fen_state(fen_position)
 
     def dump_data(self):
