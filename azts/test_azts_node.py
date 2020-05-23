@@ -25,10 +25,10 @@ statemachine = state_machine.StateMachine()
 node = azts_node.AztsNode(statemachine, model)
 
 def test_actual_start_position():
-    assert node.state_machine.actual_game.board.fen() == FIRST_STATE
+    assert node.statemachine.actual_game.board.fen() == FIRST_STATE
 
 def test_rollout_start_position():
-    assert node.state_machine.rollout_game.board.fen() == FIRST_STATE
+    assert node.statemachine.rollout_game.board.fen() == FIRST_STATE
 
 def test_start_is_not_endpostion():
     assert node.endposition == False
@@ -70,10 +70,10 @@ def test_correct_number_of_nodes_in_tree():
     assert num_of_nodes == 11 
 
 def test_actual_game_position_is_still_set_after_rollout():
-    assert node_rollout.state_machine.actual_game.board.fen() == FIRST_STATE
+    assert node_rollout.statemachine.actual_game.board.fen() == FIRST_STATE
 
 def test_rollout_game_position_is_reset_after_rollout():
-    assert node_rollout.state_machine.rollout_game.board.fen() == FIRST_STATE
+    assert node_rollout.statemachine.rollout_game.board.fen() == FIRST_STATE
 
 def test_evaluation_is_set_to_model_inference():
     assert node_rollout.evaluation == 1
@@ -85,10 +85,10 @@ def test_correct_print_function_for_more_nodes():
     assert node_rollout.__str__()[0:4] == "node"
 
 def test_actual_start_position_after_rollout():
-    assert node_rollout.state_machine.actual_game.board.fen() == FIRST_STATE
+    assert node_rollout.statemachine.actual_game.board.fen() == FIRST_STATE
 
 def test_rollout_start_position_after_rollout():
-    assert node_rollout.state_machine.rollout_game.board.fen() == FIRST_STATE
+    assert node_rollout.statemachine.rollout_game.board.fen() == FIRST_STATE
 
 def test_node_is_evaluated_to_one_by_mock_model():
     assert node_rollout.evaluation == 1
@@ -109,10 +109,10 @@ def test_stale_mate_evaluates_to_zero():
     assert node_stale.rollout() == 0
 
 def test_actual_start_position_after_set_board():
-    assert node_stale.state_machine.actual_game.board.fen() == STALE_MATE
+    assert node_stale.statemachine.actual_game.board.fen() == STALE_MATE
 
 def test_rollout_start_position_after_set_board():
-    assert node_stale.state_machine.rollout_game.board.fen() == STALE_MATE
+    assert node_stale.statemachine.rollout_game.board.fen() == STALE_MATE
 
 WIN_STATE = "7k/8/8/8/8/8/R7/5K2 w - - 10 20"
 win_statemachine = state_machine.StateMachine()

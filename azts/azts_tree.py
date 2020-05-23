@@ -41,6 +41,15 @@ class AztsTree():
         self.statemachine = statemachine
         self.model = model
         self.runs_per_move = runs_per_move
+        self._init_tree()
+
+    def _init_tree(self):
+        '''
+        keep this as separate function
+        because it needs to be called
+        after every move if tree is
+        not reused
+        '''
         self.root = azts_node.AztsNode(self.statemachine, \
                          self.model, \
                          self.color) 
@@ -71,14 +80,17 @@ class AztsTree():
         return self.root.get_policy_tensor()
 
     def receive_move(self, move):
-        self.statemachine.actual_fen_move(move)
+        if self.color != self.statemachine.get_player_color(): 
+            self.statemachine.actual_fen_move(move)
 
-        # TODO: check for reusability of current
-        # tree. This should always be the case
-        # if the opponents move leads to a follow-up
-        # position
-        del self.root
-        self._init_tree()
+            # TODO: check for reusability of current
+            # tree. This should always be the case
+            # if the opponents move leads to a follow-up
+            # position
+            del self.root
+            self._init_tree()
+        else:
+            raise Exception("My turn")
 
     def get_position(self):
         return self.root.get_position()
@@ -91,17 +103,17 @@ class AztsTree():
         pass
 
 
-def set_up():
+def set_up(color = WHITE):
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    azts_tree = AztsTree(statemachine,
-                model,
-                WHITE,
+    tree = AztsTree(statemachine, \
+                model, \
+                color, \
                 200)
 
     np.set_printoptions(suppress=True, precision=3)
 
-    return statemachine, model, azts_tree
+    return statemachine, model, tree
 
 
 if __name__ == "__main__":

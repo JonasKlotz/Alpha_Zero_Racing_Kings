@@ -109,9 +109,7 @@ class Game:
             self.after_mode()
             return
         except:
-            self.show_game()
-            print("move " + input + " illegal")
-            self.end = True
+            raise ValueError(f"move {input} illegal")
 
     def after_mode(self, ):
         self.move_count += 1
@@ -234,7 +232,7 @@ class Game:
         try:
             rnd_move = random.choice(moves)
         except:
-            self.show_game()
+            #self.show_game()
             RuntimeError()
         self.make_move(rnd_move)
 
@@ -261,7 +259,7 @@ if __name__ == "__main__":
                 # game.play_stockfish(0.01)
                 game.play_random_move()
             except:
-                game.show_game()
+                #game.show_game()
                 print("Fail")
                 break
         s = game.get_score(1)

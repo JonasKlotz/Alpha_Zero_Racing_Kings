@@ -52,7 +52,7 @@ class AztsNode():
     # pylint: disable=C0326
     def __init__(self, statemachine, model, color=WHITE):
         """
-        :param StateMachine state_machine: is a state machine that
+        :param StateMachine statemachine: is a state machine that
         translates from tensor indices to fen/uci notation and
         keeps track of state; also translates back to tensor notation
         :param model: trained keras model that does inference on
@@ -64,7 +64,7 @@ class AztsNode():
         """
 
         self.color = color
-        self.state_machine = statemachine
+        self.statemachine = statemachine
         self.model = model
 
         if statemachine.has_ended():
@@ -192,7 +192,7 @@ class AztsNode():
         """
         i = np.argmax(self.edges[:, NCOUNT])
         i = self._legal_to_total_index(i)
-        return self.state_machine.move_index_to_fen(i)
+        return self.statemachine.move_index_to_fen(i)
 
     def rollout(self, level=0):
         """
@@ -209,14 +209,14 @@ class AztsNode():
         next_node = self.children[i]
 
         move_idx = self._legal_to_total_index(i)
-        self.state_machine.idx_move(move_idx)
+        self.statemachine.idx_move(move_idx)
 
         evaluation = 0
 
         if next_node is None:
             # terminate recursion
             # on leaf expansion 
-            leaf = AztsNode(self.state_machine,
+            leaf = AztsNode(self.statemachine,
                             self.model,
                             self.color)
             evaluation = leaf.evaluation
@@ -241,7 +241,7 @@ class AztsNode():
             # up, we are back at level 0 and
             # reset the state machine to this
             # game state.
-            self.state_machine.reset_to_actual_game()
+            self.statemachine.reset_to_actual_game()
 
         return evaluation
 

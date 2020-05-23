@@ -1,8 +1,14 @@
 # pylint: disable=C0116
+import pytest
+
 from azts import state_machine 
 from azts.config import WHITE, BLACK 
 
 statemachine = state_machine.StateMachine()
+
+def test_two_games_are_independent():
+    assert statemachine.actual_game is not \
+        statemachine.rollout_game
 
 NUM_OF_LEGAL_MOVES_FROM_START = 21
 
@@ -24,6 +30,12 @@ def test_get_rollout_result_from_start():
 
 def test_get_actual_result_from_start():
     assert statemachine.get_actual_result() == 0
+
+IMPOSSIBLE_MOVE = "h1h8"
+
+def test_exception_on_impossible_move():
+    with pytest.raises(ValueError):
+        statemachine.actual_fen_move(IMPOSSIBLE_MOVE)
 
 FIRST_MOVE = "h2h3"
 FIRST_RESULT_STATE = "8/8/8/8/8/7K/krbnNBR1/qrbnNBRQ b - - 1 1"
@@ -80,6 +92,9 @@ def test_win_game_has_ended():
 SUSPENDED_WIN = "7K/k7/8/8/8/8/7R/8 b - - 10 20"
 suspended_statemachine = state_machine.StateMachine()
 suspended_statemachine.set_to_fen_state(SUSPENDED_WIN)
+
+def test_suspended_rollout_is_also_set():
+    assert suspended_statemachine.rollout_game.board.fen() == SUSPENDED_WIN
 
 def test_suspended_result():
     assert suspended_statemachine.get_actual_result() == 0

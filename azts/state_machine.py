@@ -140,7 +140,12 @@ class StateMachine():
         commits a move in uci notation
         in both actual_game and rollout_game
         '''
-        self._actual_move(move_fen)
+        try:
+            self._actual_move(move_fen)
+        except:
+            raise ValueError(f"move {move_fen} \
+                impossible in current position \
+                {self.actual_game.board.fen()}")
 
     def _actual_move(self, move_fen):
         """
@@ -151,8 +156,8 @@ class StateMachine():
             self.actual_game.make_move(move_fen)
         except:
             raise ValueError(f"actual move: move {move_fen} \
-                    not possible in position \
-                    {self.actual_game.board.fen()}")
+                not possible in position \
+                {self.actual_game.board.fen()}")
         self.reset_to_actual_game()
 
     def get_result(self):
