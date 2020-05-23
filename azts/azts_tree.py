@@ -142,8 +142,6 @@ if __name__ == "__main__":
     time2 = time.time()
 
     print(tree)
-    mode = "selfplay" if SELFPLAY else "tournament"
     print(f"doing {tree.runs_per_move} rollouts " \
-          + f"in {mode} mode took " \
-          + f"{str(time2 - time1)[0:5]} seconds.\n")
+          + f"took {str(time2 - time1)[0:5]} seconds.\n")
     print(f"First move is {first_move}.")

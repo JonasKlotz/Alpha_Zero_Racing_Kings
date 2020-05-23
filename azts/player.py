@@ -1,18 +1,17 @@
-import azts_tree as at
-import state_machine as sm
-import mock_model
+from azts import azts_tree
+from azts import state_machine
+from azts import mock_model
 
-from config import RUNS_PER_MOVE, WHITE
+from azts.config import RUNS_PER_MOVE, WHITE
 
 
 class Player():
     def __init__(self, color, runs_per_move = RUNS_PER_MOVE):
-        self.state_machine = sm.StateMachine()
+        self.statemachine = state_machine.StateMachine()
         self.model = mock_model.MockModel()
-        self.tree = at.AztsTree(self.state_machine, \
+        self.tree = azts_tree.AztsTree(self.statemachine, \
                               self.model, \
                               color, \
-                              None, \
                               runs_per_move)
 
     def make_move(self):
@@ -20,6 +19,15 @@ class Player():
 
     def receive_move(self, move):
         return self.tree.receive_move(move)
+
+    def game_over(self):
+        return self.tree.game_over()
+
+    def game_state(self):
+        return self.tree.game_state()
+
+    def set_game_state(self, fen_posititon):
+        self.tree.set_to_fen_state(fen_position)
 
     def dump_data(self):
         return [self.tree.get_position(), \

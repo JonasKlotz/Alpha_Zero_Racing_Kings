@@ -12,7 +12,7 @@ from azts import state_machine
 from azts import mock_model
 
 from azts.config import WHITE, POS_DTYPE,\
-        EDGE_DTYPE, IDX_DTYPE, SELFPLAY, \
+        EDGE_DTYPE, IDX_DTYPE, \
         AMPLIFY_RESULT, EXPLORATION
 
 # pylint: disable=W0621
