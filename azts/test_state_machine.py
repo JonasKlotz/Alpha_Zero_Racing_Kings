@@ -9,6 +9,9 @@ NUM_OF_LEGAL_MOVES_FROM_START = 21
 def test_get_player_color_from_start():
     assert statemachine.get_player_color() == WHITE
 
+def test_start_game_has_not_ended():
+    assert statemachine.actual_has_ended() == False
+
 def test_get_legal_moves_right_number_of_moves():
     moves = statemachine.get_legal_moves()
     assert len(moves[0]) == NUM_OF_LEGAL_MOVES_FROM_START
@@ -67,5 +70,28 @@ win_statemachine.set_to_fen_state(WIN_STATE)
 
 def test_win_result_black():
     assert win_statemachine.get_actual_result() == -1
+
+def test_win_game_has_ended():
+    assert win_statemachine.actual_has_ended() == True
+
+SUSPENDED_WIN = "7K/k7/8/8/8/8/7R/8 b - - 10 20"
+suspended_statemachine = state_machine.StateMachine()
+suspended_statemachine.set_to_fen_state(SUSPENDED_WIN)
+
+def test_suspended_result():
+    assert suspended_statemachine.get_actual_result() == 0
+
+def test_suspended_has_not_ended():
+    assert suspended_statemachine.actual_has_ended() == False
+
+NO_BLACK_SUSPENSE = "7k/K7/8/8/8/8/R7/8 w - - 10 20"
+no_suspense_statemachine = state_machine.StateMachine()
+no_suspense_statemachine.set_to_fen_state(NO_BLACK_SUSPENSE)
+
+def test_black_suspended_win():
+    assert no_suspense_statemachine.get_actual_result() == BLACK
+
+def test_black_suspended_has_ended():
+    assert no_suspense_statemachine.actual_has_ended() == True
 
 # pylint: enable=C0116

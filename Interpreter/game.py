@@ -166,9 +166,16 @@ class Game:
         self.draw |= self.board.is_variant_draw() or self.get_movelist_size() == 0
         if self.get_movelist_size() == 0:
             print("no valid move")
-        if self.history[self.board.fen()] > 2:
-            print("repetition")
-        self.draw |= self.history[self.board.fen()] > 2
+        try:
+            if self.history[self.board.fen()] > 2:
+                print("repetition")
+            self.draw |= self.history[self.board.fen()] > 2
+        except:
+            # to keep performance, we dont check if self.board.fen
+            # is in self.history.keys(). we just try and pass
+            # if it isnt
+            pass
+
         return self.draw
 
     def get_score(self, player):  # 0 for black, 1 for white
