@@ -164,7 +164,13 @@ class Game:
         Returns:
             boolean: False if game has not ended. True otherwise
         """
-        self.end |= self.board.is_variant_end() or self.is_draw() or self.is_won()
+        ended = self.board.is_variant_end()
+        if ended:
+            if self.board.result() == "1-0":
+                self.state = "white won"
+            if self.board.result() == "0-1":
+                self.state = "black won"
+        self.end |= ended or self.is_draw() or self.is_won()
         return self.end
 
     def is_draw(self):

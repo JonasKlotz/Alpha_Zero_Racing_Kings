@@ -81,6 +81,10 @@ def test_game_start_not_over(\
         tree_white_start):
     assert tree_white_start.game_over() is False
 
+def test_game_state_running(\
+        tree_white_start):
+    assert tree_white_start.game_state() == "running"
+
 def test_game_start_result_zero(\
         tree_white_start):
     assert tree_white_start.game_result() == 0
@@ -113,6 +117,9 @@ def test_exception_on_stale_mate(tree_stale_mate):
     with pytest.raises(Exception):
         tree_stale_mate.make_move()
 
+def test_game_state_on_stale_mate(tree_stale_mate):
+    assert tree_stale_mate.game_state() == "draw by stale mate"
+
 def test_stalemate_game_over(\
         tree_stale_mate):
     assert tree_stale_mate.game_over()
@@ -122,5 +129,15 @@ def test_stalemate_result_zero(\
     assert tree_stale_mate.game_result() == 0
 
 def test_won_game_over(tree_won):
+    assert tree_won.game_over()
+
+def test_won_registered(tree_won):
+    assert tree_won.statemachine.actual_game.board.is_variant_end()
+
+def test_won_result(tree_won):
+    assert tree_won.game_result() == BLACK
+
+def test_won_game_state(tree_won):
+    assert tree_won.game_state() == "black won"
 
 # pylint: enable=C0116
