@@ -182,10 +182,12 @@ class Game:
         if self.get_movelist_size() == 0:
             print("no valid move")
             self.state = "draw by stale mate"
+            self.end = True
         try:
             if self.history[self.board.fen()] > 2:
                 print("repetition")
-                self.state = "draw by repitition"
+                self.state = "draw by repetition"
+                self.end = True
             self.draw |= self.history[self.board.fen()] > 2
         except:
             # to keep performance, we dont check if self.board.fen
