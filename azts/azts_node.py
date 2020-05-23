@@ -67,7 +67,7 @@ class AztsNode():
         self.statemachine = statemachine
         self.model = model
 
-        if statemachine.has_ended():
+        if statemachine.game_over():
             # game over: this is a leaf node
             # which represents a decisive state
             # of the game

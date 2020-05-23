@@ -30,6 +30,7 @@ class Game:
         self.draw = False
         self.history = {}
         self.history[self.board.fen()] = 1
+        self.state = "running"
 
         # print(self.board)
 
@@ -141,11 +142,21 @@ class Game:
         ml = self.get_move_list()
         return [move.uci() for move in ml]
 
+    def get_game_state(self):
+        self.is_ended()
+        return self.state
+
     def is_won(self):
         """
            extracts last row looks if king on last_rank
         """
-        return self.board.is_variant_win()
+        won = self.board.is_variant_win()
+        if won:
+            if self.get_score() == "1-0":
+                self.state = "white won"
+            if self.get_score() == "0-1":
+                self.state = "black won"
+        return won
 
     def is_ended(self):
         """
@@ -164,9 +175,11 @@ class Game:
         self.draw |= self.board.is_variant_draw() or self.get_movelist_size() == 0
         if self.get_movelist_size() == 0:
             print("no valid move")
+            self.state = "draw by stale mate"
         try:
             if self.history[self.board.fen()] > 2:
                 print("repetition")
+                self.state = "draw by repitition"
             self.draw |= self.history[self.board.fen()] > 2
         except:
             # to keep performance, we dont check if self.board.fen

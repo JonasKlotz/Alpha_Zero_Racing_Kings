@@ -68,18 +68,26 @@ class AztsTree():
 
     def make_move(self):
         move = ""
+
+        if self.statemachine.actual_game_over():
+            raise Exception("Game over") 
+
         if self.color == self.statemachine.get_player_color():
             self._tree_search(self.runs_per_move)
             move = self.root.get_move()
             self.statemachine.actual_fen_move(move)
         else:
             raise Exception("Other players turn")
+
         return move
 
     def get_policy_tensor(self):
         return self.root.get_policy_tensor()
 
     def receive_move(self, move):
+        if self.statemachine.actual_game_over():
+            raise Exception("Game over")
+
         if self.color != self.statemachine.get_player_color(): 
             self.statemachine.actual_fen_move(move)
 
@@ -94,6 +102,15 @@ class AztsTree():
 
     def get_position(self):
         return self.root.get_position()
+
+    def game_over(self):
+        return self.statemachine.actual_game_over()
+
+    def game_result(self):
+        return self.statemachine.get_actual_result()
+
+    def game_state(self):
+        return self.statemachine.get_actual_state()
 
     def _tree_search(self, runs=10):
         for i in range(runs):

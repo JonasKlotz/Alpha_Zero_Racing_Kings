@@ -173,10 +173,13 @@ class StateMachine():
         translate = {"*": 0, "1-0": 1, "0-1": -1, "1/2-1/2": 0}
         return translate[result]
 
-    def actual_has_ended(self):
+    def actual_game_over(self):
         return self.actual_game.is_ended()
 
-    def has_ended(self):
+    def get_actual_state(self):
+        return self.actual_game.get_game_state()
+
+    def game_over(self):
         """
         check if rollout game has ended
         """

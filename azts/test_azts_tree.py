@@ -27,6 +27,26 @@ def tree_white_other_turn():
     tree.make_move()
     return tree
 
+@pytest.fixture
+def tree_stale_mate():
+    statemachine = state_machine.StateMachine()
+    model = mock_model.MockModel()
+    tree = azts_tree.AztsTree(statemachine, \
+            model, BLACK, 10)
+    stale_mate = "8/8/8/8/8/8/R7/5K1k b - - 10 20"
+    tree.set_to_fen_state(stale_mate)
+    return tree
+
+@pytest.fixture
+def tree_won(): 
+    statemachine = state_machine.StateMachine()
+    model = mock_model.MockModel()
+    tree = azts_tree.AztsTree(statemachine, \
+            model, BLACK, 10)
+    win_position = "7k/8/8/8/8/8/R7/5K2 w - - 10 20"
+    tree.set_to_fen_state(win_position)
+    return tree
+
 def test_tree_and_root_share_statemachine(\
         tree_white_start):
     assert tree_white_start.statemachine \
@@ -57,6 +77,13 @@ def test_legal_move_from_start(\
     move = tree_white_start.make_move()
     assert move in legal_moves
 
+def test_game_start_not_over(\
+        tree_white_start):
+    assert tree_white_start.game_over() is False
+
+def test_game_start_result_zero(\
+        tree_white_start):
+    assert tree_white_start.game_result() == 0
 
 def test_no_move_in_other_turn(tree_white_other_turn):
     with pytest.raises(Exception):
@@ -81,5 +108,19 @@ def test_dont_receive_move_if_reset_to_white_turn(\
     tree_white_other_turn.set_to_fen_state(new_state)
     with pytest.raises(Exception):
         tree_white_other_turn.receive_move("a8a7")
+
+def test_exception_on_stale_mate(tree_stale_mate):
+    with pytest.raises(Exception):
+        tree_stale_mate.make_move()
+
+def test_stalemate_game_over(\
+        tree_stale_mate):
+    assert tree_stale_mate.game_over()
+
+def test_stalemate_result_zero(\
+        tree_stale_mate):
+    assert tree_stale_mate.game_result() == 0
+
+def test_won_game_over(tree_won):
 
 # pylint: enable=C0116
