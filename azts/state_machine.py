@@ -128,10 +128,18 @@ class StateMachine():
         return tn.fen_to_tensor(self.rollout_game.board.fen())
 
     def actual_idx_move(self, move_idx):
+        '''
+        commits a move in tensor notation
+        in both actual_game and rollout_game
+        '''
         move_fen = tn.tensor_indices_to_move(move_idx)
         self._actual_move(move_fen)
 
     def actual_fen_move(self, move_fen):
+        '''
+        commits a move in uci notation
+        in both actual_game and rollout_game
+        '''
         self._actual_move(move_fen)
 
     def _actual_move(self, move_fen):

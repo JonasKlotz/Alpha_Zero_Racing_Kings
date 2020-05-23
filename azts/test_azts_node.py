@@ -63,6 +63,12 @@ node_rollout = azts_node.AztsNode(statemachine, model)
 for i in range(10):
     node_rollout.rollout()
 
+def test_correct_number_of_nodes_in_tree():
+    tree = node_rollout.__str__()
+    idx = tree.find(" nodes in total")
+    num_of_nodes = int(tree[idx-2:idx])
+    assert num_of_nodes == 11 
+
 def test_actual_game_position_is_still_set_after_rollout():
     assert node_rollout.state_machine.actual_game.board.fen() == FIRST_STATE
 

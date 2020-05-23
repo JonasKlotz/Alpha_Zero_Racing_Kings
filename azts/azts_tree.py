@@ -34,7 +34,6 @@ class AztsTree():
                  statemachine,
                  model,
                  color,
-                 position,
                  runs_per_move=10):
 
         self.color = color
@@ -42,18 +41,21 @@ class AztsTree():
         self.statemachine = statemachine
         self.model = model
         self.runs_per_move = runs_per_move
-        self._init_tree(position)
-
-    def _init_tree(self, position=None):
-        if position:
-            self.statemachine.set_to_fen_state(position)
-        self.root = azts_node.AztsNode(self.statemachine,
-                         self.model,
-                         self.statemachine.get_actual_position(),
-                         self.color)
+        self.root = azts_node.AztsNode(self.statemachine, \
+                         self.model, \
+                         self.color) 
 
     def __str__(self):
         return self.root.__str__()
+
+    def set_to_fen_state(self, fen_state):
+        '''
+        set internal game state to
+        a state provided by fen_state
+        :param str fen_state: fen notation
+        of new state
+        '''
+        self.statemachine.set_to_fen_state(fen_state)
 
     def make_move(self):
         move = ""
@@ -71,6 +73,10 @@ class AztsTree():
     def receive_move(self, move):
         self.statemachine.actual_fen_move(move)
 
+        # TODO: check for reusability of current
+        # tree. This should always be the case
+        # if the opponents move leads to a follow-up
+        # position
         del self.root
         self._init_tree()
 
@@ -91,7 +97,6 @@ def set_up():
     azts_tree = AztsTree(statemachine,
                 model,
                 WHITE,
-                None,
                 200)
 
     np.set_printoptions(suppress=True, precision=3)
