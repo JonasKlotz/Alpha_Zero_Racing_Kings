@@ -28,3 +28,6 @@ _Data
 # pytest coverage reports
 *.coverage
 *coverage-report*
+
+# logs
+logs
