@@ -5,12 +5,8 @@ This module simulates games of RacingsKings.
 import os.path
 import time
 import pickle
-import azts
-from Interpreter import game
-import state_machine as sm
-import self_match
-import screen
-from config import *
+from azts import self_match
+from azts.config import *
 
 REPORT_CYCLE = 25 
 
@@ -48,4 +44,4 @@ class SelfPlay():
 
 if __name__ == "__main__":
     play = SelfPlay()
-    play.start(50)
+    play.start(3)
