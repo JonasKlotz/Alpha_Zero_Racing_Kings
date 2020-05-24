@@ -1,10 +1,10 @@
-# pylint: disable=C0116
-import numpy as np
-from mockito import when, mock, unstub
+# pylint: disable=E0401
+# pylint: disable=E0602
+# pylint: disable=C0111
+# pylint: disable=W0621
 import pytest
 
 from azts import azts_tree
-from azts import azts_node
 from azts import state_machine
 from azts import mock_model
 
@@ -38,7 +38,7 @@ def tree_stale_mate():
     return tree
 
 @pytest.fixture
-def tree_won(): 
+def tree_won():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
     tree = azts_tree.AztsTree(statemachine, \
@@ -69,11 +69,11 @@ def test_policy_tensor_correct_dimensions(\
 def test_dont_receive_moves_in_own_turn(\
         tree_white_start):
     with pytest.raises(Exception):
-        tree_white_start.receive_move("a2a3") 
+        tree_white_start.receive_move("a2a3")
 
 def test_root_print_function(\
         tree_white_start):
-    assert type(tree_white_start.root.__str__()) == str 
+    assert isinstance(tree_white_start.root.__str__(), str)
 
 def test_root_shares_statemachine_with_tree(\
         tree_white_start):
@@ -151,11 +151,14 @@ def test_won_game_state(tree_won):
     assert tree_won.game_state() == BLACK_WINS
 
 def test_suspension_draw_game_not_over(suspension_draw):
-    assert suspension_draw.game_over() == False
+    assert suspension_draw.game_over() is False
 
 def test_suspension_draw_game_state_running(suspension_draw):
     assert suspension_draw.game_state() == RUNNING
 
 def test_suspension_draw_number_of_node_children(suspension_draw):
     assert len(suspension_draw.root.children) == 1
-# pylint: enable=C0116
+# pylint: enable=E0401
+# pylint: enable=E0602
+# pylint: enable=C0111
+# pylint: enable=W0621

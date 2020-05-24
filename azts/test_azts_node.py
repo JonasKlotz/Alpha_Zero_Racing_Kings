@@ -1,4 +1,7 @@
-# pylint: disable=C0116
+# pylint: disable=E0401
+# pylint: disable=E0602
+# pylint: disable=C0111
+# pylint: disable=W0621
 import numpy as np
 from mockito import when, mock, unstub
 
@@ -18,7 +21,7 @@ FIRST_STATE = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
 
 def test_compress_indices():
     compressed = azts_node.compress_indices(TEST_TENSOR)
-    assert np.array(compressed).sum() == np.array(TEST_INDICES).sum() 
+    assert np.array(compressed).sum() == np.array(TEST_INDICES).sum()
 
 model = mock_model.MockModel()
 statemachine = state_machine.StateMachine()
@@ -31,7 +34,7 @@ def test_rollout_start_position():
     assert node.statemachine.rollout_game.board.fen() == FIRST_STATE
 
 def test_start_is_not_endpostion():
-    assert node.endposition == False
+    assert node.endposition is False
 
 NUM_OF_LEGAL_START_MOVES = 21
 
@@ -50,13 +53,13 @@ LEGAL_START_MOVE_INDICES = np.array([[7, 6, 0], [7, 6, 7], \
 
 def test_correct_start_moves():
     for i in LEGAL_START_MOVE_INDICES:
-        assert i in np.array(node.legal_move_indices).T 
+        assert i in np.array(node.legal_move_indices).T
 
 def test_correct_print_function():
     assert node.__str__()[0:4] == "leaf"
 
 # testing: model responds with all ones
-when(model).inference(...).thenReturn((np.ones(MOVE_TENSOR_SHAPE), 1)) 
+when(model).inference(...).thenReturn((np.ones(MOVE_TENSOR_SHAPE), 1))
 
 node_rollout = azts_node.AztsNode(statemachine, model)
 
@@ -67,7 +70,7 @@ def test_correct_number_of_nodes_in_tree():
     tree = node_rollout.__str__()
     idx = tree.find(" nodes in total")
     num_of_nodes = int(tree[idx-2:idx])
-    assert num_of_nodes == 11 
+    assert num_of_nodes == 11
 
 def test_actual_game_position_is_still_set_after_rollout():
     assert node_rollout.statemachine.actual_game.board.fen() == FIRST_STATE
@@ -79,7 +82,7 @@ def test_evaluation_is_set_to_model_inference():
     assert node_rollout.evaluation == 1
 
 def test_get_policy_tensor_normalized():
-    assert node_rollout.get_policy_tensor().sum() == 1 
+    assert node_rollout.get_policy_tensor().sum() == 1
 
 def test_correct_print_function_for_more_nodes():
     assert node_rollout.__str__()[0:4] == "node"
@@ -103,7 +106,7 @@ def test_no_children_in_end_state():
     assert node_stale.children == []
 
 def test_end_state_is_endposition():
-    assert node_stale.endposition == True
+    assert node_stale.endposition is True
 
 def test_stale_mate_evaluates_to_zero():
     assert node_stale.rollout() == 0
@@ -127,4 +130,7 @@ def test_win_evaluation_black():
 def test_lose_evaluation_white():
     assert node_lose.evaluation == -AMPLIFY_RESULT
 
-# pylint: enable=C0116
+# pylint: enable=E0401
+# pylint: enable=E0602
+# pylint: enable=C0111
+# pylint: enable=W0621

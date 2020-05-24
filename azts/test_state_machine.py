@@ -1,7 +1,10 @@
-# pylint: disable=C0116
+# pylint: disable=E0401
+# pylint: disable=E0602
+# pylint: disable=C0111
+# pylint: disable=W0621
 import pytest
 
-from azts import state_machine 
+from azts import state_machine
 from azts.config import *
 
 statemachine = state_machine.StateMachine()
@@ -13,9 +16,9 @@ def statemachine_init():
 @pytest.fixture
 def statemachine_stalemate():
     statemachine = state_machine.StateMachine()
-    new_state = "8/8/8/8/8/8/R7/5K1k b - - 10 20" 
+    new_state = "8/8/8/8/8/8/R7/5K1k b - - 10 20"
     statemachine.set_to_fen_state(new_state)
-    return statemachine 
+    return statemachine
 
 @pytest.fixture
 def statemachine_win():
@@ -36,7 +39,7 @@ def sm_noblacksuspense():
     no_black_suspense = "7k/K7/8/8/8/8/R7/8 w - - 10 20"
     statemachine = state_machine.StateMachine()
     statemachine.set_to_fen_state(no_black_suspense)
-    return statemachine 
+    return statemachine
 
 @pytest.fixture
 def suspension_draw():
@@ -49,14 +52,14 @@ def test_two_games_are_independent(statemachine_init):
     assert statemachine_init.actual_game is not \
         statemachine_init.rollout_game
 
-def test_correct_tensor_dimensions_for_position(statemachine_init): 
+def test_correct_tensor_dimensions_for_position(statemachine_init):
     assert statemachine_init.get_position().shape == (8, 8, 11)
 
 def test_get_player_color_from_start(statemachine_init):
     assert statemachine_init.get_player_color() == WHITE
 
 def test_start_game_has_not_ended(statemachine_init):
-    assert statemachine_init.actual_game_over() == False
+    assert statemachine_init.actual_game_over() is False
 
 def test_get_legal_moves_right_number_of_moves(statemachine_init):
     num_of_legal_moves_from_start = 21
@@ -128,7 +131,7 @@ def test_win_result_black(statemachine_win):
     assert statemachine_win.get_actual_result() == -1
 
 def test_win_game_game_over(statemachine_win):
-    assert statemachine_win.actual_game_over() == True
+    assert statemachine_win.actual_game_over() is True
 
 def test_suspended_rollout_is_also_set(statemachine_suspended):
     suspended_win = statemachine_suspended.actual_game.board.fen()
@@ -138,13 +141,13 @@ def test_suspended_result(statemachine_suspended):
     assert statemachine_suspended.get_actual_result() == 0
 
 def test_suspended_has_not_ended(statemachine_suspended):
-    assert statemachine_suspended.actual_game_over() == False
+    assert statemachine_suspended.actual_game_over() is False
 
 def test_black_suspended_is_win(sm_noblacksuspense):
     assert sm_noblacksuspense.get_actual_result() == BLACK
 
 def test_black_suspended_game_over(sm_noblacksuspense):
-    assert sm_noblacksuspense.actual_game_over() == True
+    assert sm_noblacksuspense.actual_game_over() is True
 
 def test_suspended_draw_legal_moves_len(suspension_draw):
     legal_moves = suspension_draw.rollout_game.get_moves_observation()
@@ -159,13 +162,16 @@ def test_suspended_draw_game_state(suspension_draw):
     assert suspension_draw.get_actual_state() == RUNNING
 
 def test_suspended_draw_is_not_over(suspension_draw):
-    assert suspension_draw.game_over() == False
+    assert suspension_draw.game_over() is False
 
 def test_suspended_draw_finish_move_game_over(suspension_draw):
     suspension_draw.actual_fen_move("a7a8")
-    assert suspension_draw.game_over() == True
+    assert suspension_draw.game_over() is True
 
 def test_suspended_draw_finish_move_game_state(suspension_draw):
     suspension_draw.actual_fen_move("a7a8")
     assert suspension_draw.get_actual_state() == DRAW_BY_TWO_WINS
-# pylint: enable=C0116
+# pylint: enable=E0401
+# pylint: enable=E0602
+# pylint: enable=C0111
+# pylint: enable=W0621

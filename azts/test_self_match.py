@@ -1,3 +1,7 @@
+# pylint: disable=E0401
+# pylint: disable=E0602
+# pylint: disable=C0111
+# pylint: disable=W0621
 import pytest
 from azts import self_match
 
@@ -5,10 +9,10 @@ from azts.config import *
 
 @pytest.fixture
 def stalemate():
-    stale_mate = "8/8/8/8/8/8/R7/5K1k b - - 10 20" 
+    stale_mate = "8/8/8/8/8/8/R7/5K1k b - - 10 20"
     match = self_match.SelfMatch()
     match.set_game_state(stale_mate)
-    return match 
+    return match
 
 @pytest.fixture
 def repetition():
@@ -62,3 +66,7 @@ def test_suspended_white_win(suspension):
 
 def test_suspended_draw(suspension_draw):
     assert suspension_draw.simulate() == DRAW_BY_TWO_WINS
+# pylint: enable=E0401
+# pylint: enable=E0602
+# pylint: enable=C0111
+# pylint: enable=W0621

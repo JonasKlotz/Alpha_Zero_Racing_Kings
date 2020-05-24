@@ -1,3 +1,4 @@
+# pylint: disable=E0401
 '''
 State machine to keep track of current
 game state, to facilitate rollouts and
@@ -45,10 +46,19 @@ class StateMachine():
         self.reset_to_actual_game()
 
     def set_to_fen_state(self, fen_state):
+        '''
+        setting new state (including players turn)
+        for actual and rollout game
+        :param int fen_state: state to set the game to
+        '''
         self.actual_game.board.set_fen(fen_state)
         self.reset_to_actual_game() 
 
     def move_index_to_fen(self, move_idx):
+        '''
+        translate move index to uci notation
+        :return str: move in uci notation
+        '''
         return tn.tensor_indices_to_move(move_idx)
 
     def reset_to_actual_game(self):
@@ -107,17 +117,34 @@ class StateMachine():
         return tn.fen_to_tensor(new_fen)
 
     def get_position(self):
+        '''
+        :return np.array: position of rollout game
+        in tensor notation
+        '''
         return tn.fen_to_tensor(self.rollout_game.board.fen())
 
     def get_actual_position(self):
+        '''
+        :return str: position of actual game in fen
+        notation
+        '''
         return tn.fen_to_tensor(self.actual_game.board.fen())
 
     def get_player_color(self):
+        '''
+        :return int: 1 for white, -1 for black
+        '''
         if self.actual_game.board.turn:
             return 1
         return -1
 
     def idx_move(self, move_idx):
+        '''
+        make a move in index notation in rollout game
+        :param tuple: tuple with three np.arrays of
+        shape (1,) denoting the index of a move in
+        move tensor notation
+        '''
         move_fen = tn.tensor_indices_to_move(move_idx)
         try:
             self.rollout_game.make_move(move_fen)
@@ -169,14 +196,30 @@ class StateMachine():
         return translate[result]
 
     def get_actual_result(self):
+        '''
+        get result from actual game
+        :return int: -1 for black win, 1 for white
+        win, 0 for running or draw
+        '''
         result = self.actual_game.board.result()
         translate = {"*": 0, "1-0": 1, "0-1": -1, "1/2-1/2": 0}
         return translate[result]
 
     def actual_game_over(self):
+        '''
+        check if actual game is over
+        :return boolean: True if actual game is over
+        '''
         return self.actual_game.is_ended()
 
     def get_actual_state(self):
+        '''
+        check state of actual game according
+        to enum type in config
+        :return int: running, white win, black win,
+        draw, draw by stale mate, draw by repetition,
+        draw by two wins
+        '''
         return self.actual_game.get_game_state()
 
     def game_over(self):
@@ -186,3 +229,4 @@ class StateMachine():
         return self.rollout_game.is_ended()
 
 
+# pylint: enable=E0401
