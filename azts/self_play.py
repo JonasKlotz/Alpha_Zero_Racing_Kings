@@ -12,15 +12,13 @@ import self_match
 import screen
 from config import *
 
-REPORT_CYCLE = 25
-
-
+REPORT_CYCLE = 25 
 
 class SelfPlay():
     def __init__(self):
-        self.match = self_match.SelfMatch()
+        self.match = self_match.SelfMatch(RUNS_PER_MOVE)
 
-    def start(self, iterations=100):
+    def start(self, iterations=10):
         for i in range(iterations):
             self.match.simulate()
             data = [tuple(j) for j in self.match.data_collection]
@@ -29,16 +27,17 @@ class SelfPlay():
 
             filenumberstring = str(filenumber).zfill(4)
             filename = f"game_{filenumberstring}.pkl"
-            while os.path.isfile(filename):
+            filepath = os.path.join(GAMEDIR, filename)
+            while os.path.isfile(filepath):
                 filenumber += 1
                 filenumberstring = str(filenumber).zfill(4)
                 filename = f"game_{filenumberstring}.pkl"
+                filepath = os.path.join(GAMEDIR, filename)
 
-            pickle.dump(data, open(GAMEDIR + "/" + filename, "wb"))
+            pickle.dump(data, open(filepath, "wb"))
 
             del self.match
-            self.match = SelfMatch()
-
+            self.match = self_match.SelfMatch(RUNS_PER_MOVE) 
 
 if __name__ == "__main__":
     play = SelfPlay()

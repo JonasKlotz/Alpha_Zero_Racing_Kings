@@ -2,13 +2,17 @@
 Shows boards from game.
 """
 
+import os.path
 import matplotlib.pyplot as plt
 from PIL import Image
+
+from azts.config import *
 
 
 class Screen():
     def __init__(self):
-        self.img = Image.open("startboard.png")
+        img_path = os.path.join(RESOURCESDIR, "startboard.png")
+        self.img = Image.open(img_path)
         self.graph = plt.imshow(self.img)
         plt.ion()
         plt.show()

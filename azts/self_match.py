@@ -4,8 +4,7 @@ from azts import player
 from azts import screen
 from Interpreter import game
 
-from azts.config import WHITE, BLACK, \
-        RUNS_PER_MOVE, SHOW_GAME, TO_STRING
+from azts.config import *
 
 REPORT_CYCLE = 10
 
@@ -53,7 +52,7 @@ class SelfMatch():
         print(f"game ended after {moves} " \
               + f"moves with {result} ({TO_STRING[state]}).")
         translate = {"*": 0, "1-0": 1, "0-1": -1, "1/2-1/2": 0}
-        score = translate[result] 
+        score = TRAINING_PAYOFFS[state] 
 
         for i in self.data_collection:
             i[2] = score
