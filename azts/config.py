@@ -6,19 +6,25 @@ More local configuration parameters can be found in azts.py
 import numpy as np
 import sys
 import os.path
+import os 
 
-PROJECT = "AlphaZero-Gruppe1"
-ROOTDIR = None
+def find_rootdir():
+    rootdir = os.path.split(\
+            os.path.dirname(\
+            os.path.join(os.getcwd(), __file__)))[0]
 
-for i in sys.path:
-    if i.endswith(PROJECT) or i[:-1].endswith(PROJECT):
-        ROOTDIR = i
+    if rootdir is None:
+        raise Exception("Could not find Root Directory!\n" \
+                + "Please set PYTHONPATH variable to project:\n" \
+                + f"Navigate to project root folder and type:\n" \
+                + "export PYTHONPATH=`pwd`")
 
-if ROOTDIR is None:
-    raise Exception("Could not find Root Directory!\n" \
-            + "Please set PYTHONPATH variable to project:\n" \
-            + f"Navigate to folder {PROJECT} and type:\n" \
-            + "export PYTHONPATH=`pwd`")
+    if rootdir not in sys.path:
+        sys.path.append(rootdir)
+
+    return rootdir
+
+ROOTDIR = find_rootdir() 
 
 # Paths
 # Folder to store self-game files,
@@ -37,10 +43,6 @@ for i in [GAMEDIR, RESOURCESDIR, DATASETDIR]:
         print(f"Could not find {i} -- making dir {i}")
         os.makedirs(i) 
 
-
-
-
-SELFPLAY = True
 EXPLORATION = 0.1
 AMPLIFY_RESULT = 100
 
