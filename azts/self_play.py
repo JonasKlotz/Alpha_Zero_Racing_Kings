@@ -8,7 +8,6 @@ import pickle
 from azts import self_match
 from azts.config import *
 
-REPORT_CYCLE = 25 
 
 def unused_filename(i = 0):
     filenumber = i
@@ -26,8 +25,9 @@ def unused_filename(i = 0):
 
 
 class SelfPlay():
-    def __init__(self):
-        self.match = self_match.SelfMatch(RUNS_PER_MOVE)
+    def __init__(self, runs_per_move = RUNS_PER_MOVE):
+        self.match = self_match.SelfMatch(runs_per_move)
+        self.runs_per_move = runs_per_move
 
     def start(self, iterations=10):
         for i in range(iterations):
@@ -39,7 +39,7 @@ class SelfPlay():
             pickle.dump(data, open(filepath, "wb"))
 
             del self.match
-            self.match = self_match.SelfMatch(RUNS_PER_MOVE) 
+            self.match = self_match.SelfMatch(self.runs_per_move) 
 
 
 if __name__ == "__main__":
