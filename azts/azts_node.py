@@ -12,7 +12,7 @@ from azts import state_machine
 from azts import mock_model
 
 from azts.config import WHITE, POS_DTYPE,\
-        EDGE_DTYPE, IDX_DTYPE, SELFPLAY, \
+        EDGE_DTYPE, IDX_DTYPE, \
         AMPLIFY_RESULT, EXPLORATION
 
 # pylint: disable=W0621
@@ -50,9 +50,9 @@ class AztsNode():
     """
 
     # pylint: disable=C0326
-    def __init__(self, statemachine, model, position, color=WHITE):
+    def __init__(self, statemachine, model, color=WHITE):
         """
-        :param StateMachine state_machine: is a state machine that
+        :param StateMachine statemachine: is a state machine that
         translates from tensor indices to fen/uci notation and
         keeps track of state; also translates back to tensor notation
         :param model: trained keras model that does inference on
@@ -64,34 +64,35 @@ class AztsNode():
         """
 
         self.color = color
-
-        self.state_machine = statemachine
+        self.statemachine = statemachine
         self.model = model
-        self.evaluation = 0
-        self.endposition = False
 
-        self.position_shape = position.shape
-        self.position = compress_indices(position)
-
-        self.move_shape = statemachine.move_shape
-        # in selfplay, state machine tracks state
-        # in tournament, we expand the tree independently
-        # and only set state at leafs to a position
-        self.legal_move_indices = \
-            statemachine.get_legal_moves() if SELFPLAY else \
-                statemachine.get_legal_moves_from(position)
-
-        num_of_legal_moves = len(self.legal_move_indices[0])
-        self.children = [None] * num_of_legal_moves
-
-        if num_of_legal_moves == 0:
-            # TODO: probably no sufficient check!
-            # reached end of game
-            result = statemachine.get_rollout_result()
-            self.evaluation = result * self.color * AMPLIFY_RESULT
+        if statemachine.game_over():
+            # game over: this is a leaf node
+            # which represents a decisive state
+            # of the game
             self.endposition = True
 
-        else:
+            result = statemachine.get_result()
+            self.evaluation = result * self.color * AMPLIFY_RESULT
+            self.children = []
+
+        else: 
+            # game still running
+            self.endposition = False
+
+            position = statemachine.get_position() 
+
+            # TODO: do we actually need to store the position?
+            self.position_shape = position.shape
+            self.position = compress_indices(position)
+
+            self.move_shape = statemachine.move_shape
+            self.legal_move_indices = statemachine.get_legal_moves()
+
+            num_of_legal_moves = len(self.legal_move_indices[0])
+            self.children = [None] * num_of_legal_moves 
+
             # expansion of node
             policy, self.evaluation = model.inference(position)
 
@@ -191,7 +192,7 @@ class AztsNode():
         """
         i = np.argmax(self.edges[:, NCOUNT])
         i = self._legal_to_total_index(i)
-        return self.state_machine.move_index_to_fen(i)
+        return self.statemachine.move_index_to_fen(i)
 
     def rollout(self, level=0):
         """
@@ -207,34 +208,16 @@ class AztsNode():
         i = self._index_of_best_move()
         next_node = self.children[i]
 
-        next_position = None
-
         move_idx = self._legal_to_total_index(i)
-        if SELFPLAY:
-            # in self-play, we let the state
-            # machine keep track of every move
-            # to catch move-repetitions as draws
-            # so that we get a realistic data set
-            next_position = self.state_machine.rollout_idx_move(move_idx)
+        self.statemachine.idx_move(move_idx)
 
         evaluation = 0
 
         if next_node is None:
             # terminate recursion
-            # on leaf expansion
-            if not SELFPLAY:
-                # if not in self-play, we do not use
-                # the state machine, because all
-                # the conversions tensor-fen are
-                # quite expensive and evaluation
-                # depends on the model anyways
-                current_position = self._position_as_tensor()
-                next_position = self.state_machine.get_new_position(
-                    current_position, move_idx)
-
-            leaf = AztsNode(self.state_machine,
+            # on leaf expansion 
+            leaf = AztsNode(self.statemachine,
                             self.model,
-                            next_position,
                             self.color)
             evaluation = leaf.evaluation
             self.children[i] = leaf
@@ -252,8 +235,13 @@ class AztsNode():
         self.edges[i][NCOUNT] = count
         self.edges[i][WACCUMVALUE] = accum
 
-        if SELFPLAY and level == 0:
-            self.state_machine.reset_to_actual_game()
+        if level == 0:
+            # after rollout is finished and
+            # all values have been propagated
+            # up, we are back at level 0 and
+            # reset the state machine to this
+            # game state.
+            self.statemachine.reset_to_actual_game()
 
         return evaluation
 
@@ -301,7 +289,7 @@ class AztsNode():
 if __name__ == "__main__":
     statemachine = state_machine.StateMachine()
     mock_model = mock_model.MockModel()
-    node = AztsNode(statemachine, mock_model, statemachine.get_actual_position())
+    node = AztsNode(statemachine, mock_model)
     for i in range(25):
         node.rollout()
 
