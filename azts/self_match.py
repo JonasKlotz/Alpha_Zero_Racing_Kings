@@ -3,6 +3,7 @@ import time
 from azts import player
 from azts import screen
 from Interpreter import game
+from azts import mock_model
 
 from azts.config import *
 
@@ -10,10 +11,11 @@ REPORT_CYCLE = 10
 
 
 class SelfMatch():
-    def __init__(self, runs_per_move = RUNS_PER_MOVE):
+    def __init__(self, runs_per_move=RUNS_PER_MOVE):
         self.players = []
-        self.players.append(player.Player(WHITE, runs_per_move))
-        self.players.append(player.Player(BLACK, runs_per_move))
+        model = mock_model.MockModel()
+        self.players.append(player.Player(WHITE, model, runs_per_move))
+        self.players.append(player.Player(BLACK, model, runs_per_move))
         self.game = game.Game()
         self.screen = screen.Screen()
         self.data_collection = []
@@ -26,58 +28,56 @@ class SelfMatch():
         moves = 1
         time1 = time.time()
         while True:
-            # check break condition: 
+            # check break condition:
             if self.game.is_ended():
                 break
             # select players
-            select = 0 if self.game.get_current_player() else 1 
+            select = 0 if self.game.get_current_player() else 1
             active_player = self.players[select]
             other_player = self.players[1 - select]
-            # handle all moves 
+            # handle all moves
             move = active_player.make_move()
             other_player.receive_move(move)
-            self.game.make_move(move) 
+            self.game.make_move(move)
             # collect data
             self.data_collection.append(active_player.dump_data())
-            
-            # statistics: 
+
+            # statistics:
             # only increment after black move
-            moves += select 
-            self._show_game() 
+            moves += select
+            self._show_game()
             if moves % REPORT_CYCLE == 0 and select:
-                time1 = self._report(time1, moves) 
+                time1 = self._report(time1, moves)
 
         result = self.game.board.result()
         state = self.game.get_game_state()
-        print(f"game ended after {moves} " \
+        print(f"game ended after {moves} "
               + f"moves with {result} ({TO_STRING[state]}).")
         translate = {"*": 0, "1-0": 1, "0-1": -1, "1/2-1/2": 0}
-        score = TRAINING_PAYOFFS[state] 
+        score = TRAINING_PAYOFFS[state]
 
         for i in self.data_collection:
             i[2] = score
 
         return state
 
-
     def _show_game(self):
         if SHOW_GAME:
             img = self.game.render_game()
-            self.screen.show_img(img) 
+            self.screen.show_img(img)
 
     def _report(self, time_before, moves):
         time_now = time.time()
         elapsed = time_now - time_before
         avg_per_move = elapsed / REPORT_CYCLE
-        print(f"played {REPORT_CYCLE} moves in {str(elapsed)[0:5]} " \
-                + f"seconds, average of {str(avg_per_move)[0:4]} " \
+        print(f"played {REPORT_CYCLE} moves in {str(elapsed)[0:5]} "
+              + f"seconds, average of {str(avg_per_move)[0:4]} "
                 + "seconds per move.")
         return time_now
-        
+
 
 if __name__ == "__main__":
     SHOW_GAME = True
     RUNS_PER_MOVE = 10
     match = SelfMatch()
     match.simulate()
-

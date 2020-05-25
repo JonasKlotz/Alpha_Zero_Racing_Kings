@@ -11,6 +11,7 @@ from keras.callbacks import ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
 
+from Model.config import Config
 from lib.timing import timing
 
 
@@ -27,19 +28,24 @@ class AZero:
         remember_model_architecture: makes sure the architecture along with config is saved once
         build_model: builds model
         plot_model: plots the network graph
-        summary: ouputs config parameters and model summary
+        summary: prints config parameters and model summary
     """
 
-    def __init__(self, config):
-
-        assert config is not None, "ERROR! no config provided"
-
-        self.config = config
+    def __init__(self, config_file='Model/config.yaml'):
+        """
+        Args:
+            config_file (str): AlphaZero Model configuration file
+        """
+        self.config = Config(config_file)
         self.build_model()
         self.compile_model()
         self.remember_model_architecture()
         self.initial_epoch = 0
         self.restore_weights()
+
+    def inference(self, input):
+        policy, value = self.model.predict(input[None, :])
+        return policy.squeeze(), value.squeeze()
 
     def train(self, train_data, batch_size=64, epochs=10, initial_epoch=0):
         """ enters the training loop
