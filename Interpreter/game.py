@@ -285,8 +285,8 @@ class Game:
     def get_policy(self):
         """
 
-        :rtype: List of Centipawn Score in same order as movelist
-        :return: Policy as vector
+        :rtype: [[UCI String][Centipawnscore]]
+        :return: Policy as list of lists
         """
         if not self.engine:
             self.engine = chess.engine.SimpleEngine.popen_uci(
@@ -297,29 +297,37 @@ class Game:
         for move in self.get_move_list():
             self.board.push(move)
             info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
-            policy.append(info["score"].relative.score())
+            t = [move.uci(), info["score"].relative.score()]
+            policy.append(t)
             self.board.pop()
 
         return policy
 
 
-def normalize_policy(policy):
-    s = sum(policy)
-    print(s)
-    policy[:] = [x / s for x in policy]
+def normalize_policy(policy, x=-1):
+    """
+    :param policy: policy as from get policy
+    :param x: value how many values of the policy you want to keep
+    :return: sorted normalized cut policy
+    """
+    policy.sort(key=lambda x: x[1], reverse=True)  # sort policy
+    if x > 0:
+        policy = policy[:x]
+    s = sum(row[1] for row in policy)
+    for i in range(len(policy)):
+        policy[i][1] /= s
+
     return policy
 
 
-def policy_to_tensor(norm, uci_list):
-    assert len(norm) == len(uci_list)
-
+def policy_to_tensor(policy):
+    """
+    :param policy: policy as from get_policy
+    :return: tensor regarding the policy
+    """
     tensor = np.zeros((8, 8, 64)).astype(DATATYPE)
-    for i in range(len(uci_list)):
-        uci = uci_list[i];
-        prob = norm[i]
+    for uci, prob in policy:
         index = move_to_tensor_indices(uci)
-        print(index)
-        # tensor[index] = prob
         tensor[index[0], index[1], index[2]] = prob
 
     return tensor
@@ -341,11 +349,11 @@ TODO:
 """
 if __name__ == "__main__":
     game = Game()
-    print(game.get_move_list()[0])
     policy = game.get_policy()
-    policy.sort()
-    print(policy[0])
-    norm = normalize_policy(policy)
-    print(norm[0])
-    print(sum(norm))
-    tensor = policy_to_tensor(norm, game.get_moves_observation())
+    print(policy)
+    policy.sort(key=lambda x: x[1], reverse=True)
+    print(policy)
+    norm = normalize_policy(policy, 5)
+    print(norm)
+
+    tensor = policy_to_tensor(policy)
