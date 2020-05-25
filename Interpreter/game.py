@@ -2,6 +2,7 @@ import sys
 from copy import copy
 import io
 import random
+import numpy as np
 
 import chess  # pip install python-chess
 import chess.variant
@@ -12,6 +13,7 @@ import chess.svg
 from cairosvg import svg2png
 from PIL import Image
 
+from Interface.TensorNotation import DATATYPE, move_to_tensor_indices
 from azts.config import *
 
 
@@ -19,7 +21,7 @@ class Game:
     # pylint: disable=too-many-instance-attributes
     # Eight is reasonable in this case.
     std_fen = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
-    engine = None  # TODO does not belong in this class
+    engine = None
     move_count = 0
     history = None  # Dict containing key : fen, value 0-3 for threefold repetition
 
@@ -51,7 +53,7 @@ class Game:
         self.history[self.std_fen] = 1
         return self
 
-    def update(self, board):
+    def update(self, board):  # TODO: Überarbeiten
         """
         Like reset, but resets the position to whatever was supplied for board
         :param chess.Board board: position to reset to
@@ -63,21 +65,21 @@ class Game:
 
     def get_move_list(self):
         """
-        Returns:
+        :returns:
              list <move> all legal moves
         """
         return list(self.board.legal_moves)
 
     def get_current_player(self):
         """
-        Returns:
+        :Returns:
             int: current player idx
         """
         return self.board.turn  # white true, black false
 
     def get_movelist_size(self):
         """
-        Returns:
+        :Returns:
             int: number of all possible actions
         """
         return len(list(self.board.legal_moves))
@@ -85,9 +87,9 @@ class Game:
     def make_move(self, input):
         """
         must check if king landed on 8 rank
-        Input:
+        :input:
             move: move taken by the current player  SAN Notation
-        Returns:
+        :Returns:
             double: score of current player on the current turn
             int: player who plays in the next turn
         """
@@ -187,7 +189,6 @@ class Game:
         black_finish = self.board.king(False) > 55
         both_finish = white_finish and black_finish
 
-
         if self.get_movelist_size() == 0:
             if both_finish:
                 self.state = DRAW_BY_TWO_WINS
@@ -203,7 +204,7 @@ class Game:
         except:
             # to keep performance, we dont check if self.board.fen
             # is in self.history.keys(). we just try and pass
-            # if it isnt
+            # if it iss
             pass
 
         return self.draw
@@ -264,7 +265,7 @@ class Game:
         try:
             rnd_move = random.choice(moves)
         except:
-            #self.show_game()
+            # self.show_game()
             RuntimeError()
         self.make_move(rnd_move)
 
@@ -282,6 +283,11 @@ class Game:
         self.make_move(result.move)
 
     def get_policy(self):
+        """
+
+        :rtype: List of Centipawn Score in same order as movelist
+        :return: Policy as vector
+        """
         if not self.engine:
             self.engine = chess.engine.SimpleEngine.popen_uci(
                 "Engine/stockfish-x86_64")
@@ -291,13 +297,55 @@ class Game:
         for move in self.get_move_list():
             self.board.push(move)
             info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
-            policy.append(info["score"])
+            policy.append(info["score"].relative.score())
             self.board.pop()
 
         return policy
 
 
+def normalize_policy(policy):
+    s = sum(policy)
+    print(s)
+    policy[:] = [x / s for x in policy]
+    return policy
+
+
+def policy_to_tensor(norm, uci_list):
+    assert len(norm) == len(uci_list)
+
+    tensor = np.zeros((8, 8, 64)).astype(DATATYPE)
+    for i in range(len(uci_list)):
+        uci = uci_list[i];
+        prob = norm[i]
+        index = move_to_tensor_indices(uci)
+        print(index)
+        # tensor[index] = prob
+        tensor[index[0], index[1], index[2]] = prob
+
+    return tensor
+
+
+"""
+tupel 
+    stellung 
+    zugempfehlung(tensor) wie stark? illegal 0
+    policy sucht stärksten zug der gerade dran ist.
+    (8 8 64 für züge) summe = 1 alle für spieler gder gerade dran ist. siehe tensor
+    für jeden zug tensor einheit als index für zug -> zahelnwert eintragen
+    
+    antwort ist tensor mit jedem zug und gewicht + bewertung (float -1 schwarz und 1 weiß gewinnt) normalisiert auf 
+
+TODO:
+
+
+"""
 if __name__ == "__main__":
     game = Game()
     print(game.get_move_list()[0])
-    print(game.get_policy()[0])
+    policy = game.get_policy()
+    policy.sort()
+    print(policy[0])
+    norm = normalize_policy(policy)
+    print(norm[0])
+    print(sum(norm))
+    tensor = policy_to_tensor(norm, game.get_moves_observation())
