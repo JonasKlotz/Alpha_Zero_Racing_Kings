@@ -281,22 +281,23 @@ class Game:
         result = self.engine.play(self.board, chess.engine.Limit(time=limit))
         self.make_move(result.move)
 
+    def get_policy(self):
+        if not self.engine:
+            self.engine = chess.engine.SimpleEngine.popen_uci(
+                "Engine/stockfish-x86_64")
+
+        policy = []
+
+        for move in self.get_move_list():
+            self.board.push(move)
+            info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
+            policy.append(info["score"])
+            self.board.pop()
+
+        return policy
+
 
 if __name__ == "__main__":
-    score = [0] * 3
-    for i in range(50):
-        game = Game()
-        while not game.is_ended():
-            try:
-                # game.play_stockfish(0.01)
-                game.play_random_move()
-            except:
-                #game.show_game()
-                print("Fail")
-                break
-        s = game.get_score(1)
-        print("s ", s)
-        score[int(s * 2)] += 1
-    game.show_game()
-    print(score)
-    game.engine.close()
+    game = Game()
+    print(game.get_move_list()[0])
+    print(game.get_policy()[0])
