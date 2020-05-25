@@ -1,3 +1,5 @@
+# pylint: disable=E0401
+# pylint: disable=E0602
 import multiprocessing
 import os.path
 import pickle
@@ -18,20 +20,20 @@ parser = argparse.ArgumentParser(description = \
         + "a print message with details before the " \
         + "script terminates.")
 parser.add_argument("-p", "--num_of_parallel_processes", \
-        type = int, default = 2,
-        help = "choose number of processes which generate " \
+        type=int, default=2,
+        help="choose number of processes which generate " \
         + "games. The number of your CPU cores is a good " \
         + "starting point. Defaults to 2")
 parser.add_argument("-g", "--num_of_games_per_process", \
-        type = int, default = 10, \
-        help = "number of games to be created by each " \
+        type=int, default=10, \
+        help="number of games to be created by each " \
         + "process. Defaults to 10")
 parser.add_argument("-r", "--rollouts_per_move", \
-        type = int, default = 100, help = "number of " \
+        type=int, default=100, help="number of " \
         + "rollouts that the engine performs while " \
         + "determinating a single move. Defaults to 100.")
-parser.add_argument("--fork_method", type = str, \
-        default = "spawn", help = "depending on operating " \
+parser.add_argument("--fork_method", type=str, \
+        default="spawn", help="depending on operating " \
         + "system, different fork methods are valid for " \
         + "multithreading. \"spawn\" has apparently the " \
         + "widest compatibility. Other options are "\
@@ -65,6 +67,7 @@ def unused_filename(num_of_games):
 
 
 if __name__ == "__main__":
+    # pylint: disable=C0103
 
     # according to
     # https://docs.python.org/3/library/multiprocessing.html
@@ -114,4 +117,7 @@ if __name__ == "__main__":
             + f"with {len(test_load[0])} entries of type\n" \
             + f"{type(test_load[0][0])}, {type(test_load[0][1])}, " \
             + f"{type(test_load[0][2])}.")
+    # pylint: enable=C0103
 
+# pylint: enable=E0401
+# pylint: enable=E0602

@@ -1,3 +1,4 @@
+# pylint: disable=C0116
 import pytest
 from azts import player
 
@@ -99,3 +100,4 @@ def test_won_dont_accept_illegal_move(win_position):
     move = "a2c7"
     with pytest.raises(Exception):
         win_position.receive_move(move)
+# pylint: enable=C0116

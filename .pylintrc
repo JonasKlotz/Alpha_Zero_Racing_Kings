@@ -140,6 +140,7 @@ disable=print-statement,
         exception-escape,
         comprehension-escape,
         unsubscriptable-object, # pylint gets confused by numpy indexing
+        unused-wildcard-import,          # enum types etc from config
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
