@@ -157,9 +157,9 @@ class Game:
         """
         won = self.board.is_variant_win()
         if won:
-            if self.get_score() == "1-0":
+            if self.board.result() == "1-0":
                 self.state = WHITE_WINS
-            if self.get_score() == "0-1":
+            if self.board.result() == "0-1":
                 self.state = BLACK_WINS
         return won
 
@@ -208,23 +208,6 @@ class Game:
             pass
 
         return self.draw
-
-    def get_score(self, player):  # 0 for black, 1 for white
-        """
-        Input:
-            player: current player
-        Returns:
-            1, 0 or 1/2 if the game is over, depending on the player.
-            Otherwise, the result is undetermined: *.
-        """
-        res = self.board.result()
-        if res == '*':
-            print("not Ended")
-            return None
-        if res == "1/2-1/2":
-            return 0.5
-        res = res.split('-')
-        return float(res[player])
 
     def clone(self):
         """
@@ -303,10 +286,27 @@ class Game:
 
         return policy
 
+    def get_score(self):
+        """
+
+        :return: returns winning probabilty in intervall between -1,1
+        """
+        if not self.engine:
+            self.engine = chess.engine.SimpleEngine.popen_uci(
+                "Engine/stockfish-x86_64")
+
+        info = self.engine.analyse(self.board, chess.engine.Limit(time=0.1))
+        centipawn = info["score"].relative.score() / 100
+        # calculate winning probability
+        # https://www.chessprogramming.org/Pawn_Advantage,_Win_Percentage,_and_Elo
+        winning_probability = 1 / (1 + pow(10, -centipawn / 4))
+        winning_probability = (winning_probability - 0.5) * 2.  # scale to [-1, 1]
+        return winning_probability
+
 
 def normalize_policy(policy, x=-1):
     """
-    :param policy: policy as from get policy
+    :param policy: policy as from game.get_policy
     :param x: value how many values of the policy you want to keep
     :return: sorted normalized cut policy
     """
@@ -322,7 +322,7 @@ def normalize_policy(policy, x=-1):
 
 def policy_to_tensor(policy):
     """
-    :param policy: policy as from get_policy
+    :param policy: policy as from game.get_policy
     :return: tensor regarding the policy
     """
     tensor = np.zeros((8, 8, 64)).astype(DATATYPE)
@@ -350,10 +350,17 @@ TODO:
 if __name__ == "__main__":
     game = Game()
     policy = game.get_policy()
-    print(policy)
     policy.sort(key=lambda x: x[1], reverse=True)
-    print(policy)
     norm = normalize_policy(policy, 5)
-    print(norm)
 
     tensor = policy_to_tensor(policy)
+
+    print(game.get_scoring())
+    # game.make_move(policy[3][0])
+    # print(game.get_scoring())
+
+    while not game.is_ended():
+        game.play_stockfish()
+        print(game.get_scoring())
+
+    game.show_game()
