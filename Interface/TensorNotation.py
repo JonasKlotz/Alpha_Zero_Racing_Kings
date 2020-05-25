@@ -322,14 +322,33 @@ def move_from_two_tensors(from_tensor, to_tensor):
 
     diff = np.subtract(converted_from_tensor[:, :, :10], to_tensor[:, :, :10])
     from_index = np.argwhere(diff == 1)
-    to_index = np.argwhere(diff == -1)
 
-    print(diff)
+    try:
+        if np.iinfo(diff.dtype).min == 0:
+            to_index = np.argwhere(diff == np.iinfo(diff.dtype).max)
+        else:
+            to_index = np.argwhere(diff == -1)
+    except ValueError:
+        to_index = np.argwhere(diff == -1)
 
-    print(from_index)
-    print(to_index)
+    if 2 >= from_index.shape[0] >= 1 and to_index.shape[0] == 1:
+        if from_index[0][2] != to_index[0][2]:
+            from_index = np.delete(from_index, 0, 0)
+        else:
+            from_index = np.delete(from_index, 1, 0)
+        uci = chr(ord("A") + from_index[0][1]).lower() + str(8 - from_index[0][0])
+        uci += chr(ord("A") + to_index[0][1]).lower() + str(8 - to_index[0][0])
+        return uci
 
-    uci = chr(ord("A") + from_index[0][1]).lower() + str(8 - from_index[0][0])
-    uci += chr(ord("A") + to_index[0][1]).lower() + str(8 - to_index[0][0])
+    if from_index.shape[0] == 0 and to_index.shape[0] == 0:
+        print("No piece moved")
+        return None
 
+    if from_index.shape[0] > 1 and to_index.shape[0] > 1:
+        print("More than 1 piece moved")
+        return None
+
+
+def move_from_two_fen(from_fen, to_fen):
+    uci = ""
     return uci
