@@ -294,7 +294,6 @@ class Game:
 
     def get_score(self):
         """
-        #TODO: FIX Error if game won, or function doesnt wait
         :return: returns winning probabilty in intervall between -1,1
         """
         if not self.engine:
@@ -302,7 +301,7 @@ class Game:
                 "Engine/stockfish-x86_64")
 
         try:
-            info = self.engine.analyse(self.board, chess.engine.Limit(time=0.00001))
+            info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
             centipawn = info["score"].white().score(mate_score=100000) / 100
             # calculate winning probability
             # https://www.chessprogramming.org/Pawn_Advantage,_Win_Percentage,_and_Elo
