@@ -279,36 +279,46 @@ class Game:
 
         for move in self.get_move_list():
             self.board.push(move)
-            info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
-            t = [move.uci(), info["score"].relative.score()]
-            policy.append(t)
+
+            try:
+                info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
+                t = [move.uci(), info["score"].white().score(mate_score=100000)]
+                policy.append(t)
+            except:
+                print("move is null", move.uci())
+                t = [move.uci(), 0]
+
             self.board.pop()
 
         return policy
 
     def get_score(self):
         """
-
+        #TODO: FIX Error if game won, or function doesnt wait
         :return: returns winning probabilty in intervall between -1,1
         """
         if not self.engine:
             self.engine = chess.engine.SimpleEngine.popen_uci(
                 "Engine/stockfish-x86_64")
 
-        info = self.engine.analyse(self.board, chess.engine.Limit(time=0.1))
-        centipawn = info["score"].relative.score() / 100
-        # calculate winning probability
-        # https://www.chessprogramming.org/Pawn_Advantage,_Win_Percentage,_and_Elo
-        winning_probability = 1 / (1 + pow(10, -centipawn / 4))
-        winning_probability = (winning_probability - 0.5) * 2.  # scale to [-1, 1]
-        return winning_probability
+        try:
+            info = self.engine.analyse(self.board, chess.engine.Limit(time=0.00001))
+            centipawn = info["score"].white().score(mate_score=100000) / 100
+            # calculate winning probability
+            # https://www.chessprogramming.org/Pawn_Advantage,_Win_Percentage,_and_Elo
+            winning_probability = 1 / (1 + pow(10, -centipawn / 4))
+            winning_probability = (winning_probability - 0.5) * 2.  # scale to [-1, 1]
+            return winning_probability
+        except:
+            print(self.board)
+            raise RuntimeError("coudlt calculate probability")  # TODO: LOGG
 
 
 def normalize_policy(policy, x=-1):
     """
     :param policy: policy as from game.get_policy
     :param x: value how many values of the policy you want to keep
-    :return: sorted normalized cut policy
+    :return: sorted normalized cut policy between [0,1]
     """
     policy.sort(key=lambda x: x[1], reverse=True)  # sort policy
     if x > 0:
@@ -333,34 +343,23 @@ def policy_to_tensor(policy):
     return tensor
 
 
+# game.make_move(policy[3][0])
+# print(game.get_scoring())
+game = Game()
+i = 0
+
+while not game.is_ended():
+    game.play_random_move()
+    game.get_score()
+    print(game.get_score(), i)
+    i += 1
+
+game.show_game()
 """
-tupel 
-    stellung 
-    zugempfehlung(tensor) wie stark? illegal 0
-    policy sucht stärksten zug der gerade dran ist.
-    (8 8 64 für züge) summe = 1 alle für spieler gder gerade dran ist. siehe tensor
-    für jeden zug tensor einheit als index für zug -> zahelnwert eintragen
-    
-    antwort ist tensor mit jedem zug und gewicht + bewertung (float -1 schwarz und 1 weiß gewinnt) normalisiert auf 
+asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
+asyncio.run(main())
 
-TODO:
-
-
+except:
+print()
+print("Unexpected error:", sys.exc_info()[0])
 """
-if __name__ == "__main__":
-    game = Game()
-    policy = game.get_policy()
-    policy.sort(key=lambda x: x[1], reverse=True)
-    norm = normalize_policy(policy, 5)
-
-    tensor = policy_to_tensor(policy)
-
-    print(game.get_scoring())
-    # game.make_move(policy[3][0])
-    # print(game.get_scoring())
-
-    while not game.is_ended():
-        game.play_stockfish()
-        print(game.get_scoring())
-
-    game.show_game()
