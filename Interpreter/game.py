@@ -13,7 +13,7 @@ import chess.svg
 from cairosvg import svg2png
 from PIL import Image
 
-from Interface.TensorNotation import DATATYPE, move_to_tensor_indices
+from Interface.TensorNotation import DATATYPE, move_to_tensor_indices, tensor_to_fen
 from azts.config import *
 
 
@@ -312,6 +312,22 @@ class Game:
             print(self.board)
             raise RuntimeError("coudlt calculate probability")  # TODO: LOGG
 
+    def get_evaluation(self):
+        """
+        :return: int with position evaluation score
+        """
+
+        if not self.engine:
+            self.engine = chess.engine.SimpleEngine.popen_uci(
+                "Engine/stockfish-x86_64")
+
+        try:
+            info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
+            centipawn = info["score"].white().score(mate_score=100000) #/ 100
+            return centipawn
+        except:
+            print(self.board)
+            raise RuntimeError("coudlt calculate evaluation score")  # TODO: LOGG
 
 def normalize_policy(policy, x=-1):
     """
@@ -328,6 +344,27 @@ def normalize_policy(policy, x=-1):
 
     return policy
 
+def evaluate_position(position):
+    """
+    :param np.array: current game position
+        in tensor notation
+    :return: int with position evaluation score
+    """
+    g = Game()
+    g.board = tensor_to_fen(position)
+    return g.get_evaluation()
+
+def get_policy_from_position(position):
+    """
+    Returns normalized policy for a given position in tensor notation
+    :param position: np.array: current game position
+        in tensor notation
+    :return: normalized policy tensor
+    """
+    g = Game()
+    g.board = tensor_to_fen(position)
+    return policy_to_tensor(normalize_policy(g.get_policy()))
+
 
 def policy_to_tensor(policy):
     """
@@ -341,19 +378,18 @@ def policy_to_tensor(policy):
 
     return tensor
 
-
+if __name__ == "__main__":
 # game.make_move(policy[3][0])
 # print(game.get_scoring())
-game = Game()
-i = 0
+    game = Game()
+    i = 0
+    while not game.is_ended():
+        game.play_random_move()
+        game.get_score()
+        print(game.get_score(), i)
+        i += 1
 
-while not game.is_ended():
-    game.play_random_move()
-    game.get_score()
-    print(game.get_score(), i)
-    i += 1
-
-game.show_game()
+    game.show_game()
 """
 asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
 asyncio.run(main())
