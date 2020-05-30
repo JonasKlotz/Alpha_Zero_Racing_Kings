@@ -184,12 +184,30 @@ class AztsNode():
         policy_tensor[self.legal_move_indices] = policy_weights
         return policy_tensor
 
-    def get_move(self):
+    def get_move(self, heat = 1):
         """
         :return: best move according to current state of
         tree search in fen notation
         :rtype: str
         """
+        distribution = self.edges[:, NCOUNT] / max(self.edges[:, NCOUNT].sum(), 1)
+        if heat != 1:
+            distribution = np.power(distribution, 1 / heat)
+            distribution /= distribution.sum()
+
+        order = distribution.argsort()
+        draw = np.random.rand(1)[0]
+        category = 0
+
+        # going through the distribution from smallest to
+        # largest value
+        for i in order:
+            category += distribution[i]
+            if draw < category:
+                # select this move.
+                return self._legal_to_total_index(i)
+
+        # something went wrong: return best move 
         i = np.argmax(self.edges[:, NCOUNT])
         i = self._legal_to_total_index(i)
         return self.statemachine.move_index_to_fen(i)
