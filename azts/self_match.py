@@ -29,9 +29,9 @@ class SelfMatch():
     move
     '''
 
-    def __init__(self, runs_per_move=RUNS_PER_MOVE):
+    def __init__(self, model, runs_per_move=RUNS_PER_MOVE):
         self.players = []
-        model = mock_model.MockModel()
+        # model = mock_model.MockModel()
         self.players.append(player.Player(WHITE, model, runs_per_move))
         self.players.append(player.Player(BLACK, model, runs_per_move))
         self.game = game.Game()
@@ -117,7 +117,7 @@ class SelfMatch():
 if __name__ == "__main__":
     SHOW_GAME = True
     RUNS_PER_MOVE = 10
-    match = SelfMatch()
+    match = SelfMatch(mock_model.MockModel())
     match.simulate()
 
 # pylint: enable=E0401

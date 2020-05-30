@@ -1,4 +1,4 @@
-""" 
+"""
 Usage:
     from lib.logger import get_logger
     log = get_logger(__name__)
@@ -13,7 +13,7 @@ import logging
 
 
 # config
-_LOG_DIR = "logs"
+LOG_DIR = "logs"
 _LOG_FILE_FMT = "%Y-%m-%d_%H.%M.%S.log"
 
 _LOG_FMT = '%(asctime)s %(levelname)s @ %(name)s : %(message)s'
@@ -23,8 +23,8 @@ _LOG_STDOUT = True
 
 
 # setup
-if not os.path.isdir(_LOG_DIR):
-    os.mkdir(_LOG_DIR)
+if not os.path.isdir(LOG_DIR):
+    os.mkdir(LOG_DIR)
 
 
 def file_handler(file):
@@ -35,7 +35,7 @@ def file_handler(file):
     return handler
 
 
-__LOG_FILE = os.path.join(_LOG_DIR, time.strftime(_LOG_FILE_FMT))
+__LOG_FILE = os.path.join(LOG_DIR, time.strftime(_LOG_FILE_FMT))
 __LOG_FORMATTER = logging.Formatter(_LOG_FMT, datefmt=_LOG_DATEFMT)
 
 __LOG_STREAM_HANDLER = logging.StreamHandler(sys.stdout)
