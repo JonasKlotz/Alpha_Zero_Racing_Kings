@@ -119,7 +119,13 @@ class AztsNode():
                          + f"\t{metrics[0]} normal tree nodes\n" \
                          + f"\t{metrics[4]} was maximal tree depth\n" \
                          + f"\t{str(avg_num_of_move_possibilities)[0:5]}" \
-                         + " was average number of move possibilities per move"
+                         + " was average number of move possibilities per move\n\n" \
+                         + "Move statistics:\n"
+        move_stats = self._get_distribution_statistics()
+        for i in move_stats.keys():
+            filler = "\t\t" if "move" in i else "\t"
+            distr_metric = f"\t{i}:{filler}{str(move_stats[i])[0:5]}\n"
+            metric_string += distr_metric 
 
         return tree_string + metric_string
 
