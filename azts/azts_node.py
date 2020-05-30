@@ -205,7 +205,8 @@ class AztsNode():
             category += distribution[i]
             if draw < category:
                 # select this move.
-                return self._legal_to_total_index(i)
+                move = self._legal_to_total_index(i)
+                return self.statemachine.move_index_to_fen(move)
 
         # something went wrong: return best move 
         i = np.argmax(self.edges[:, NCOUNT])
