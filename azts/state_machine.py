@@ -212,6 +212,16 @@ class StateMachine():
         '''
         return self.actual_game.is_ended()
 
+    def get_state(self):
+        '''
+        check state of rollout game according
+        to enum type in config
+        :return int: running, white win, black win,
+        draw, draw by stale mate, draw by repetition,
+        draw by two wins
+        '''
+        return self.rollout_game.get_game_state()
+
     def get_actual_state(self):
         '''
         check state of actual game according

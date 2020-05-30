@@ -13,8 +13,8 @@ from azts import mock_model
 
 from azts.config import WHITE, POS_DTYPE,\
         EDGE_DTYPE, IDX_DTYPE, \
-        AMPLIFY_RESULT, EXPLORATION
-
+        AMPLIFY_RESULT, EXPLORATION, \
+        ROLLOUT_PAYOFFS
 # pylint: disable=W0621
 # index of values that get stored
 # in each edge
@@ -50,7 +50,8 @@ class AztsNode():
     """
 
     # pylint: disable=C0326
-    def __init__(self, statemachine, model, color=WHITE):
+    def __init__(self, statemachine, model, color=WHITE,
+            exploration=EXPLORATION, payoffs=ROLLOUT_PAYOFFS):
         """
         :param StateMachine statemachine: is a state machine that
         translates from tensor indices to fen/uci notation and
@@ -66,6 +67,7 @@ class AztsNode():
         self.color = color
         self.statemachine = statemachine
         self.model = model
+        self.payoffs = payoffs
 
         if statemachine.game_over():
             # game over: this is a leaf node
@@ -73,8 +75,8 @@ class AztsNode():
             # of the game
             self.endposition = True
 
-            result = statemachine.get_result()
-            self.evaluation = result * self.color * AMPLIFY_RESULT
+            state = statemachine.get_state()
+            self.evaluation = self.payoffs[self.color][state]
             self.children = []
 
         else: 

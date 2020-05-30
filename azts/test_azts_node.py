@@ -10,7 +10,8 @@ from azts import azts_node
 from azts import state_machine
 from azts import mock_model
 
-from azts.config import BLACK, AMPLIFY_RESULT, WHITE
+from azts.config import BLACK, ROLLOUT_PAYOFFS, WHITE, \
+        BLACK_WINS, WHITE_WINS
 
 TEST_INDICES = (np.array([1, 4, 4, 2, 1]), \
         np.array([1, 0, 0, 1, 3]), \
@@ -175,10 +176,10 @@ def test_rollout_start_position_after_set_board(stale_node):
     assert stale_node.statemachine.rollout_game.board.fen() == STALE_MATE 
 
 def test_win_evaluation_black(win_node):
-    assert win_node.evaluation == AMPLIFY_RESULT
+    assert win_node.evaluation == ROLLOUT_PAYOFFS[BLACK][BLACK_WINS]
 
 def test_lose_evaluation_white(lose_node):
-    assert lose_node.evaluation == -AMPLIFY_RESULT
+    assert lose_node.evaluation == ROLLOUT_PAYOFFS[WHITE][BLACK_WINS]
 
 # pylint: enable=E0401
 # pylint: enable=E0602
