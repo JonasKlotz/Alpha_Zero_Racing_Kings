@@ -169,6 +169,53 @@ class AztsNode():
         repstr = "node, {:0.3f}\n".format(self.evaluation) + repstr
         return metrics, repstr
 
+    def _get_tree_statistics(self):
+        '''
+        get information about the current state of the rollout tree
+        :return dict: dictionary containing several kpis
+        '''
+        metrics, _ = self._print_tree(0)
+
+        num_of_nodes = metrics[0] + metrics[1] + metrics[2]
+        avg_legal_moves = metrics[5] / num_of_nodes
+        tree_overflow = metrics[3] != 0
+        
+        stats = {"tree overflow": tree_overflow, \
+                "number of nodes": num_of_nodes, \
+                "leaf nodes": metrics[1], \
+                "end positions": metrics[2], \
+                "normal tree nodes": metrics[0], \
+                "maximal tree depth": metrics[4], \
+                "avg num of legal moves per pos": avg_legal_moves} 
+        
+        return stats
+
+    def _get_distribution_statistics(self, heat = 1):
+
+        move_distribution = self.get_move_distribution(heat) 
+        stats = {}
+
+        for i in ["first", "second", "third", "fourth"]:
+            j = i + " rating"
+            k = i + " move"
+            select = move_distribution.argmax()
+            stats[j] = move_distribution[select] 
+            move_index = self._legal_to_total_index(select)
+            move = self.statemachine.move_index_to_fen(move_index)
+            stats[k] = move
+            move_distribution[select] = 0
+
+        stats["rest rating"] = move_distribution.sum() 
+        return stats
+    
+    def get_move_statistics(self, heat = 1):
+        stats = {}
+        stats["tree"] = self._get_tree_statistics()
+        stats["move distribution"] = self._get_distribution_statistics(heat) 
+
+        return stats
+
+
     def get_policy_tensor(self):
         """
         :return: tensor with distributions from
