@@ -13,8 +13,7 @@ from azts import mock_model
 
 from azts.config import WHITE, POS_DTYPE,\
         EDGE_DTYPE, IDX_DTYPE, \
-        AMPLIFY_RESULT, EXPLORATION, \
-        ROLLOUT_PAYOFFS
+        EXPLORATION, ROLLOUT_PAYOFFS
 # pylint: disable=W0621
 # index of values that get stored
 # in each edge
@@ -50,8 +49,12 @@ class AztsNode():
     """
 
     # pylint: disable=C0326
-    def __init__(self, statemachine, model, color=WHITE,
-            exploration=EXPLORATION, payoffs=ROLLOUT_PAYOFFS):
+    def __init__(self, \
+            statemachine, \
+            model, \
+            color=WHITE, \
+            exploration=EXPLORATION, \
+            payoffs=ROLLOUT_PAYOFFS):
         """
         :param StateMachine statemachine: is a state machine that
         translates from tensor indices to fen/uci notation and
@@ -68,6 +71,7 @@ class AztsNode():
         self.statemachine = statemachine
         self.model = model
         self.payoffs = payoffs
+        self.exploration = exploration
 
         if statemachine.game_over():
             # game over: this is a leaf node
@@ -309,9 +313,12 @@ class AztsNode():
         if next_node is None:
             # terminate recursion
             # on leaf expansion 
-            leaf = AztsNode(self.statemachine,
-                            self.model,
-                            self.color)
+            leaf = AztsNode(statemachine=self.statemachine, \
+                            model=self.model, \
+                            color=self.color, \
+                            exploration=self.exploration, \
+                            payoffs=self.payoffs) 
+
             evaluation = leaf.evaluation
             self.children[i] = leaf
 
@@ -345,7 +352,7 @@ class AztsNode():
         """
 
         U = self.edges[:, PPRIOR] / (self.edges[:, NCOUNT] + 1)
-        U *= EXPLORATION
+        U *= self.exploration
         Q = self.edges[:, QMEANVALUE]
         best_move_index = (Q + U).argmax()
 

@@ -44,7 +44,7 @@ for i in [GAMEDIR, RESOURCESDIR, DATASETDIR]:
         os.makedirs(i) 
 
 EXPLORATION = 0.1
-AMPLIFY_RESULT = 100
+HEAT = 1
 
 # Misc
 RUNS_PER_MOVE = 10  # Sets the number of azts runs

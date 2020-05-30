@@ -20,8 +20,8 @@ from azts import state_machine
 from azts import azts_node
 from azts import mock_model
 
-from azts.config import *
-
+from azts.config import WHITE, RUNS_PER_MOVE, \
+        EXPLORATION, ROLLOUT_PAYOFFS, HEAT
 
 
 class AztsTree():
@@ -31,17 +31,27 @@ class AztsTree():
     :param str position: Game state in FEN-notation
     or None.
     """
-    def __init__(self,
-                 statemachine,
-                 model,
-                 color,
-                 runs_per_move=10):
+    def __init__(self, \
+                 statemachine, \
+                 model, \
+                 color=WHITE, \
+                 exploration=EXPLORATION, \
+                 payoffs=ROLLOUT_PAYOFFS, \
+                 runs_per_move=RUNS_PER_MOVE, \
+                 heat=HEAT):
 
         self.color = color
 
         self.statemachine = statemachine
         self.model = model
         self.runs_per_move = runs_per_move
+
+        # for initialising azts nodes:
+        self.exploration = exploration
+        self.payoffs = payoffs
+
+
+
         self._init_tree()
 
     def _init_tree(self):
@@ -51,9 +61,12 @@ class AztsTree():
         after every move if tree is
         not reused
         '''
-        self.root = azts_node.AztsNode(self.statemachine, \
-                         self.model, \
-                         self.color)
+        self.root = azts_node.AztsNode(\
+                statemachine=self.statemachine, \
+                model=self.model, \
+                color=self.color, \
+                exploration=self.exploration, \
+                payoffs=self.payoffs)
 
     def __str__(self):
         return self.root.__str__()
