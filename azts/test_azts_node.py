@@ -106,6 +106,11 @@ def test_correct_number_of_nodes_in_tree(rollout_node):
 def test_move_distribution_adds_up_to_one(rollout_node):
     assert np.isclose(rollout_node.get_move_distribution().sum(), 1)
 
+def test_move_distribution_prioritizes_correct_move(rollout_node):
+    best_move_from_distribution = np.argmax(rollout_node.get_move_distribution())
+    best_move_from_edges = np.argmax(rollout_node.edges[:, 1])
+    assert best_move_from_distribution == best_move_from_edges 
+
 def test_actual_game_position_is_still_set_after_rollout(rollout_node):
     assert rollout_node.statemachine.actual_game.board.fen() == FIRST_STATE
 
