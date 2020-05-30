@@ -12,7 +12,7 @@ from azts.config import *
 
 import lib.timing
 from lib.logger import get_logger
-log = get_logger(__name__)
+log = get_logger("self_play")
 
 
 def unused_filename(i=0):
@@ -79,20 +79,17 @@ class SelfPlay():
 
 if __name__ == "__main__":
 
-    import os
-
     MAX_RUNS = 4
     SP_LENGTH = 4
 
     from Model.model import AZero
-
     model = AZero()
     play = SelfPlay(model)
 
-    passed_half = False
+    half_dataset_done = False
     # Generate
     for i in range(MAX_RUNS):
-        if passed_half:  # expects new model to be ready soon
+        if half_dataset_done:  # expects new model to be ready soon
             start = time.perf_counter()
             log.info("Waiting for newest model")
             while not model.new_model_available():
@@ -105,7 +102,7 @@ if __name__ == "__main__":
         log.info("Beginning Self-play iteration {}/{}, \
             game chunk-size: {}".format(i, MAX_RUNS, SP_LENGTH))
         play.start(SP_LENGTH)
-        passed_half = not passed_half
+        half_dataset_done = not half_dataset_done
 
 
 # pylint: enable=E0401

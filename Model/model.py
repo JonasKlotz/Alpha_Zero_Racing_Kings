@@ -19,7 +19,7 @@ from lib.timing import timing
 from azts.config import DATASETDIR
 
 from lib.logger import get_logger
-log = get_logger(__name__)
+log = get_logger("model")
 
 
 def get_latest_dataset():
