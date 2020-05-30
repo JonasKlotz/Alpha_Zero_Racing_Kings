@@ -91,6 +91,43 @@ class Options(object):
         return out
 
 
+class ModelConfig(Options):
+
+    input_shape = [8, 8, 11]
+    resnet_depth = 9
+
+    residual_block = Options()
+    residual_block.layers = 2
+    residual_block.num_filters = 128
+    residual_block.filter_size = 3
+    residual_block.filter_stride = 1
+    residual_block.activation = 'relu'
+    residual_block.batch_normalization = True
+
+    policy_head = Options()
+
+    policy_head.residual_layer = Options()
+    policy_head.residual_layer.num_filters = 192
+    policy_head.residual_layer.filter_size = 3
+    policy_head.residual_layer.filter_stride = 1
+    policy_head.residual_layer.batch_normalization = True
+
+    policy_head.dense_layer = Options()
+    policy_head.dense_layer.num_filters = 64
+    policy_head.dense_layer.activation = 'relu'
+
+    value_head = Options()
+    value_head.residual_layer = Options()
+    value_head.residual_layer.num_filters = 4
+    value_head.residual_layer.filter_size = 3
+    value_head.residual_layer.filter_stride = 1
+    value_head.residual_layer.batch_normalization = True
+
+    value_head.dense_layer = Options()
+    value_head.dense_layer.num_filters = 256
+    value_head.dense_layer.activation = 'tanh'
+
+
 class Config(Options):
     """ contains the default config settings
     attributes of interest:
@@ -105,9 +142,7 @@ class Config(Options):
 
     data_dir = "_Data"
 
-    model = Options()
-    model.input_shape = [8, 8, 11]
-    model.resnet_depth = 9
+    model = ModelConfig()
 
     model_name = name + \
         '%dv%dr%d' % (model.resnet_depth, config_version, model_revision)
@@ -122,34 +157,3 @@ class Config(Options):
         os.makedirs(self_play_dir)
     if not os.path.exists(train_data_dir):
         os.makedirs(train_data_dir)
-
-    model.residual_block = Options()
-    model.residual_block.layers = 2
-    model.residual_block.num_filters = 128
-    model.residual_block.filter_size = 3
-    model.residual_block.filter_stride = 1
-    model.residual_block.activation = 'relu'
-    model.residual_block.batch_normalization = True
-
-    model.policy_head = Options()
-
-    model.policy_head.residual_layer = Options()
-    model.policy_head.residual_layer.num_filters = 192
-    model.policy_head.residual_layer.filter_size = 3
-    model.policy_head.residual_layer.filter_stride = 1
-    model.policy_head.residual_layer.batch_normalization = True
-
-    model.policy_head.dense_layer = Options()
-    model.policy_head.dense_layer.num_filters = 64
-    model.policy_head.dense_layer.activation = 'relu'
-
-    model.value_head = Options()
-    model.value_head.residual_layer = Options()
-    model.value_head.residual_layer.num_filters = 4
-    model.value_head.residual_layer.filter_size = 3
-    model.value_head.residual_layer.filter_stride = 1
-    model.value_head.residual_layer.batch_normalization = True
-
-    model.value_head.dense_layer = Options()
-    model.value_head.dense_layer.num_filters = 256
-    model.value_head.dense_layer.activation = 'tanh'

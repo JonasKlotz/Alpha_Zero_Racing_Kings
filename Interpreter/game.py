@@ -114,15 +114,19 @@ class Game:
         except:
             raise ValueError(f"move {input} illegal")
 
+    def board_fen_hash(self):
+        return self.board.fen().split(' ')[0]
+
     def after_mode(self, ):
         self.move_count += 1
         self.player_to_move *= -1
 
+        board_fen = self.board_fen_hash()
         try:
-            if self.board.fen() in self.history:
-                self.history[self.board.fen()] += 1
+            if board_fen in self.history:
+                self.history[board_fen] += 1
             else:
-                self.history[self.board.fen()] = 1
+                self.history[board_fen] = 1
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
@@ -187,7 +191,6 @@ class Game:
         black_finish = self.board.king(False) > 55
         both_finish = white_finish and black_finish
 
-
         if self.get_movelist_size() == 0:
             if both_finish:
                 self.state = DRAW_BY_TWO_WINS
@@ -196,10 +199,10 @@ class Game:
             self.end = True
 
         try:
-            if self.history[self.board.fen()] > 2:
+            if self.history[self.board_fen_hash()] > 2:
                 self.state = DRAW_BY_REP
                 self.end = True
-            self.draw |= self.history[self.board.fen()] > 2
+                self.draw = True
         except:
             # to keep performance, we dont check if self.board.fen
             # is in self.history.keys(). we just try and pass
@@ -264,7 +267,7 @@ class Game:
         try:
             rnd_move = random.choice(moves)
         except:
-            #self.show_game()
+            # self.show_game()
             RuntimeError()
         self.make_move(rnd_move)
 
@@ -291,7 +294,7 @@ if __name__ == "__main__":
                 # game.play_stockfish(0.01)
                 game.play_random_move()
             except:
-                #game.show_game()
+                # game.show_game()
                 print("Fail")
                 break
         s = game.get_score(1)
