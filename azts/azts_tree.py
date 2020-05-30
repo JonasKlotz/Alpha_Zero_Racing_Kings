@@ -45,6 +45,7 @@ class AztsTree():
         self.statemachine = statemachine
         self.model = model
         self.runs_per_move = runs_per_move
+        self.heat = heat
 
         # for initialising azts nodes:
         self.exploration = exploration
@@ -94,7 +95,7 @@ class AztsTree():
 
         if self.color == self.statemachine.get_player_color():
             self._tree_search(self.runs_per_move)
-            move = self.root.get_move()
+            move = self.root.get_move(self.heat)
             self.statemachine.actual_fen_move(move)
         else:
             raise Exception("Other players turn")
