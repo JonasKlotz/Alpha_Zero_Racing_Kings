@@ -103,6 +103,9 @@ def test_correct_number_of_nodes_in_tree(rollout_node):
     num_of_nodes = int(tree[idx-2:idx])
     assert num_of_nodes == 11
 
+def test_move_distribution_adds_up_to_one(rollout_node):
+    assert np.isclose(rollout_node.get_move_distribution().sum(), 1)
+
 def test_actual_game_position_is_still_set_after_rollout(rollout_node):
     assert rollout_node.statemachine.actual_game.board.fen() == FIRST_STATE
 
