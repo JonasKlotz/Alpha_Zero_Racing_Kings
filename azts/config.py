@@ -47,7 +47,7 @@ EXPLORATION = 0.1
 AMPLIFY_RESULT = 100
 
 # Misc
-RUNS_PER_MOVE = 1  # Sets the number of azts runs
+RUNS_PER_MOVE = 10  # Sets the number of azts runs
 SHOW_GAME = False  # If True boards will be shown in self_play
 
 # Enum Types representing

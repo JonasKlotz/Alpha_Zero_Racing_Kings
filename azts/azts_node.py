@@ -184,16 +184,35 @@ class AztsNode():
         policy_tensor[self.legal_move_indices] = policy_weights
         return policy_tensor
 
-    def get_move(self, heat = 1):
+    def get_move_distribution(self, heat=1):
+        '''
+        calculates the current move distribution from
+        which the next move is being sampled. Every legal
+        move is being assigned a probability which is determined
+        by the simulations of that move; all move probabilities
+        add up to 1.
+        :param float heat: control explorative behaviour:
+        heat > 1 more exploration (less deterministic)
+        0 < heat < 1 more exploitation
+        :return np.array: distribution of moves; indices in this
+        array correspond to the indices in self.edges and need
+        to be translated to actual moves with _legal_to_total_index
+        '''
+        distribution = self.edges[:, NCOUNT] / max(self.edges[:, NCOUNT].sum(), 1)
+        if heat != 1:
+            heat = max(heat, 0.0001)
+            distribution = np.power(distribution, 1 / heat)
+            distribution /= distribution.sum()
+
+        return distribution
+
+    def get_move(self, heat=1):
         """
         :return: best move according to current state of
         tree search in fen notation
         :rtype: str
         """
-        distribution = self.edges[:, NCOUNT] / max(self.edges[:, NCOUNT].sum(), 1)
-        if heat != 1:
-            distribution = np.power(distribution, 1 / heat)
-            distribution /= distribution.sum()
+        distribution = self.get_move_distribution(heat)
 
         order = distribution.argsort()
         draw = np.random.rand(1)[0]
