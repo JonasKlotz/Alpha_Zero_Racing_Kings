@@ -127,9 +127,15 @@ class AztsNode():
                          + "Move statistics:\n"
         move_stats = self._get_distribution_statistics()
         for i in move_stats.keys():
-            filler = "\t\t" if "move" in i else "\t"
-            distr_metric = f"\t{i}:{filler}{str(move_stats[i])[0:5]}\n"
+            filler = {"move": "\t\t", "score": "\t\t\t", "rating": "\t"}
+            select = i.split(" ")[1]
+            distr_metric = f"\t{i}:{filler[select]}{str(move_stats[i])[0:5]}\n"
             metric_string += distr_metric 
+
+        metric_string += "\n\nNote that the scores change dynamically\n" \
+                + "during rollouts and do not determine\n" \
+                + "the distribution; they rather determine\n" \
+                + "the first move for the next rollout."
 
         return tree_string + metric_string
 
@@ -150,13 +156,15 @@ class AztsNode():
         rep = []
         metrics = (1, 0, 0, 0, level, len(self.children))
         maxlevel = level
+        edge_scores = self._edge_scores()
         for i, j in enumerate(self.children):
             if j:
                 # pylint: disable=W0212
                 child_metrics, string = j._print_tree(level + 1)
+                score = str(edge_scores[i])[0:5]
                 metrics = [k + l for k, l in zip(metrics, child_metrics)]
                 maxlevel = max(maxlevel, child_metrics[4])
-                rep.append(str(i) + ": " + string)
+                rep.append(f"{i}: scored {score}: {string}")
                 # pylint: enable=W0212
 
         metrics[4] = maxlevel
@@ -203,19 +211,26 @@ class AztsNode():
         return stats
 
     def _get_distribution_statistics(self, heat = 1):
+        '''
+        gather information about the move distribution
+        and return it as dictionary
+        '''
 
         move_distribution = self.get_move_distribution(heat) 
+        scores = self._edge_scores()
         stats = {}
 
         for i in ["first", "second", "third", "fourth"]:
             j = i + " rating"
             k = i + " move"
+            l = i + " score"
             select = move_distribution.argmax()
             stats[j] = move_distribution[select] 
             move_index = self._legal_to_total_index(select)
             move = self.statemachine.move_index_to_fen(move_index)
             stats[k] = move
             move_distribution[select] = 0
+            stats[l] = scores[select]
 
         stats["rest rating"] = move_distribution.sum() 
         return stats
@@ -345,17 +360,26 @@ class AztsNode():
 
         return evaluation
 
+    def _edge_scores(self):
+        '''
+        from the four metrics in each edge, calculate
+        a score for each edge. highest score is being
+        selected in rollouts.
+        :return np.array: list of scores whos indices
+        are aligned to self.edges
+        '''
+        U = self.edges[:, PPRIOR] / (self.edges[:, NCOUNT] + 1)
+        U *= self.exploration
+        Q = self.edges[:, QMEANVALUE]
+
+        return Q + U
+
     def _index_of_best_move(self):
         """
         :return: index of best move
         :rtype: int
-        """
-
-        U = self.edges[:, PPRIOR] / (self.edges[:, NCOUNT] + 1)
-        U *= self.exploration
-        Q = self.edges[:, QMEANVALUE]
-        best_move_index = (Q + U).argmax()
-
+        """ 
+        best_move_index = self._edge_scores().argmax()
         return best_move_index
 
     def _legal_to_total_index(self, index):

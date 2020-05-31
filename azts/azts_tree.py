@@ -180,10 +180,10 @@ def set_up(color=WHITE):
     '''
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = AztsTree(statemachine, \
-                model, \
-                color, \
-                200)
+    tree = AztsTree(statemachine=statemachine, \
+                model=model, \
+                color=color, \
+                runs_per_move=200)
 
     np.set_printoptions(suppress=True, precision=3)
 
@@ -202,5 +202,8 @@ if __name__ == "__main__":
     print(f"doing {tree.runs_per_move} rollouts " \
           + f"took {str(time2 - time1)[0:5]} seconds.\n")
     print(f"First move is {first_move}.")
+    print("This might differ from the highest\n" \
+            + "rated move because the actual move\n" \
+            + "is randomly sampled from a distribution.")
     # pylint: enable=C0103
 # pylint: enable=E0401
