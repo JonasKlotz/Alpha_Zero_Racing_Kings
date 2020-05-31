@@ -104,20 +104,23 @@ class SelfPlay():
 
 if __name__ == "__main__":
 
-    model = mock_model.MockModel()
+    from Model.model import AZero
 
     conf_one = config.Config("Player/default_config.yaml") 
+    model_one = AZero(conf_one) 
     player_one = player.Player(name=conf_one.name, \
-            model=model, \
+            model=model_one, \
             **(conf_one.player.as_dictionary()))
 
     conf_two = config.Config("Player/SpryGibbon.yaml")
+    model_two = AZero(conf_two)
     player_two = player.Player(name=conf_two.name, \
-            model=model, \
+            model=model_two, \
             **(conf_two.player.as_dictionary()))
 
     play = SelfPlay(player_one=player_one, \
-            player_two=player_two)
+            player_two=player_two, \
+            show_game=True)
     play.start(3)
 # pylint: enable=E0401
 # pylint: enable=E0602
