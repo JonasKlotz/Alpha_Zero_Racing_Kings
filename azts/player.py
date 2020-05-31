@@ -12,18 +12,6 @@ from azts.config import RUNS_PER_MOVE, WHITE, \
         EXPLORATION, ROLLOUT_PAYOFFS, HEAT, \
         MODEL
 
-
-def load_player(configuration):
-    '''
-    load player with specific configuration
-    :param dict configuration: dictionary
-    containing key-value-pairs to set options
-    of player; keys would be
-    model, color, runs_per_move,
-    exploration, payoffs, heat
-    '''
-    return Player(**configuration)
-
 class Player():
     '''
     Player that keeps track of
