@@ -14,10 +14,11 @@ from azts import player
 from azts import self_match
 from azts import mock_model
 from azts.config import GAMEDIR, \
-        RUNS_PER_MOVE, DEFAULT_PLAYER
+        RUNS_PER_MOVE, DEFAULT_PLAYER, \
+        SHOW_GAME
 
 
-def unused_filename(names, i=0):
+def unused_filename(names, game_id, i=0):
     '''
     function to find the lowest unused
     filename within games folder according
@@ -28,14 +29,15 @@ def unused_filename(names, i=0):
 
     names.sort()
     namestring = names[0] + "-" + names[1]
+    game_name = f"game_{game_id}_{namestring}"
 
     filenumberstring = str(filenumber).zfill(4)
-    filename = f"game_{namestring}_{filenumberstring}.pkl"
+    filename = f"{game_name}_{filenumberstring}.pkl"
     filepath = os.path.join(GAMEDIR, filename)
     while os.path.isfile(filepath):
         filenumber += 1
         filenumberstring = str(filenumber).zfill(4)
-        filename = f"game_{namestring}_{filenumberstring}.pkl"
+        filename = f"{game_name}_{filenumberstring}.pkl"
         filepath = os.path.join(GAMEDIR, filename)
 
     return filepath
@@ -57,10 +59,14 @@ class SelfPlay():
     def __init__(self, \
             player_one, \
             player_two, \
-            runs_per_move=RUNS_PER_MOVE):
+            runs_per_move=RUNS_PER_MOVE, \
+            game_id="game-id", \
+            show_game=SHOW_GAME):
 
         self.players = [player_one, player_two] 
         self.runs_per_move = runs_per_move
+        self.game_id = game_id
+        self.show_game = show_game
 
     def start(self, iterations=10):
         '''
@@ -77,13 +83,15 @@ class SelfPlay():
             match = self_match.SelfMatch(\
                     player_one=self.players[switch], \
                     player_two=self.players[1 - switch], \
-                    runs_per_move=self.runs_per_move) 
+                    runs_per_move=self.runs_per_move, \
+                    show_game=self.show_game)
             match.simulate()
             data = [tuple(j) for j in match.data_collection]
 
             filepath = unused_filename([\
                     self.players[0].name, \
                     self.players[1].name], \
+                    self.game_id, \
                     i)
 
             pickle.dump(data, open(filepath, "wb"))

@@ -34,7 +34,8 @@ class SelfMatch():
     def __init__(self, \
             player_one, \
             player_two, \
-            runs_per_move=RUNS_PER_MOVE):
+            runs_per_move=RUNS_PER_MOVE, \
+            show_game=SHOW_GAME):
 
         self.players = []
 
@@ -48,6 +49,7 @@ class SelfMatch():
         self.data_collection = []
 
         self.training_payoffs = TRAINING_PAYOFFS
+        self.show_game = show_game
 
     def set_game_state(self, fen_state):
         '''
@@ -114,7 +116,7 @@ class SelfMatch():
 
 
     def _show_game(self):
-        if SHOW_GAME:
+        if self.show_game:
             img = self.game.render_game()
             self.screen.show_img(img)
 
