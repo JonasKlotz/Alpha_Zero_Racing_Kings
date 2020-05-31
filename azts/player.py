@@ -130,7 +130,7 @@ if __name__ == "__main__":
             "heat": 0.9}
 
 
-    player = load_player(configuration)
+    player = Player(**configuration)
     print(f"First move of white player is {player.make_move()}.")
     print(player.get_stats())
 # pylint: enable=E0401

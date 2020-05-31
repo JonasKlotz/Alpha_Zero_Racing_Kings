@@ -7,12 +7,19 @@ in a match against each other
 import time
 
 from Interpreter import game
+from azts import mock_model
 from azts import player
 from azts import screen
-from azts.config import *
+from azts.config import ROLLOUT_PAYOFFS, \
+        EXPLORATION, HEAT, BLACK, WHITE, \
+        RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS
 
 REPORT_CYCLE = 10
-
+MODEL = mock_model.MockModel()
+DEFAULT_PLAYER = {"payoffs": ROLLOUT_PAYOFFS, \
+        "exploration": EXPLORATION, \
+        "heat" : HEAT, \
+        "model": MODEL}
 
 class SelfMatch():
     '''
@@ -27,13 +34,25 @@ class SelfMatch():
     of rollouts that each player does per
     move
     '''
-    def __init__(self, runs_per_move=RUNS_PER_MOVE):
+    def __init__(self, \
+            player_one=DEFAULT_PLAYER, \
+            player_two=DEFAULT_PLAYER, \
+            runs_per_move=RUNS_PER_MOVE):
+
         self.players = []
-        self.players.append(player.Player(WHITE, runs_per_move))
-        self.players.append(player.Player(BLACK, runs_per_move))
+
+        player_one["color"] = WHITE
+        self.players.append(player.Player(**player_one))
+        player_two["color"] = BLACK
+        self.players.append(player.Player(**player_two))
+
         self.game = game.Game()
         self.screen = screen.Screen()
         self.data_collection = []
+
+        self.training_payoffs = player_one["training_payoffs"] \
+                if "training_payoffs" in player_one.keys() \
+                else TRAINING_PAYOFFS
 
     def set_game_state(self, fen_state):
         '''
@@ -89,7 +108,7 @@ class SelfMatch():
         state = self.game.get_game_state()
         print(f"game ended after {moves} " \
               + f"moves with {result} ({TO_STRING[state]}).")
-        score = TRAINING_PAYOFFS[state]
+        score = self.training_payoffs[state]
 
         for i in self.data_collection:
             i[2] = score

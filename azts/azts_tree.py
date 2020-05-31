@@ -118,6 +118,7 @@ class AztsTree():
         stats["settings"] = {}
         stats["settings"]["heat"] = self.heat
         stats["settings"]["exploration"] = self.exploration
+        stats["settings"]["color"] = self.color
         return stats
 
 
