@@ -8,7 +8,8 @@ from azts import azts_tree
 from azts import state_machine
 from azts import mock_model
 
-from azts.config import RUNS_PER_MOVE, WHITE
+from azts.config import RUNS_PER_MOVE, WHITE, \
+        EXPLORATION, ROLLOUT_PAYOFFS, HEAT
 
 
 class Player():
@@ -23,13 +24,25 @@ class Player():
     to be made in the alpha zero tree
     search for every move
     '''
-    def __init__(self, color, runs_per_move=RUNS_PER_MOVE):
-        self.statemachine = state_machine.StateMachine()
-        self.model = mock_model.MockModel()
-        self.tree = azts_tree.AztsTree(self.statemachine, \
-                              self.model, \
-                              color, \
-                              runs_per_move)
+    def __init__(self, \
+            model, \
+            color, \
+            runs_per_move=RUNS_PER_MOVE, \
+            exploration=EXPLORATION, \
+            payoffs=ROLLOUT_PAYOFFS, \
+            heat=HEAT):
+
+        # player is actually not keeping any state,
+        # so no need to store statemachine or model
+        # in self
+        statemachine = state_machine.StateMachine()
+        self.tree = azts_tree.AztsTree(statemachine=statemachine, \
+                              model=model, \
+                              color=color, \
+                              runs_per_move=runs_per_move, \
+                              exploration=exploration, \
+                              payoffs=payoffs, \
+                              heat=heat)
 
     def make_move(self):
         '''
@@ -86,6 +99,7 @@ class Player():
 
 
 if __name__ == "__main__":
-    player = Player(WHITE)
+    model = mock_model.MockModel()
+    player = Player(model=model, color=WHITE)
     print(f"First move of white player is {player.make_move()}.")
 # pylint: enable=E0401

@@ -35,9 +35,9 @@ class AztsTree():
                  statemachine, \
                  model, \
                  color=WHITE, \
+                 runs_per_move=RUNS_PER_MOVE, \
                  exploration=EXPLORATION, \
                  payoffs=ROLLOUT_PAYOFFS, \
-                 runs_per_move=RUNS_PER_MOVE, \
                  heat=HEAT):
 
         self.color = color
