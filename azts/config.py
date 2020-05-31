@@ -8,6 +8,8 @@ import sys
 import os.path
 import os 
 
+from azts import mock_model
+
 def find_rootdir():
     rootdir = os.path.split(\
             os.path.dirname(\
@@ -48,7 +50,7 @@ HEAT = 1
 
 # Misc
 RUNS_PER_MOVE = 10  # Sets the number of azts runs
-SHOW_GAME = False  # If True boards will be shown in self_play
+SHOW_GAME = True  # If True boards will be shown in self_play
 
 # Enum Types representing
 # player colors
@@ -93,6 +95,17 @@ TO_STRING = {0: "undefined", \
         DRAW_BY_REP: "draw by repetition", \
         DRAW_BY_STALE_MATE: "draw by stale mate", \
         DRAW_BY_TWO_WINS: "draw by simultaneous finish"}
+
+
+MODEL = mock_model.MockModel()
+DEFAULT_PLAYER = {\
+        "name": "default player", \
+        "azts_settings": {\
+            "payoffs": ROLLOUT_PAYOFFS, \
+            "exploration": EXPLORATION, \
+            "heat" : HEAT, \
+            "model": MODEL} \
+        }
 
 # Data types for size of
 # np.arrays

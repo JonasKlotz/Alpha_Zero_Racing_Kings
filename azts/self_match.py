@@ -13,14 +13,9 @@ from azts import screen
 from azts.config import ROLLOUT_PAYOFFS, \
         EXPLORATION, HEAT, BLACK, WHITE, \
         RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
-        SHOW_GAME
+        SHOW_GAME, DEFAULT_PLAYER
 
 REPORT_CYCLE = 10
-MODEL = mock_model.MockModel()
-DEFAULT_PLAYER = {"payoffs": ROLLOUT_PAYOFFS, \
-        "exploration": EXPLORATION, \
-        "heat" : HEAT, \
-        "model": MODEL}
 
 class SelfMatch():
     '''

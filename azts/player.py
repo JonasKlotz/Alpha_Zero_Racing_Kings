@@ -9,7 +9,8 @@ from azts import state_machine
 from azts import mock_model
 
 from azts.config import RUNS_PER_MOVE, WHITE, \
-        EXPLORATION, ROLLOUT_PAYOFFS, HEAT
+        EXPLORATION, ROLLOUT_PAYOFFS, HEAT, \
+        MODEL
 
 
 def load_player(configuration):
@@ -36,12 +37,13 @@ class Player():
     search for every move
     '''
     def __init__(self, \
-            model, \
             color, \
+            model=MODEL, \
             runs_per_move=RUNS_PER_MOVE, \
             exploration=EXPLORATION, \
             payoffs=ROLLOUT_PAYOFFS, \
-            heat=HEAT):
+            heat=HEAT, \
+            **kwargs):
 
         # player is actually not keeping any state,
         # so no need to store statemachine or model

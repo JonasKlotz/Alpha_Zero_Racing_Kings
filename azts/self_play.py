@@ -8,7 +8,9 @@ import os.path
 import time
 import pickle
 from azts import self_match
-from azts.config import *
+from azts import mock_model
+from azts.config import GAMEDIR, \
+        RUNS_PER_MOVE, DEFAULT_PLAYER
 
 
 def unused_filename(i=0):
@@ -44,8 +46,12 @@ class SelfPlay():
     parallelisation of creating data for many
     matches.
     '''
-    def __init__(self, runs_per_move=RUNS_PER_MOVE):
-        self.match = self_match.SelfMatch(runs_per_move)
+    def __init__(self, \
+            player_one=DEFAULT_PLAYER, \
+            player_two=DEFAULT_PLAYER, \
+            runs_per_move=RUNS_PER_MOVE):
+
+        self.players = [player_one, player_two] 
         self.runs_per_move = runs_per_move
 
     def start(self, iterations=10):
@@ -58,19 +64,40 @@ class SelfPlay():
         to be simulated
         '''
         for i in range(iterations):
-            self.match.simulate()
-            data = [tuple(j) for j in self.match.data_collection]
+            switch = i % 2 
+            print(f"Match {i+1} of {iterations}:")
+            print(f"{self.players[switch]['name']} as WHITE " \
+                    +f"against {self.players[1-switch]['name']} as BLACK")
+            match = self_match.SelfMatch(\
+                    player_one=self.players[switch]["azts_settings"], \
+                    player_two=self.players[1 - switch]["azts_settings"], \
+                    runs_per_move=self.runs_per_move) 
+            match.simulate()
+            data = [tuple(j) for j in match.data_collection]
 
             filepath = unused_filename(i)
 
             pickle.dump(data, open(filepath, "wb"))
 
-            del self.match
-            self.match = self_match.SelfMatch(self.runs_per_move) 
+            del match
+
 
 
 if __name__ == "__main__":
-    play = SelfPlay()
+
+    model = mock_model.MockModel()
+    player_one = {"name": "NotoriousWalruss", \
+            "azts_settings": {\
+                "exploration": 1.1, \
+                "heat" : 0.8} \
+            }
+    player_two = {"name": "WhiteCrane", \
+            "azts_settings": {\
+                "model": model} \
+            }
+
+    play = SelfPlay(player_one=player_one, \
+            player_two=player_two)
     play.start(3)
 # pylint: enable=E0401
 # pylint: enable=E0602
