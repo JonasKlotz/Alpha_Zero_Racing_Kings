@@ -32,7 +32,6 @@ class AztsTree():
     or None.
     """
     def __init__(self, \
-                 statemachine, \
                  model, \
                  color=WHITE, \
                  runs_per_move=RUNS_PER_MOVE, \
@@ -42,16 +41,14 @@ class AztsTree():
 
         self.color = color
 
-        self.statemachine = statemachine
+        self.statemachine = state_machine.StateMachine()
         self.model = model
         self.runs_per_move = runs_per_move
         self.heat = heat
 
         # for initialising azts nodes:
         self.exploration = exploration
-        self.payoffs = payoffs
-
-
+        self.payoffs = payoffs 
 
         self._init_tree()
 
@@ -186,6 +183,14 @@ class AztsTree():
         draw by two wins
         '''
         return self.statemachine.get_actual_state()
+
+    def reset(self):
+        '''
+        re-initialise all stateful things
+        '''
+        del self.statemachine
+        self.statemachine = state_machine.StateMachine()
+        self._init_tree()
 
     def _tree_search(self, runs=10):
         '''

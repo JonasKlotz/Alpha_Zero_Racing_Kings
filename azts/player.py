@@ -28,6 +28,7 @@ class Player():
     search for every move
     '''
     def __init__(self, \
+            name="UNNAMED PLAYER", \
             color=WHITE, \
             model=MODEL, \
             runs_per_move=RUNS_PER_MOVE, \
@@ -39,9 +40,9 @@ class Player():
         # player is actually not keeping any state,
         # so no need to store statemachine or model
         # in self
+        self.name = name
         statemachine = state_machine.StateMachine()
-        self.tree = azts_tree.AztsTree(statemachine=statemachine, \
-                              model=model, \
+        self.tree = azts_tree.AztsTree(model=model, \
                               color=color, \
                               runs_per_move=runs_per_move, \
                               exploration=exploration, \
@@ -53,6 +54,12 @@ class Player():
         sets color =)
         '''
         self.tree.set_color(color)
+
+    def reset(self):
+        '''
+        resets all stateful things
+        '''
+        self.tree.reset()
 
     def make_move(self):
         '''

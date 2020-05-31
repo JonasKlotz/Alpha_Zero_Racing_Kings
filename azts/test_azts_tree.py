@@ -16,16 +16,18 @@ from azts.config import WHITE, BLACK, \
 def tree_white_start():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, WHITE, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=WHITE, \
+            runs_per_move=10)
     return tree
 
 @pytest.fixture
 def tree_white_other_turn():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, WHITE, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=WHITE, \
+            runs_per_move=10)
     tree.make_move()
     return tree
 
@@ -33,8 +35,9 @@ def tree_white_other_turn():
 def tree_stale_mate():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, BLACK, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=BLACK, \
+            runs_per_move=10)
     stale_mate = "8/8/8/8/8/8/R7/5K1k b - - 10 20"
     tree.set_to_fen_state(stale_mate)
     return tree
@@ -43,8 +46,9 @@ def tree_stale_mate():
 def tree_won():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, BLACK, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=BLACK, \
+            runs_per_move=10)
     win_position = "7k/8/8/8/8/8/R7/5K2 w - - 10 20"
     tree.set_to_fen_state(win_position)
     return tree
@@ -53,8 +57,9 @@ def tree_won():
 def suspension_draw():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, BLACK, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=BLACK, \
+            runs_per_move=10)
     suspended_draw = "7K/k7/7R/8/8/8/8/1R6 b - - 10 20"
     tree.set_to_fen_state(suspended_draw)
     return tree

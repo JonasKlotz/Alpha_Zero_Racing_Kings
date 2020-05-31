@@ -1,3 +1,7 @@
+'''
+inspirations to give a name
+to your new ai player
+'''
 import numpy as np
 
 

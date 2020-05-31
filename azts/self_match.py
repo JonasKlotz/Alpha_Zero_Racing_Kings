@@ -47,9 +47,7 @@ class SelfMatch():
         self.screen = screen.Screen()
         self.data_collection = []
 
-        self.training_payoffs = player_one["training_payoffs"] \
-                if "training_payoffs" in player_one.keys() \
-                else TRAINING_PAYOFFS
+        self.training_payoffs = TRAINING_PAYOFFS
 
     def set_game_state(self, fen_state):
         '''
@@ -79,6 +77,8 @@ class SelfMatch():
         '''
         moves = 1
         time1 = time.time()
+        print(f"\nWHITE: {self.players[0].name}\n" \
+                + f"BLACK: {self.players[1].name}\n")
         while True:
             # check break condition:
             if self.game.is_ended():
@@ -131,12 +131,18 @@ if __name__ == "__main__":
     SHOW_GAME = True
     RUNS_PER_MOVE = 10
 
-    model = mock_model.Model()
-    conf_player_one = config("Player/default_config.yaml")
+    model = mock_model.MockModel()
 
+    players = {}
+    for i, j in zip(["player_one", "player_two"], \
+            ["default_config.yaml", "SpryGibbon.yaml"]):
+        path = "Player/" + j
+        configuration = config.Config(path)
+        players[i] = player.Player(model=model, \
+                name=configuration.name, \
+                **(configuration.player.as_dictionary())) 
 
-
-    match = SelfMatch()
+    match = SelfMatch(**players)
     match.simulate()
 
 # pylint: enable=E0401

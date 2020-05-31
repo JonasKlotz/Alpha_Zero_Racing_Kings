@@ -7,6 +7,10 @@ This module simulates many games of RacingsKings.
 import os.path
 import time
 import pickle
+
+from Player import config
+
+from azts import player
 from azts import self_match
 from azts import mock_model
 from azts.config import GAMEDIR, \
@@ -47,8 +51,8 @@ class SelfPlay():
     matches.
     '''
     def __init__(self, \
-            player_one=DEFAULT_PLAYER, \
-            player_two=DEFAULT_PLAYER, \
+            player_one, \
+            player_two, \
             runs_per_move=RUNS_PER_MOVE):
 
         self.players = [player_one, player_two] 
@@ -65,12 +69,10 @@ class SelfPlay():
         '''
         for i in range(iterations):
             switch = i % 2 
-            print(f"Match {i+1} of {iterations}:")
-            print(f"{self.players[switch]['name']} as WHITE " \
-                    +f"against {self.players[1-switch]['name']} as BLACK")
+            print(f"\nMATCH {i+1} OF {iterations}:")
             match = self_match.SelfMatch(\
-                    player_one=self.players[switch]["azts_settings"], \
-                    player_two=self.players[1 - switch]["azts_settings"], \
+                    player_one=self.players[switch], \
+                    player_two=self.players[1 - switch], \
                     runs_per_move=self.runs_per_move) 
             match.simulate()
             data = [tuple(j) for j in match.data_collection]
@@ -80,21 +82,24 @@ class SelfPlay():
             pickle.dump(data, open(filepath, "wb"))
 
             del match
+            for i in self.players:
+                i.reset()
 
 
 
 if __name__ == "__main__":
 
     model = mock_model.MockModel()
-    player_one = {"name": "NotoriousWalruss", \
-            "azts_settings": {\
-                "exploration": 1.1, \
-                "heat" : 0.8} \
-            }
-    player_two = {"name": "WhiteCrane", \
-            "azts_settings": {\
-                "model": model} \
-            }
+
+    conf_one = config.Config("Player/default_config.yaml") 
+    player_one = player.Player(name=conf_one.name, \
+            model=model, \
+            **(conf_one.player.as_dictionary()))
+
+    conf_two = config.Config("Player/SpryGibbon.yaml")
+    player_two = player.Player(name=conf_two.name, \
+            model=model, \
+            **(conf_two.player.as_dictionary()))
 
     play = SelfPlay(player_one=player_one, \
             player_two=player_two)
