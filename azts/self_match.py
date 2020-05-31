@@ -12,7 +12,8 @@ from azts import player
 from azts import screen
 from azts.config import ROLLOUT_PAYOFFS, \
         EXPLORATION, HEAT, BLACK, WHITE, \
-        RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS
+        RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
+        SHOW_GAME
 
 REPORT_CYCLE = 10
 MODEL = mock_model.MockModel()

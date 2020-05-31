@@ -5,7 +5,9 @@
 import pytest
 from azts import self_match
 
-from azts.config import *
+from azts.config import DRAW_BY_STALE_MATE, \
+        DRAW_BY_REP, DRAW_BY_TWO_WINS, \
+        BLACK_WINS, WHITE_WINS
 
 @pytest.fixture
 def stalemate():
