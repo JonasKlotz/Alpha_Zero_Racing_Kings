@@ -7,6 +7,7 @@ in a match against each other
 import time
 
 from Interpreter import game
+from Player import config
 from azts import mock_model
 from azts import player
 from azts import screen
@@ -31,16 +32,16 @@ class SelfMatch():
     move
     '''
     def __init__(self, \
-            player_one=DEFAULT_PLAYER, \
-            player_two=DEFAULT_PLAYER, \
+            player_one, \
+            player_two, \
             runs_per_move=RUNS_PER_MOVE):
 
         self.players = []
 
-        player_one["color"] = WHITE
-        self.players.append(player.Player(**player_one))
-        player_two["color"] = BLACK
-        self.players.append(player.Player(**player_two))
+        player_one.set_color(WHITE)
+        self.players.append(player_one)
+        player_two.set_color(BLACK)
+        self.players.append(player_two)
 
         self.game = game.Game()
         self.screen = screen.Screen()
@@ -129,6 +130,12 @@ class SelfMatch():
 if __name__ == "__main__":
     SHOW_GAME = True
     RUNS_PER_MOVE = 10
+
+    model = mock_model.Model()
+    conf_player_one = config("Player/default_config.yaml")
+
+
+
     match = SelfMatch()
     match.simulate()
 

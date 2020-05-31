@@ -123,7 +123,6 @@ class Player():
 if __name__ == "__main__":
     model = mock_model.MockModel()
     configuration = config.Config("Player/default_config.yaml")
-    print(configuration.player.as_dictionary())
     player = Player(model=model, \
             **(configuration.player.as_dictionary()))
     print(f"First move of white player is {player.make_move()}.")
