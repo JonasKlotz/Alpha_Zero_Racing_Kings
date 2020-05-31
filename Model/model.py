@@ -4,6 +4,8 @@ import os
 import re
 import numpy as np
 import keras
+import mlflow
+import mlflow.keras
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
@@ -44,41 +46,50 @@ class AZero:
     def train(self, train_data, batch_size=64, epochs=10, initial_epoch=0):
         """ enters the training loop
         """
-        # prepare data
-        x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
-        x_train = np.stack(x_train.flatten(), axis=0)
-        y_train_p = np.stack(y_train_p.flatten(), axis=0)
-        y_train_v = np.stack(y_train_v.flatten(), axis=0)
-        y_train = {"policy_head": y_train_p,
-                   "value_head":  y_train_v}
+        with mlflow.start_run(): # so mlfow can log
+            # prepare data
+            x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
+            x_train = np.stack(x_train.flatten(), axis=0)
+            y_train_p = np.stack(y_train_p.flatten(), axis=0)
+            y_train_v = np.stack(y_train_v.flatten(), axis=0)
+            y_train = {"policy_head": y_train_p,
+                       "value_head":  y_train_v}
 
-        # Callbacks
-        checkpoint_file = os.path.join(self.config.checkpoint_dir,
-                                       "{epoch:02d}-{loss:.2f}.hdf5")
-        checkpoint = ModelCheckpoint(filepath=checkpoint_file,
-                                     # monitor='val_acc',
-                                     save_weights_only=True,
-                                     verbose=1,
-                                     save_best_only=False)
+            # Callbacks
+            checkpoint_file = os.path.join(self.config.checkpoint_dir,
+                                           "{epoch:02d}-{loss:.2f}.hdf5")
+            checkpoint = ModelCheckpoint(filepath=checkpoint_file,
+                                         # monitor='val_acc',
+                                         save_weights_only=True,
+                                         verbose=1,
+                                         save_best_only=False)
 
-        # lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
-        #                                cooldown=0,
-        #                                patience=5,
-        #                                min_lr=0.5e-6)
-        # callbacks = [checkpoint, lr_reducer]
-        callbacks = [checkpoint]
+            # lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
+            #                                cooldown=0,
+            #                                patience=5,
+            #                                min_lr=0.5e-6)
+            # callbacks = [checkpoint, lr_reducer]
+            callbacks = [checkpoint]
 
-        if initial_epoch == 0:
-            initial_epoch = self.initial_epoch
+            if initial_epoch == 0:
+                initial_epoch = self.initial_epoch
 
-        # begin training
-        self.model.fit(x_train, y_train,
-                       batch_size=batch_size,
-                       epochs=initial_epoch + epochs,
-                       shuffle=True,
-                       callbacks=callbacks,
-                       initial_epoch=initial_epoch)
-        self.initial_epoch = initial_epoch + epochs
+            # begin training
+            self.model.fit(x_train, y_train,
+                           batch_size=batch_size,
+                           epochs=initial_epoch + epochs,
+                           shuffle=True,
+                           callbacks=callbacks,
+                           initial_epoch=initial_epoch)
+            self.initial_epoch = initial_epoch + epochs
+
+            # mlflow logging
+            # logging parameters
+            mlflow.log_param("batch_size", batch_size)
+            # logging metrics
+            # mlflow.log_metric("metric", metric_variable)
+            # logging the model
+            mlflow.keras.log_model(self.model, "model")
 
     def summary(self):
         """ prints a summary of the model architecture
