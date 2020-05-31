@@ -277,3 +277,13 @@ class AZero:
         self.model = keras.models.Model(inputs=[input],
                                         outputs=[policy_head, value_head],
                                         name=self.config.model_name)
+
+
+if __name__ == "__main__":
+    # TEST
+
+    from Player.config import Config
+    config = Config("Player/config.yaml")
+
+    model = AZero(config)
+    model.summary()
