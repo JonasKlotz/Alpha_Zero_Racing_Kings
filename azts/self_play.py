@@ -17,21 +17,25 @@ from azts.config import GAMEDIR, \
         RUNS_PER_MOVE, DEFAULT_PLAYER
 
 
-def unused_filename(i=0):
+def unused_filename(names, i=0):
     '''
     function to find the lowest unused
     filename within games folder according
-    to naming scheme "game_0000.pkl"
+    to naming scheme "game_[NAME]-[NAME]_0000.pkl"
+    where the names are sorted alphabetically
     '''
     filenumber = i
 
+    names.sort()
+    namestring = names[0] + "-" + names[1]
+
     filenumberstring = str(filenumber).zfill(4)
-    filename = f"game_{filenumberstring}.pkl"
+    filename = f"game_{namestring}_{filenumberstring}.pkl"
     filepath = os.path.join(GAMEDIR, filename)
     while os.path.isfile(filepath):
         filenumber += 1
         filenumberstring = str(filenumber).zfill(4)
-        filename = f"game_{filenumberstring}.pkl"
+        filename = f"game_{namestring}_{filenumberstring}.pkl"
         filepath = os.path.join(GAMEDIR, filename)
 
     return filepath
@@ -77,7 +81,10 @@ class SelfPlay():
             match.simulate()
             data = [tuple(j) for j in match.data_collection]
 
-            filepath = unused_filename(i)
+            filepath = unused_filename([\
+                    self.players[0].name, \
+                    self.players[1].name], \
+                    i)
 
             pickle.dump(data, open(filepath, "wb"))
 
