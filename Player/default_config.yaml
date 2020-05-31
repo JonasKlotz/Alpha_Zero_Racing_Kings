@@ -12,7 +12,23 @@ model_revision: 0
 data_dir: "_Data"
 #player parameters
 player:
-    example_parameter: 0
+    heat: 2
+    exploration: 3
+    rollout_payoffs:
+        white:
+            white_wins: 10
+            black_wins: -10
+            draw: 0
+            draw_by_rep: 0
+            draw_by_stale_mate: 0
+            draw_by_two_wins: 0
+        black: 
+            white_wins: -10
+            black_wins: 10
+            draw: 0
+            draw_by_rep: 0
+            draw_by_stale_mate: 0
+            draw_by_two_wins: 0
 #model parameters
 model:
     #input feature dimensions

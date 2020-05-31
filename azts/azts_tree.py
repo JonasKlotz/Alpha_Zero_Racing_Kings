@@ -75,6 +75,14 @@ class AztsTree():
                 + f"\tExploration:\t{self.exploration}\n"
         return string
 
+    def set_color(self, color):
+        '''
+        sets color
+        '''
+        self.color = color
+        del self.root
+        self._init_tree()
+
     def set_to_fen_state(self, fen_state):
         '''
         set internal game state to
@@ -119,6 +127,7 @@ class AztsTree():
         stats["settings"]["heat"] = self.heat
         stats["settings"]["exploration"] = self.exploration
         stats["settings"]["color"] = self.color
+        stats["settings"]["payoffs"] = self.payoffs
         return stats
 
 

@@ -4,6 +4,9 @@ player class representing
 an ai player with a simple
 API.
 '''
+
+from Player import config
+
 from azts import azts_tree
 from azts import state_machine
 from azts import mock_model
@@ -25,11 +28,11 @@ class Player():
     search for every move
     '''
     def __init__(self, \
-            color, \
+            color=WHITE, \
             model=MODEL, \
             runs_per_move=RUNS_PER_MOVE, \
             exploration=EXPLORATION, \
-            payoffs=ROLLOUT_PAYOFFS, \
+            rollout_payoffs=ROLLOUT_PAYOFFS, \
             heat=HEAT, \
             **kwargs):
 
@@ -42,8 +45,14 @@ class Player():
                               color=color, \
                               runs_per_move=runs_per_move, \
                               exploration=exploration, \
-                              payoffs=payoffs, \
+                              payoffs=rollout_payoffs, \
                               heat=heat)
+
+    def set_color(self, color):
+        '''
+        sets color =)
+        '''
+        self.tree.set_color(color)
 
     def make_move(self):
         '''
@@ -113,14 +122,10 @@ class Player():
 
 if __name__ == "__main__":
     model = mock_model.MockModel()
-    configuration = {"model": model, \
-            "color": WHITE, \
-            "runs_per_move": 200, \
-            "exploration": 1.1, \
-            "heat": 0.9}
-
-
-    player = Player(**configuration)
+    configuration = config.Config("Player/default_config.yaml")
+    print(configuration.player.as_dictionary())
+    player = Player(model=model, \
+            **(configuration.player.as_dictionary()))
     print(f"First move of white player is {player.make_move()}.")
     print(player.get_stats())
 # pylint: enable=E0401
