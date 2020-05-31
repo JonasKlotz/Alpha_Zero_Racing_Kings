@@ -12,6 +12,17 @@ from azts.config import RUNS_PER_MOVE, WHITE, \
         EXPLORATION, ROLLOUT_PAYOFFS, HEAT
 
 
+def load_player(configuration):
+    '''
+    load player with specific configuration
+    :param dict configuration: dictionary
+    containing key-value-pairs to set options
+    of player; keys would be
+    model, color, runs_per_move,
+    exploration, payoffs, heat
+    '''
+    return Player(**configuration)
+
 class Player():
     '''
     Player that keeps track of
@@ -85,6 +96,18 @@ class Player():
         '''
         self.tree.set_to_fen_state(fen_position)
 
+    def get_stats(self):
+        '''
+        get statistics about azts tree search
+        parameters
+        :return dict: dictionary containing
+        information about tree shape (max
+        depth, num of end states etc.) and
+        move distribution (probability of
+        best move etc.)
+        '''
+        return self.tree.get_move_statistics()
+
     def dump_data(self):
         '''
         poll for internal data
@@ -100,6 +123,14 @@ class Player():
 
 if __name__ == "__main__":
     model = mock_model.MockModel()
-    player = Player(model=model, color=WHITE)
+    configuration = {"model": model, \
+            "color": WHITE, \
+            "runs_per_move": 200, \
+            "exploration": 1.1, \
+            "heat": 0.9}
+
+
+    player = load_player(configuration)
     print(f"First move of white player is {player.make_move()}.")
+    print(player.get_stats())
 # pylint: enable=E0401

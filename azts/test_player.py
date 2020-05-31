@@ -3,7 +3,9 @@ import pytest
 from azts import player
 from azts import mock_model
 
-from azts.config import *
+from azts.config import WHITE, BLACK, \
+        RUNNING, DRAW_BY_STALE_MATE, \
+        BLACK_WINS
 
 @pytest.fixture
 def player_white():

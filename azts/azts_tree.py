@@ -70,7 +70,10 @@ class AztsTree():
                 payoffs=self.payoffs)
 
     def __str__(self):
-        return self.root.__str__()
+        string = self.root.__str__()
+        string += f"\n\nSettings:\n\tHeat:\t\t{self.heat}\n" \
+                + f"\tExploration:\t{self.exploration}\n"
+        return string
 
     def set_to_fen_state(self, fen_state):
         '''
@@ -101,6 +104,22 @@ class AztsTree():
             raise Exception("Other players turn")
 
         return move
+
+    def get_move_statistics(self):
+        '''
+        return statistics about current state
+        of azts tree search
+        :return dict: dictionary containing
+        entries about tree (max depth etc)
+        and distribution (probability of
+        best move etc).
+        '''
+        stats = self.root.get_move_statistics(self.heat)
+        stats["settings"] = {}
+        stats["settings"]["heat"] = self.heat
+        stats["settings"]["exploration"] = self.exploration
+        return stats
+
 
     def get_policy_tensor(self):
         '''
