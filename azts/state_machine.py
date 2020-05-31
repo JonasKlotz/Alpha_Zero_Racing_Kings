@@ -12,6 +12,9 @@ import numpy as np
 from Interpreter import game
 from Interface import TensorNotation as tn
 
+from azts.config import WHITE, BLACK, \
+        RUNNING, BLACK_WINS, \
+        WHITE_WINS, DRAW
 
 
 class StateMachine():
@@ -135,8 +138,8 @@ class StateMachine():
         :return int: 1 for white, -1 for black
         '''
         if self.actual_game.board.turn:
-            return 1
-        return -1
+            return WHITE
+        return BLACK
 
     def idx_move(self, move_idx):
         '''
@@ -202,7 +205,8 @@ class StateMachine():
         win, 0 for running or draw
         '''
         result = self.actual_game.board.result()
-        translate = {"*": 0, "1-0": 1, "0-1": -1, "1/2-1/2": 0}
+        translate = {"*": RUNNING, "1-0": WHITE_WINS, \
+                "0-1": BLACK_WINS, "1/2-1/2": DRAW}
         return translate[result]
 
     def actual_game_over(self):

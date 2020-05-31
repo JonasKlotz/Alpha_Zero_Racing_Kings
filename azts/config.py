@@ -54,19 +54,18 @@ SHOW_GAME = True  # If True boards will be shown in self_play
 
 # Enum Types representing
 # player colors
-WHITE = 1
-BLACK = -1
+WHITE = "white"
+BLACK = "black"
 
 # Enum Types representing
 # all possible game states
-RUNNING = 0
-WHITE_WINS = 1
-BLACK_WINS = 2
-DRAW = 3
-DRAW_BY_REP = 4
-DRAW_BY_STALE_MATE = 5
-DRAW_BY_TWO_WINS = 6
-NUM_OF_OUTCOMES = 7
+RUNNING = "running"
+WHITE_WINS = "white_wins"
+BLACK_WINS = "black_wins"
+DRAW = "draw"
+DRAW_BY_REP = "draw_by_rep"
+DRAW_BY_STALE_MATE = "draw_by_stale_mate"
+DRAW_BY_TWO_WINS = "draw_by_two_wins"
 
 TRAINING_PAYOFFS = {WHITE_WINS: 1, \
         BLACK_WINS: -1, \
