@@ -83,7 +83,9 @@ if __name__ == "__main__":
     SP_LENGTH = 4
 
     from Model.model import AZero
-    model = AZero()
+    from Player.config import Config
+    conf = Config("Player/config.yaml")
+    model = AZero(conf)
     play = SelfPlay(model)
 
     half_dataset_done = False

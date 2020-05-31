@@ -16,7 +16,7 @@ from keras.utils.vis_utils import plot_model
 
 from lib.timing import timing
 
-from azts.config import DATASETDIR
+from azts.config import GAMEDIR
 
 from lib.logger import get_logger
 log = get_logger("model")
@@ -24,10 +24,15 @@ log = get_logger("model")
 
 def get_latest_dataset():
     """ returns latest dataset """
-    dirs = os.listdir(DATASETDIR)
-    if len(dirs) == 0:
+    dir = GAMEDIR
+    files = os.listdir(GAMEDIR)
+    if len(files) == 0:
         return None
-    return max(dirs, key=os.path.getmtime)
+
+    def key_map(file):
+        return os.path.getmtime(os.path.join(dir, file))
+    newest_file = max(files, key=key_map)
+    return os.path.join(dir, newest_file)
 
 
 def load_data(FILE):
@@ -49,6 +54,7 @@ def prepare_dataset(train_data):
 
 class AutoFetchDataset(keras.callbacks.Callback):
     def __init__(self, dataset_file):
+        # pylint: disable=bad-super-call
         super(keras.callbacks.Callback, self).__init__()
         self.current_dataset_file = dataset_file
 
@@ -76,16 +82,19 @@ class AZero:
         summary: prints config parameters and model summary
     """
 
-    def __init__(self, auto_run=False, config_file='Model/config.yaml'):
+    def __init__(self, config, auto_run=False):
         """
         Args:
-            auto_run (bool): if True, will enter a loop that
-                             continuously trains on newest found dataset
-            config_file (str): AlphaZero Model configuration file
+            config (Config): Player Configuration file
+            auto_run (bool), optional: if True, will enter a loop that
+                                       continuously trains on newest found dataset
         """
+
+        assert config is not None, "ERROR! no config provided"
+        self.config = config
+
         self.initial_epoch = 0
         self.checkpoint_file = None
-        self.config = Config(config_file)
 
         self.build_model()
         self.compile_model()
@@ -142,12 +151,11 @@ class AZero:
             self.callbacks.append(auto_fetch_dataset)
 
     def train(self, train_data, batch_size=64, epochs=10, initial_epoch=None):
-        """ enters the training loop
-        """
+        """ enters the training loop """
 
         x_train, y_train = prepare_dataset(train_data)
 
-        if initial_epoch == None:
+        if initial_epoch is None:
             initial_epoch = self.initial_epoch
 
         if epochs == -1:  # train indefinitely; XXX: review
@@ -163,16 +171,14 @@ class AZero:
         self.initial_epoch = initial_epoch + epochs
 
     def summary(self):
-        """ prints a summary of the model architecture
-        """
+        """ prints a summary of the model architecture """
         print("Model Name: " + self.config.model_name)
         print("Configuration Settings:")
         print(self.config)
         self.model.summary()
 
     def plot_model(self):
-        """ plots the whole model architecture as a graph
-        """
+        """ plots the whole model architecture as a graph """
         # graphviz (not a python package) has to be installed https://www.graphviz.org/
         plot_model(self.model, to_file='Model/%s.png' % self.config.model_name,
                    show_shapes=True, show_layer_names=True)
@@ -217,23 +223,23 @@ class AZero:
                     return file, epoch
         return None, 0
 
-    def restore_latest_model(self, checkpoint_file=None):
-        """ Checks for latest model checkpoint and restores
-        unless a checkpoint is given
-        """
-        if checkpoint_file is None:
-            checkpoint_file, self.checkpoint_epoch = self.newest_checkpoint_file()
+    def restore_latest_model(self):
+        """ Checks for latest model checkpoint and restores the weights """
+        checkpoint_file, self.checkpoint_epoch = self.newest_checkpoint_file()
 
         if checkpoint_file is not None:
-            print("restoring from checkpoint " + checkpoint_file)
-            self.model.load_weights(checkpoint_file)
-            self.checkpoint_file = checkpoint_file
+            self.restore_from_checkpoint(checkpoint_file)
         else:
-            print("no previous checkpoint found")
+            log.info("no previous checkpoint found")
+
+    def restore_from_checkpoint(self, checkpoint_file):
+        """ restores weights from given checkpoint """
+        log.info("restoring from checkpoint " + checkpoint_file)
+        self.model.load_weights(checkpoint_file)
+        self.checkpoint_file = checkpoint_file
 
     def compile_model(self):
-        """ compiles the model
-        """
+        """ compiles the model """
         losses = {"policy_head": "categorical_crossentropy",
                   "value_head": "mean_squared_error"}
         self.model.compile(loss=losses,
@@ -241,8 +247,7 @@ class AZero:
                            metrics=['accuracy'])
 
     def build_model(self):
-        """ Builds the ResNet model via config parameters
-        """
+        """ Builds the ResNet model via config parameters """
 
         def residual_layer(input,
                            num_filters,
@@ -378,7 +383,7 @@ class AZero:
 
 
 if __name__ == "__main__":
+
     config = Config("Player/config.yaml")
 
-    model = AZero(config)
-    model.summary()
+    model = AZero(config, auto_run=True)
