@@ -111,6 +111,10 @@ class AZero:
         if not os.path.isfile(config_file):
             self.config.dump_yaml(config_file)
 
+    def load_model_architecture(self, file):
+        """ Restores model architecture from yaml file """
+        self.model = keras.models.model_from_yaml(file)
+
     def restore_weights(self, checkpoint_file=None):
         """ Checks for latest model checkpoint and restores
         unless a checkpoint is given
@@ -277,3 +281,13 @@ class AZero:
         self.model = keras.models.Model(inputs=[input],
                                         outputs=[policy_head, value_head],
                                         name=self.config.model_name)
+
+
+if __name__ == "__main__":
+    # TEST
+
+    from Player.config import Config
+    config = Config("Player/config.yaml")
+
+    model = AZero(config)
+    model.summary()
