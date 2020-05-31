@@ -1,5 +1,6 @@
 """ handles the AlphaZero model
 """
+from Player.config import Config
 import os
 import re
 import pickle
@@ -13,7 +14,6 @@ from keras.callbacks import ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
 
-from Model.config import Config
 from lib.timing import timing
 
 from azts.config import DATASETDIR
@@ -192,6 +192,10 @@ class AZero:
         config_file = os.path.join(self.config.checkpoint_dir, "config.yaml")
         if not os.path.isfile(config_file):
             self.config.dump_yaml(config_file)
+
+    def load_model_architecture(self, file):
+        """ Restores model architecture from yaml file """
+        self.model = keras.models.model_from_yaml(file)
 
     def new_model_available(self):
         new_checkpoint_file, _ = self.newest_checkpoint_file()
@@ -374,5 +378,7 @@ class AZero:
 
 
 if __name__ == "__main__":
-    # auto run
-    AZero(auto_run=True)
+    config = Config("Player/config.yaml")
+
+    model = AZero(config)
+    model.summary()
