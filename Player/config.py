@@ -52,6 +52,9 @@ class Options(object):
         return [(attr, getattr(self, attr)) for attr in dir(self) if not callable(getattr(self, attr))
                 and "__" not in attr]
 
+    def as_dictionary(self):
+        return dict(self.get_items())
+
     def __str__(self, indent=""):
         out = ""
         for member, value in self.get_items():
