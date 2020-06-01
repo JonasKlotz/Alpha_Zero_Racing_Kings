@@ -5,7 +5,9 @@
 import pytest
 
 from azts import state_machine
-from azts.config import *
+from azts.config import WHITE, BLACK, \
+        RUNNING, DRAW, DRAW_BY_TWO_WINS, \
+        BLACK_WINS
 
 statemachine = state_machine.StateMachine()
 
@@ -70,7 +72,7 @@ def test_get_rollout_result_from_start(statemachine_init):
     assert statemachine_init.get_result() == 0
 
 def test_get_actual_result_from_start(statemachine_init):
-    assert statemachine_init.get_actual_result() == 0
+    assert statemachine_init.get_actual_result() == RUNNING
 
 def test_exception_on_impossible_move(statemachine_init):
     impossible_move = "h1h8"
@@ -125,10 +127,10 @@ def test_get_rollout_result_from_no_valid_move(statemachine_stalemate):
     assert statemachine_stalemate.get_result() == 0
 
 def test_get_actual_result_from_no_valid_move(statemachine_stalemate):
-    assert statemachine_stalemate.get_actual_result() == 0
+    assert statemachine_stalemate.get_actual_result() == DRAW
 
 def test_win_result_black(statemachine_win):
-    assert statemachine_win.get_actual_result() == -1
+    assert statemachine_win.get_actual_result() == BLACK_WINS
 
 def test_win_game_game_over(statemachine_win):
     assert statemachine_win.actual_game_over() is True
@@ -138,13 +140,13 @@ def test_suspended_rollout_is_also_set(statemachine_suspended):
     assert statemachine_suspended.rollout_game.board.fen() == suspended_win
 
 def test_suspended_result(statemachine_suspended):
-    assert statemachine_suspended.get_actual_result() == 0
+    assert statemachine_suspended.get_actual_result() == RUNNING
 
 def test_suspended_has_not_ended(statemachine_suspended):
     assert statemachine_suspended.actual_game_over() is False
 
 def test_black_suspended_is_win(sm_noblacksuspense):
-    assert sm_noblacksuspense.get_actual_result() == BLACK
+    assert sm_noblacksuspense.get_actual_result() == BLACK_WINS
 
 def test_black_suspended_game_over(sm_noblacksuspense):
     assert sm_noblacksuspense.actual_game_over() is True

@@ -1,12 +1,18 @@
 # pylint: disable=E0401
 # pylint: disable=E0602
+import random
+import string
 import multiprocessing
 import os.path
 import pickle
 
 import argparse
 
+
+from Player import config
 from azts import self_play
+from azts import mock_model
+from azts import player
 from azts.config import *
 
 parser = argparse.ArgumentParser(description = \
@@ -40,34 +46,62 @@ parser.add_argument("--fork_method", type=str, \
         + "\"fork\" and \"forkserver\". See "\
         + "https://docs.python.org/3/library/multiprocessing.html "\
         + "for details. Defaults to \"spawn\".")
-    
+parser.add_argument("--player_one", type=str, \
+        default="Player/default_config.yaml", \
+        help="Player one configuration file") 
+parser.add_argument("--player_two", type=str, \
+        default="Player/default_config.yaml", \
+        help="Player two configuration file")
 
 
 args = parser.parse_args()
 
+# from https://pynative.com/python-generate-random-string/
+def random_string(length=8):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
 
-
-filepath = os.path.join(GAMEDIR, "game_0000.pkl")
-if os.path.exists(filepath):
-    raise Exception("Games Directory not empty")
-
-def unused_filename(num_of_games):
+def unused_filename(num_of_games, match_name):
     filenumber = 0
 
     filenumberstring = str(filenumber).zfill(4)
-    filename = f"dataset_{filenumberstring}_{num_of_games}_games.pkl"
+    filename = f"dataset_{match_name}_" \
+            + f"{filenumberstring}_{num_of_games}_games.pkl"
     filepath = os.path.join(DATASETDIR, filename)
     while os.path.isfile(filepath):
         filenumber += 1
         filenumberstring = str(filenumber).zfill(4)
-        filename = f"dataset_{filenumberstring}_{num_of_games}_games.pkl"
+        filename = f"dataset_{match_name}_" \
+                + f"{filenumberstring}_{num_of_games}_games.pkl"
         filepath = os.path.join(DATASETDIR, filename)
 
     return filepath
 
 
+
+
+
+
+
+
 if __name__ == "__main__":
     # pylint: disable=C0103
+    conf_one = config.Config(args.player_one)
+    conf_two = config.Config(args.player_two)
+
+    player_names = [conf_one.name, conf_two.name]
+    player_names.sort()
+
+
+    match_name = f"{player_names[0]}-{player_names[1]}" 
+    game_id = random_string(8)
+    game_name = f"game_{game_id}_{match_name}"
+
+    filepath = os.path.join(GAMEDIR, f"{game_name}_0000.pkl")
+    while os.path.exists(filepath): 
+        game_id = random_string(8)
+        game_name = f"game_{game_id}_{match_name}"
+        filepath = os.path.join(GAMEDIR, f"{game_name}_0000.pkl")
 
     # according to
     # https://docs.python.org/3/library/multiprocessing.html
@@ -77,7 +111,23 @@ if __name__ == "__main__":
 
 
     for i in range(args.num_of_parallel_processes):
-        selfplay = self_play.SelfPlay(args.rollouts_per_move)
+        model = mock_model.MockModel()
+        
+        player_one = player.Player(model=model, \
+                name=conf_one.name, \
+                **(conf_one.player.as_dictionary()))
+
+        player_two = player.Player(model=model, \
+                name=conf_two.name, \
+                **(conf_two.player.as_dictionary()))
+
+
+        selfplay = self_play.SelfPlay(\
+                player_one=player_one, \
+                player_two=player_two, \
+                runs_per_move=args.rollouts_per_move, \
+                game_id=game_id, \
+                show_game=False)
         process = multiprocessing.Process(target = selfplay.start, \
                 args = (args.num_of_games_per_process,))
 
@@ -95,7 +145,7 @@ if __name__ == "__main__":
 
     counter = 0
     for filename in os.listdir(GAMEDIR):
-        if "game_" in filename and filename.endswith(".pkl"):
+        if game_name in filename and filename.endswith(".pkl"):
             filepath = os.path.join(GAMEDIR, filename)
             counter += 1
             game_data = pickle.load(open(filepath, "rb"))
@@ -103,7 +153,7 @@ if __name__ == "__main__":
                 dataset.append(i)
             print(f"added {filename} to dataset.")
 
-    dataset_path = unused_filename(counter)
+    dataset_path = unused_filename(counter, match_name)
 
     pickle.dump(dataset, open(dataset_path, "wb"))
     print(f"saved data of {counter} games to {dataset_path}.")
