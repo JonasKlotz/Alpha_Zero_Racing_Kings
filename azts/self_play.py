@@ -10,7 +10,7 @@ import pickle
 from azts import self_match
 from azts.config import *
 
-import lib.timing
+from lib.timing import timing, runtime_summary, prettify_time
 from lib.logger import get_logger
 log = get_logger("self_play")
 
@@ -92,14 +92,16 @@ if __name__ == "__main__":
     # Generate
     for i in range(MAX_RUNS):
         if half_dataset_done:  # expects new model to be ready soon
+            log.info("Half-time done")
             start = time.perf_counter()
-            log.info("Waiting for newest model")
+            if not model.new_model_available():
+                log.info("Waiting for newest model")
             while not model.new_model_available():
                 # NOTE: thread could just continue to create dataset (not const chunksize!)
                 time.sleep(1)
             log.info("Found new model")
-            elapsed = time.perf_counter - start
-            log.info("Thread blocked for {}".format(timing.prettify(elapsed)))
+            elapsed = time.perf_counter() - start
+            log.info("Thread blocked for {}".format(prettify_time(elapsed)))
             model.restore_latest_model()
         log.info("Beginning Self-play iteration {}/{}, \
             game chunk-size: {}".format(i, MAX_RUNS, SP_LENGTH))

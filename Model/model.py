@@ -1,6 +1,5 @@
 """ handles the AlphaZero model
 """
-from Player.config import Config
 import os
 import re
 import pickle
@@ -10,60 +9,17 @@ import keras
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-from keras.callbacks import ReduceLROnPlateau
+# from keras.callbacks import ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
 
 from lib.timing import timing
 
 from azts.config import GAMEDIR
+from Player.config import Config
 
 from lib.logger import get_logger
-log = get_logger("model")
-
-
-def get_latest_dataset():
-    """ returns latest dataset """
-    dir = GAMEDIR
-    files = os.listdir(GAMEDIR)
-    if len(files) == 0:
-        return None
-
-    def key_map(file):
-        return os.path.getmtime(os.path.join(dir, file))
-    newest_file = max(files, key=key_map)
-    return os.path.join(dir, newest_file)
-
-
-def load_data(FILE):
-    with open(FILE, 'rb') as f:
-        train_data = pickle.load(f)
-    return train_data
-
-
-def prepare_dataset(train_data):
-    # prepare data
-    x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
-    x_train = np.stack(x_train.flatten(), axis=0)
-    y_train_p = np.stack(y_train_p.flatten(), axis=0)
-    y_train_v = np.stack(y_train_v.flatten(), axis=0)
-    y_train = {"policy_head": y_train_p,
-               "value_head":  y_train_v}
-    return x_train, y_train
-
-
-class AutoFetchDataset(keras.callbacks.Callback):
-    def __init__(self, dataset_file):
-        # pylint: disable=bad-super-call
-        super(keras.callbacks.Callback, self).__init__()
-        self.current_dataset_file = dataset_file
-
-    def on_train_batch_end(self, batch, logs=None):
-        new_dataset_file = get_latest_dataset()
-        if self.current_dataset_file is not new_dataset_file:
-            log.info("New dataset found: {}".format(new_dataset_file))
-            log.info("Aborting training.")
-            self.model.stop_training = True
+log = get_logger("Model")
 
 
 class AZero:
@@ -82,12 +38,10 @@ class AZero:
         summary: prints config parameters and model summary
     """
 
-    def __init__(self, config, auto_run=False):
+    def __init__(self, config):
         """
         Args:
             config (Config): Player Configuration file
-            auto_run (bool), optional: if True, will enter a loop that
-                                       continuously trains on newest found dataset
         """
 
         assert config is not None, "ERROR! no config provided"
@@ -100,31 +54,32 @@ class AZero:
         self.compile_model()
         self.remember_model_architecture()
         self.restore_latest_model()
+        self.setup_callbacks()
 
-        if auto_run:
-            self.setup_callbacks(auto_run=True)
+    def auto_run(self):
+        """ Automatically enters a training loop that fetches newest datasets
+        """
 
-            self.auto_run_loop()
-        else:
-            self.setup_callbacks(auto_run=False)
-
-    def auto_run_loop(self):
         MAX_RUNS = 3
 
         # latest_dataset =
         for i in range(MAX_RUNS):
-            dataset_file = get_latest_dataset()
+            dataset_file = get_latest_dataset_file()
             if dataset_file is None:
                 log.info("Waiting for dataset..")
                 while dataset_file is None:
                     time.sleep(1)
-                    dataset_file = get_latest_dataset()
-            train_data = load_data(dataset_file)
+                    dataset_file = get_latest_dataset_file()
+            self.setup_callbacks(auto_run=True)  # new file, new callback
+            with open(dataset_file, 'rb') as f:
+                train_data = pickle.load(f)
+            log.info("New Dataset available")
             log.info("Commencing training {}/{} on {}".format(i,
                                                               MAX_RUNS,
                                                               dataset_file))
             self.train(train_data, epochs=-1)
 
+    @timing
     def inference(self, input):
         policy, value = self.model.predict(input[None, :])
         return policy.squeeze(), value.squeeze()
@@ -144,11 +99,15 @@ class AZero:
         #                                min_lr=0.5e-6)
         # callbacks = [checkpoint, lr_reducer]
 
-        self.callbacks = [checkpoint]
+        epoch = CountEpochs()
+
+        callbacks = [checkpoint, epoch]
 
         if auto_run:
-            auto_fetch_dataset = AutoFetchDataset(get_latest_dataset())
-            self.callbacks.append(auto_fetch_dataset)
+            auto_fetch_dataset = AutoFetchDataset(get_latest_dataset_file())
+            callbacks.append(auto_fetch_dataset)
+
+        self.callbacks = callbacks
 
     def train(self, train_data, batch_size=64, epochs=10, initial_epoch=None):
         """ enters the training loop """
@@ -162,13 +121,13 @@ class AZero:
             epochs = 10000
 
         # begin training
-        self.model.fit(x_train, y_train,
-                       batch_size=batch_size,
-                       epochs=initial_epoch + epochs,
-                       shuffle=True,
-                       callbacks=self.callbacks,
-                       initial_epoch=initial_epoch)
-        self.initial_epoch = initial_epoch + epochs
+        train_logs = self.model.fit(x_train, y_train,
+                                    batch_size=batch_size,
+                                    epochs=initial_epoch + epochs,
+                                    shuffle=True,
+                                    callbacks=self.callbacks,
+                                    initial_epoch=initial_epoch)
+        self.initial_epoch = train_logs.history['epoch']
 
     def summary(self):
         """ prints a summary of the model architecture """
@@ -204,17 +163,26 @@ class AZero:
         self.model = keras.models.model_from_yaml(file)
 
     def new_model_available(self):
+        """ checks whether a new checkpoint file is available 
+        not very robust; only checks for file name """
         new_checkpoint_file, _ = self.newest_checkpoint_file()
-        return new_checkpoint_file is not self.checkpoint_file
+        return not new_checkpoint_file == self.checkpoint_file
 
     def newest_checkpoint_file(self):
-        """ searches model dir for newest checkpoint
+        """ searches checkpoint dir for newest checkpoint,
+        goes by file mtime..
         Returns:
             file (str): filepath
             epoch (int): checkpoint's epoch
         """
         chkpt_dir = self.config.checkpoint_dir
-        for file_name in reversed(sorted(os.listdir(chkpt_dir))):
+
+        def chkpt_sort(file):   # XXX go for newest epoch?
+            return os.path.getmtime(os.path.join(chkpt_dir, file))
+
+        files = reversed(sorted(os.listdir(chkpt_dir), key=chkpt_sort))
+
+        for file_name in files:
             file = os.path.join(chkpt_dir, file_name)
             if os.path.isfile(file):
                 reg = re.search("^0*(\d+).*?\.hdf5", file_name)
@@ -225,21 +193,21 @@ class AZero:
 
     def restore_latest_model(self):
         """ Checks for latest model checkpoint and restores the weights """
-        checkpoint_file, self.checkpoint_epoch = self.newest_checkpoint_file()
+        checkpoint_file, self.initial_epoch = self.newest_checkpoint_file()
 
         if checkpoint_file is not None:
             self.restore_from_checkpoint(checkpoint_file)
         else:
-            log.info("no previous checkpoint found")
+            log.info("No previous checkpoint found")
 
     def restore_from_checkpoint(self, checkpoint_file):
-        """ restores weights from given checkpoint """
-        log.info("restoring from checkpoint " + checkpoint_file)
+        """ Restores weights from given checkpoint """
+        log.info("Restoring from checkpoint %s", checkpoint_file)
         self.model.load_weights(checkpoint_file)
         self.checkpoint_file = checkpoint_file
 
     def compile_model(self):
-        """ compiles the model """
+        """ Compiles the model """
         losses = {"policy_head": "categorical_crossentropy",
                   "value_head": "mean_squared_error"}
         self.model.compile(loss=losses,
@@ -305,7 +273,6 @@ class AZero:
                 y = _x
                 for layer in range(num_layers):
                     if layer == num_layers - 1:
-                        # XXX Why does resnet do this?
                         _x = res_layer(_x, activation=None)
                     else:
                         _x = res_layer(_x)
@@ -382,8 +349,58 @@ class AZero:
                                         name=self.config.model_name)
 
 
+def get_latest_dataset_file():
+    """ Returns newest dataset file in game dir """
+    _dir = GAMEDIR
+    files = os.listdir(_dir)
+    if len(files) == 0:
+        return None
+
+    def key_map(file):
+        return os.path.getmtime(os.path.join(_dir, file))
+    newest_file = max(files, key=key_map)
+    return os.path.join(_dir, newest_file)
+
+
+def prepare_dataset(train_data):
+    """ Transforms dataset to format that keras.model expects """
+    x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
+    x_train = np.stack(x_train.flatten(), axis=0)
+    y_train_p = np.stack(y_train_p.flatten(), axis=0)
+    y_train_v = np.stack(y_train_v.flatten(), axis=0)
+    y_train = {"policy_head": y_train_p,
+               "value_head":  y_train_v}
+    return x_train, y_train
+
+
+class CountEpochs(keras.callbacks.Callback):
+    """ keras Callback Class, used to count epochs """
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs["epoch"] = epoch
+
+
+class AutoFetchDataset(keras.callbacks.Callback):
+    """ keras Callback Class, used to abort training
+    if new datasets are available """
+
+    def __init__(self, dataset_file):
+        # pylint: disable=bad-super-call
+        super(keras.callbacks.Callback, self).__init__()
+        # pylint: enable=bad-super-call
+        self.current_dataset_file = dataset_file
+
+    def on_train_batch_end(self, batch, logs=None):
+        new_dataset_file = get_latest_dataset_file()
+        if not self.current_dataset_file == new_dataset_file:   # XXX use mtime instead?
+            log.info("New dataset found: %s", new_dataset_file)
+            log.info("Aborting training.")
+            self.model.stop_training = True
+
+
 if __name__ == "__main__":
 
     config = Config("Player/config.yaml")
 
-    model = AZero(config, auto_run=True)
+    model = AZero(config)
+    model.auto_run()
