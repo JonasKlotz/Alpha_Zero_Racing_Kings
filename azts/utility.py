@@ -47,7 +47,7 @@ def get_match_player_names(player1, player2):
     thus can be reconstructed 
     '''
 
-    player_names = [get_player_as_string(i) for i in \
+    player_names = [i.model_name for i in \
             [player1, player2]]
 
     player_names.sort() 
