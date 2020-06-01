@@ -74,9 +74,8 @@ class AZero:
             with open(dataset_file, 'rb') as f:
                 train_data = pickle.load(f)
             log.info("New Dataset available")
-            log.info("Commencing training {}/{} on {}".format(i,
-                                                              MAX_RUNS,
-                                                              dataset_file))
+            log.info("Commencing training %i/%i on %s",
+                     i, MAX_RUNS, dataset_file)
             self.train(train_data, epochs=-1)
 
     @timing
@@ -126,7 +125,8 @@ class AZero:
                                     epochs=initial_epoch + epochs,
                                     shuffle=True,
                                     callbacks=self.callbacks,
-                                    initial_epoch=initial_epoch)
+                                    initial_epoch=initial_epoch,
+                                    verbose=2)
         self.initial_epoch = train_logs.history['epoch']
 
     def summary(self):
@@ -378,6 +378,7 @@ class CountEpochs(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         logs["epoch"] = epoch
+        print(logs)
 
 
 class AutoFetchDataset(keras.callbacks.Callback):
