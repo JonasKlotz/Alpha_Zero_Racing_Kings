@@ -12,6 +12,8 @@ import chess.svg
 from cairosvg import svg2png
 from PIL import Image
 
+from azts.config import *
+
 
 class Game:
     # pylint: disable=too-many-instance-attributes
@@ -30,6 +32,7 @@ class Game:
         self.draw = False
         self.history = {}
         self.history[self.board.fen()] = 1
+        self.state = RUNNING
 
         # print(self.board)
 
@@ -109,9 +112,7 @@ class Game:
             self.after_mode()
             return
         except:
-            self.show_game()
-            print("move " + input + " illegal")
-            self.end = True
+            raise ValueError(f"move {input} illegal")
 
     def after_mode(self, ):
         self.move_count += 1
@@ -143,11 +144,22 @@ class Game:
         ml = self.get_move_list()
         return [move.uci() for move in ml]
 
+    def get_game_state(self):
+        self.is_draw()
+        self.is_ended()
+        return self.state
+
     def is_won(self):
         """
            extracts last row looks if king on last_rank
         """
-        return self.board.is_variant_win()
+        won = self.board.is_variant_win()
+        if won:
+            if self.get_score() == "1-0":
+                self.state = WHITE_WINS
+            if self.get_score() == "0-1":
+                self.state = BLACK_WINS
+        return won
 
     def is_ended(self):
         """
@@ -155,7 +167,13 @@ class Game:
         Returns:
             boolean: False if game has not ended. True otherwise
         """
-        self.end |= self.board.is_variant_end() or self.is_draw() or self.is_won()
+        ended = self.board.is_variant_end()
+        if ended:
+            if self.board.result() == "1-0":
+                self.state = WHITE_WINS
+            if self.board.result() == "0-1":
+                self.state = BLACK_WINS
+        self.end |= ended or self.is_draw() or self.is_won()
         return self.end
 
     def is_draw(self):
@@ -164,11 +182,30 @@ class Game:
             boolean: True if game ended in a draw, False otherwise
         """
         self.draw |= self.board.is_variant_draw() or self.get_movelist_size() == 0
+
+        white_finish = self.board.king(True) > 55
+        black_finish = self.board.king(False) > 55
+        both_finish = white_finish and black_finish
+
+
         if self.get_movelist_size() == 0:
-            print("no valid move")
-        if self.history[self.board.fen()] > 2:
-            print("repetition")
-        self.draw |= self.history[self.board.fen()] > 2
+            if both_finish:
+                self.state = DRAW_BY_TWO_WINS
+            else:
+                self.state = DRAW_BY_STALE_MATE
+            self.end = True
+
+        try:
+            if self.history[self.board.fen()] > 2:
+                self.state = DRAW_BY_REP
+                self.end = True
+            self.draw |= self.history[self.board.fen()] > 2
+        except:
+            # to keep performance, we dont check if self.board.fen
+            # is in self.history.keys(). we just try and pass
+            # if it isnt
+            pass
+
         return self.draw
 
     def get_score(self, player):  # 0 for black, 1 for white
@@ -227,7 +264,7 @@ class Game:
         try:
             rnd_move = random.choice(moves)
         except:
-            self.show_game()
+            #self.show_game()
             RuntimeError()
         self.make_move(rnd_move)
 
@@ -254,7 +291,7 @@ if __name__ == "__main__":
                 # game.play_stockfish(0.01)
                 game.play_random_move()
             except:
-                game.show_game()
+                #game.show_game()
                 print("Fail")
                 break
         s = game.get_score(1)

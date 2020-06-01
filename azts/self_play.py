@@ -1,45 +1,92 @@
+# pylint: disable=E0401
+# pylint: disable=E0602
 """
-This module simulates games of RacingsKings.
+This module simulates many games of RacingsKings.
 """
 
 import os.path
 import time
 import pickle
-import azts
-from Interpreter import game
-import state_machine as sm
-import self_match
-import screen
-from config import *
 
-REPORT_CYCLE = 25
+from Player import config
 
+from azts import player
+from azts import self_match
+from azts import mock_model
+from azts import utility
+from azts.config import GAMEDIR, \
+        RUNS_PER_MOVE, DEFAULT_PLAYER, \
+        SHOW_GAME
 
 
 class SelfPlay():
-    def __init__(self):
-        self.match = self_match.SelfMatch()
+    '''
+    selfplay is initialized with the number of
+    rollouts that the matching ai player are
+    using per move.
+    the number of game simulations is determined
+    by the parameter in function start() which
+    actually starts the series of matches.
+    After each match, the match data is written
+    to a separate file which facilitates
+    parallelisation of creating data for many
+    matches.
+    '''
+    def __init__(self, \
+            player_one, \
+            player_two, \
+            runs_per_move=RUNS_PER_MOVE, \
+            game_id="UNNAMED_MATCH", \
+            show_game=SHOW_GAME):
 
-    def start(self, iterations=100):
+        self.players = [player_one, player_two] 
+        self.runs_per_move = runs_per_move
+        self.game_id = game_id
+        self.show_game = show_game
+
+    def start(self, iterations=10):
+        '''
+        start a series of matches. match data
+        for each match is written to a separate
+        file in the games folder as defined in
+        config.
+        :param int iterations: number of matches
+        to be simulated
+        '''
         for i in range(iterations):
-            self.match.simulate()
-            data = [tuple(j) for j in self.match.data_collection]
+            switch = i % 2 
+            print(f"\nMATCH {i+1} OF {iterations}:")
+            match = self_match.SelfMatch(\
+                    player_one=self.players[switch], \
+                    player_two=self.players[1 - switch], \
+                    runs_per_move=self.runs_per_move, \
+                    show_game=self.show_game)
+            match.simulate()
+            data = [tuple(j) for j in match.data_collection]
 
-            filenumber = i
+            filepath = utility.get_unused_filepath( \
+                    f"game_{self.game_id}", \
+                    GAMEDIR, \
+                    i)
 
-            filenumberstring = str(filenumber).zfill(4)
-            filename = f"game_{filenumberstring}.pkl"
-            while os.path.isfile(filename):
-                filenumber += 1
-                filenumberstring = str(filenumber).zfill(4)
-                filename = f"game_{filenumberstring}.pkl"
+            pickle.dump(data, open(filepath, "wb"))
 
-            pickle.dump(data, open(GAMEDIR + "/" + filename, "wb"))
+            del match
+            for i in self.players:
+                i.reset()
 
-            del self.match
-            self.match = SelfMatch()
 
 
 if __name__ == "__main__":
-    play = SelfPlay()
-    play.start(50)
+
+    player_defs = ("default_config", "SpryGibbon")
+    game_id = utility.get_unused_match_handle(*player_defs)
+    players = utility.load_players(*player_defs, True)
+
+    play = SelfPlay(player_one=players[0], \
+            player_two=players[1], \
+            game_id=game_id, \
+            show_game=True)
+    play.start(3)
+# pylint: enable=E0401
+# pylint: enable=E0602

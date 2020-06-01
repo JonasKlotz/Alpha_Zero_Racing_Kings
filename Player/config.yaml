@@ -1,0 +1,45 @@
+### YAML Config-File
+#the config version should be updated whenever the old config looses compatibility,
+#i.e. a change is made in the architecture of the model; new parameters
+#convention: model revision is changed whenever the parameters are reconfigured;
+#the model then gets a new unique name and a new folder for checkpoints, etc.
+
+name: 'AlphaZero'
+config_version: 1
+model_revision: 0
+
+data_dir: "_Data" #folder to save checkpoints and training data
+
+#player parameters
+player:
+    example_parameter: 0
+
+#model parameters
+model:
+    input_shape: [8,8,11]
+    resnet_depth: 9
+    residual_block:
+        layers: 2
+        num_filters: 128
+        filter_size: 3
+        filter_stride: 1
+        activation: 'relu'
+        batch_normalization: True
+    policy_head:
+        residual_layer:
+            num_filters: 192
+            filter_size: 3
+            filter_stride: 1
+            batch_normalization: True
+        dense_layer:
+            num_filters: 64
+            activation: 'relu'
+    value_head:
+        residual_layer:
+            num_filters: 4
+            filter_size: 3
+            filter_stride: 1
+            batch_normalization: True
+        dense_layer:
+            num_filters: 256
+            activation: 'tanh'
