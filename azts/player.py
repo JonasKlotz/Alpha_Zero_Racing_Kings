@@ -4,12 +4,16 @@ player class representing
 an ai player with a simple
 API.
 '''
+
+from Player import config
+
 from azts import azts_tree
 from azts import state_machine
 from azts import mock_model
 
-from azts.config import RUNS_PER_MOVE, WHITE
-
+from azts.config import RUNS_PER_MOVE, WHITE, \
+        EXPLORATION, ROLLOUT_PAYOFFS, HEAT, \
+        MODEL
 
 class Player():
     '''
@@ -23,13 +27,39 @@ class Player():
     to be made in the alpha zero tree
     search for every move
     '''
-    def __init__(self, color, runs_per_move=RUNS_PER_MOVE):
-        self.statemachine = state_machine.StateMachine()
-        self.model = mock_model.MockModel()
-        self.tree = azts_tree.AztsTree(self.statemachine, \
-                              self.model, \
-                              color, \
-                              runs_per_move)
+    def __init__(self, \
+            name="UNNAMED PLAYER", \
+            color=WHITE, \
+            model=MODEL, \
+            runs_per_move=RUNS_PER_MOVE, \
+            exploration=EXPLORATION, \
+            rollout_payoffs=ROLLOUT_PAYOFFS, \
+            heat=HEAT, \
+            **kwargs):
+
+        # player is actually not keeping any state,
+        # so no need to store statemachine or model
+        # in self
+        self.name = name
+        statemachine = state_machine.StateMachine()
+        self.tree = azts_tree.AztsTree(model=model, \
+                              color=color, \
+                              runs_per_move=runs_per_move, \
+                              exploration=exploration, \
+                              payoffs=rollout_payoffs, \
+                              heat=heat)
+
+    def set_color(self, color):
+        '''
+        sets color =)
+        '''
+        self.tree.set_color(color)
+
+    def reset(self):
+        '''
+        resets all stateful things
+        '''
+        self.tree.reset()
 
     def make_move(self):
         '''
@@ -72,6 +102,18 @@ class Player():
         '''
         self.tree.set_to_fen_state(fen_position)
 
+    def get_stats(self):
+        '''
+        get statistics about azts tree search
+        parameters
+        :return dict: dictionary containing
+        information about tree shape (max
+        depth, num of end states etc.) and
+        move distribution (probability of
+        best move etc.)
+        '''
+        return self.tree.get_move_statistics()
+
     def dump_data(self):
         '''
         poll for internal data
@@ -86,6 +128,10 @@ class Player():
 
 
 if __name__ == "__main__":
-    player = Player(WHITE)
+    model = mock_model.MockModel()
+    configuration = config.Config("Player/default_config.yaml")
+    player = Player(model=model, \
+            **(configuration.player.as_dictionary()))
     print(f"First move of white player is {player.make_move()}.")
+    print(player.get_stats())
 # pylint: enable=E0401
