@@ -35,10 +35,12 @@ ROOTDIR = find_rootdir()
 GAMEFOLDER = "games"
 RESOURCESFOLDER = "resources"
 DATASETFOLDER = "datasets"
+PLAYERFOLDER = "Player"
 
 GAMEDIR = os.path.join(ROOTDIR, GAMEFOLDER)
 RESOURCESDIR = os.path.join(ROOTDIR, RESOURCESFOLDER)
 DATASETDIR = os.path.join(ROOTDIR, DATASETFOLDER)
+PLAYERDIR = os.path.join(ROOTDIR, PLAYERFOLDER)
 
 for i in [GAMEDIR, RESOURCESDIR, DATASETDIR]:
     if not os.path.exists(i):

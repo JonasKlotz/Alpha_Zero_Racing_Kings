@@ -13,34 +13,10 @@ from Player import config
 from azts import player
 from azts import self_match
 from azts import mock_model
+from azts import utility
 from azts.config import GAMEDIR, \
         RUNS_PER_MOVE, DEFAULT_PLAYER, \
         SHOW_GAME
-
-
-def unused_filename(names, game_id, i=0):
-    '''
-    function to find the lowest unused
-    filename within games folder according
-    to naming scheme "game_[NAME]-[NAME]_0000.pkl"
-    where the names are sorted alphabetically
-    '''
-    filenumber = i
-
-    names.sort()
-    namestring = names[0] + "-" + names[1]
-    game_name = f"game_{game_id}_{namestring}"
-
-    filenumberstring = str(filenumber).zfill(4)
-    filename = f"{game_name}_{filenumberstring}.pkl"
-    filepath = os.path.join(GAMEDIR, filename)
-    while os.path.isfile(filepath):
-        filenumber += 1
-        filenumberstring = str(filenumber).zfill(4)
-        filename = f"{game_name}_{filenumberstring}.pkl"
-        filepath = os.path.join(GAMEDIR, filename)
-
-    return filepath
 
 
 class SelfPlay():
@@ -60,7 +36,7 @@ class SelfPlay():
             player_one, \
             player_two, \
             runs_per_move=RUNS_PER_MOVE, \
-            game_id="game-id", \
+            game_id="UNNAMED_MATCH", \
             show_game=SHOW_GAME):
 
         self.players = [player_one, player_two] 
@@ -88,10 +64,9 @@ class SelfPlay():
             match.simulate()
             data = [tuple(j) for j in match.data_collection]
 
-            filepath = unused_filename([\
-                    self.players[0].name, \
-                    self.players[1].name], \
-                    self.game_id, \
+            filepath = utility.get_unused_filepath( \
+                    f"game_{self.game_id}", \
+                    GAMEDIR, \
                     i)
 
             pickle.dump(data, open(filepath, "wb"))
@@ -104,22 +79,13 @@ class SelfPlay():
 
 if __name__ == "__main__":
 
-    from Model.model import AZero
+    player_defs = ("default_config", "SpryGibbon")
+    game_id = utility.get_unused_match_handle(*player_defs)
+    players = utility.load_players(*player_defs, True)
 
-    conf_one = config.Config("Player/default_config.yaml") 
-    model_one = AZero(conf_one) 
-    player_one = player.Player(name=conf_one.name, \
-            model=model_one, \
-            **(conf_one.player.as_dictionary()))
-
-    conf_two = config.Config("Player/SpryGibbon.yaml")
-    model_two = AZero(conf_two)
-    player_two = player.Player(name=conf_two.name, \
-            model=model_two, \
-            **(conf_two.player.as_dictionary()))
-
-    play = SelfPlay(player_one=player_one, \
-            player_two=player_two, \
+    play = SelfPlay(player_one=players[0], \
+            player_two=players[1], \
+            game_id=game_id, \
             show_game=True)
     play.start(3)
 # pylint: enable=E0401

@@ -13,6 +13,7 @@ from Player import config
 from azts import self_play
 from azts import mock_model
 from azts import player
+from azts import utility
 from azts.config import *
 
 parser = argparse.ArgumentParser(description = \
@@ -78,7 +79,40 @@ def unused_filename(num_of_games, match_name):
     return filepath
 
 
+def create_dataset(yamlpath_one, yamlpath_two, fork_method="spawn"):
+    handle = utility.get_unused_match_handle(yamlpath_one, yamlpath_two)
+    
 
+    return 0
+
+
+def parallel_matches(yamlpaths, fork_method="spawn")
+    # according to
+    # https://docs.python.org/3/library/multiprocessing.html
+    multiprocessing.set_start_method(args.fork_method)
+    processes = []
+    selfplays = []
+
+
+    for i in range(args.num_of_parallel_processes):
+        players = utility.load_players(*tuple(yamlpaths))
+
+
+        selfplay = self_play.SelfPlay(\
+                player_one=players[0], \
+                player_two=players[1], \
+                runs_per_move=args.rollouts_per_move, \
+                game_id=game_id, \
+                show_game=False)
+        process = multiprocessing.Process(target = selfplay.start, \
+                args = (args.num_of_games_per_process,))
+
+        process.start()
+        processes.append(process) 
+        selfplays.append(selfplay)
+
+    for i in processes:
+        i.join()
 
 
 
