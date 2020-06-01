@@ -20,8 +20,8 @@ from azts import state_machine
 from azts import azts_node
 from azts import mock_model
 
-from azts.config import *
-
+from azts.config import WHITE, RUNS_PER_MOVE, \
+        EXPLORATION, ROLLOUT_PAYOFFS, HEAT
 
 
 class AztsTree():
@@ -31,17 +31,25 @@ class AztsTree():
     :param str position: Game state in FEN-notation
     or None.
     """
-    def __init__(self,
-                 statemachine,
-                 model,
-                 color,
-                 runs_per_move=10):
+    def __init__(self, \
+                 model, \
+                 color=WHITE, \
+                 runs_per_move=RUNS_PER_MOVE, \
+                 exploration=EXPLORATION, \
+                 payoffs=ROLLOUT_PAYOFFS, \
+                 heat=HEAT):
 
         self.color = color
 
-        self.statemachine = statemachine
+        self.statemachine = state_machine.StateMachine()
         self.model = model
         self.runs_per_move = runs_per_move
+        self.heat = heat
+
+        # for initialising azts nodes:
+        self.exploration = exploration
+        self.payoffs = payoffs 
+
         self._init_tree()
 
     def _init_tree(self):
@@ -51,12 +59,26 @@ class AztsTree():
         after every move if tree is
         not reused
         '''
-        self.root = azts_node.AztsNode(self.statemachine, \
-                         self.model, \
-                         self.color)
+        self.root = azts_node.AztsNode(\
+                statemachine=self.statemachine, \
+                model=self.model, \
+                color=self.color, \
+                exploration=self.exploration, \
+                payoffs=self.payoffs)
 
     def __str__(self):
-        return self.root.__str__()
+        string = self.root.__str__()
+        string += f"\n\nSettings:\n\tHeat:\t\t{self.heat}\n" \
+                + f"\tExploration:\t{self.exploration}\n"
+        return string
+
+    def set_color(self, color):
+        '''
+        sets color
+        '''
+        self.color = color
+        del self.root
+        self._init_tree()
 
     def set_to_fen_state(self, fen_state):
         '''
@@ -81,12 +103,30 @@ class AztsTree():
 
         if self.color == self.statemachine.get_player_color():
             self._tree_search(self.runs_per_move)
-            move = self.root.get_move()
+            move = self.root.get_move(self.heat)
             self.statemachine.actual_fen_move(move)
         else:
             raise Exception("Other players turn")
 
         return move
+
+    def get_move_statistics(self):
+        '''
+        return statistics about current state
+        of azts tree search
+        :return dict: dictionary containing
+        entries about tree (max depth etc)
+        and distribution (probability of
+        best move etc).
+        '''
+        stats = self.root.get_move_statistics(self.heat)
+        stats["settings"] = {}
+        stats["settings"]["heat"] = self.heat
+        stats["settings"]["exploration"] = self.exploration
+        stats["settings"]["color"] = self.color
+        stats["settings"]["payoffs"] = self.payoffs
+        return stats
+
 
     def get_policy_tensor(self):
         '''
@@ -144,6 +184,14 @@ class AztsTree():
         '''
         return self.statemachine.get_actual_state()
 
+    def reset(self):
+        '''
+        re-initialise all stateful things
+        '''
+        del self.statemachine
+        self.statemachine = state_machine.StateMachine()
+        self._init_tree()
+
     def _tree_search(self, runs=10):
         '''
         :param int runs: number of rollouts to
@@ -166,10 +214,10 @@ def set_up(color=WHITE):
     '''
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = AztsTree(statemachine, \
-                model, \
-                color, \
-                200)
+    tree = AztsTree(statemachine=statemachine, \
+                model=model, \
+                color=color, \
+                runs_per_move=200)
 
     np.set_printoptions(suppress=True, precision=3)
 
@@ -188,5 +236,8 @@ if __name__ == "__main__":
     print(f"doing {tree.runs_per_move} rollouts " \
           + f"took {str(time2 - time1)[0:5]} seconds.\n")
     print(f"First move is {first_move}.")
+    print("This might differ from the highest\n" \
+            + "rated move because the actual move\n" \
+            + "is randomly sampled from a distribution.")
     # pylint: enable=C0103
 # pylint: enable=E0401

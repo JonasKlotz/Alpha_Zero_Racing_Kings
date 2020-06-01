@@ -7,10 +7,14 @@ in a match against each other
 import time
 
 from Interpreter import game
+from Player import config
+from azts import mock_model
 from azts import player
 from azts import screen
-from azts.config import *
-from azts import mock_model
+from azts.config import ROLLOUT_PAYOFFS, \
+    EXPLORATION, HEAT, BLACK, WHITE, \
+    RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
+    SHOW_GAME, DEFAULT_PLAYER
 
 REPORT_CYCLE = 10
 
@@ -29,14 +33,25 @@ class SelfMatch():
     move
     '''
 
-    def __init__(self, model, runs_per_move=RUNS_PER_MOVE):
+    def __init__(self,
+                 player_one,
+                 player_two,
+                 runs_per_move=RUNS_PER_MOVE,
+                 show_game=SHOW_GAME):
+
         self.players = []
-        # model = mock_model.MockModel()
-        self.players.append(player.Player(WHITE, model, runs_per_move))
-        self.players.append(player.Player(BLACK, model, runs_per_move))
+
+        player_one.set_color(WHITE)
+        self.players.append(player_one)
+        player_two.set_color(BLACK)
+        self.players.append(player_two)
+
         self.game = game.Game()
         self.screen = screen.Screen()
         self.data_collection = []
+
+        self.training_payoffs = TRAINING_PAYOFFS
+        self.show_game = show_game
 
     def set_game_state(self, fen_state):
         '''
@@ -66,6 +81,8 @@ class SelfMatch():
         '''
         moves = 1
         time1 = time.time()
+        print(f"\nWHITE: {self.players[0].name}\n"
+              + f"BLACK: {self.players[1].name}\n")
         while True:
             # check break condition:
             if self.game.is_ended():
@@ -92,7 +109,7 @@ class SelfMatch():
         state = self.game.get_game_state()
         print(f"game ended after {moves} "
               + f"moves with {result} ({TO_STRING[state]}).")
-        score = TRAINING_PAYOFFS[state]
+        score = self.training_payoffs[state]
 
         for i in self.data_collection:
             i[2] = score
@@ -100,7 +117,7 @@ class SelfMatch():
         return state
 
     def _show_game(self):
-        if SHOW_GAME:
+        if self.show_game:
             img = self.game.render_game()
             self.screen.show_img(img)
 
@@ -117,7 +134,19 @@ class SelfMatch():
 if __name__ == "__main__":
     SHOW_GAME = True
     RUNS_PER_MOVE = 10
-    match = SelfMatch(mock_model.MockModel())
+
+    model = mock_model.MockModel()
+
+    players = {}
+    for i, j in zip(["player_one", "player_two"],
+                    ["default_config.yaml", "SpryGibbon.yaml"]):
+        path = "Player/" + j
+        configuration = config.Config(path)
+        players[i] = player.Player(model=model,
+                                   name=configuration.name,
+                                   **(configuration.player.as_dictionary()))
+
+    match = SelfMatch(**players)
     match.simulate()
 
 # pylint: enable=E0401

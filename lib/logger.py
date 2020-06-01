@@ -1,9 +1,11 @@
-"""
+""" Have a look at the logger.py's __main__ for detailed examples on usage;
 Usage:
     from lib.logger import get_logger
     log = get_logger(__name__)
 
     log.info("info test message")
+
+logger will print message to console and to unique log file in LOG_DIR (/logs)
 
 Enforce level for all existing and future loggers:
     from lib.logger import set_level_global
@@ -35,7 +37,7 @@ _LOG_LEVEL_GLOBAL = logging.DEBUG
 _GLOBAL_LEVEL_ENFORCED = False
 
 
-# setup
+# setup variables
 __loggers = []
 
 __LOG_LEVELS = {
@@ -43,18 +45,29 @@ __LOG_LEVELS = {
     "INFO": logging.INFO,
     "WARNING": logging.WARNING,
     "ERROR": logging.ERROR,
-    "CRITICAL": logging.CRITICAL
+    "CRITICAL": logging.CRITICAL,
+    "SILENCE": 100
 }
 __LOG_LEVELS_STR = {
     logging.DEBUG: "DEBUG",
     logging.INFO: "INFO",
     logging.WARNING: "WARNING",
     logging.ERROR: "ERROR",
-    logging.CRITICAL: "CRITICAL"
+    logging.CRITICAL: "CRITICAL",
+    100: "SILENCE"
 }
+
+__LOG_FILE = os.path.join(LOG_DIR, time.strftime(_LOG_FILE_FMT))
+__LOG_FORMATTER = logging.Formatter(_LOG_FMT, datefmt=_LOG_DATEFMT)
 
 if not os.path.isdir(LOG_DIR):
     os.mkdir(LOG_DIR)
+
+
+# setup handlers
+__STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
+__STDOUT_HANDLER.setFormatter(__LOG_FORMATTER)
+__STDOUT_HANDLER.setLevel(_LOG_LEVEL_STDOUT)
 
 
 def __file_handler(file):
@@ -64,14 +77,14 @@ def __file_handler(file):
     return handler
 
 
-__LOG_FILE = os.path.join(LOG_DIR, time.strftime(_LOG_FILE_FMT))
-__LOG_FORMATTER = logging.Formatter(_LOG_FMT, datefmt=_LOG_DATEFMT)
-
-__STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
-__STDOUT_HANDLER.setFormatter(__LOG_FORMATTER)
-__STDOUT_HANDLER.setLevel(_LOG_LEVEL_STDOUT)
-
 __LOG_FILE_HANDLER = __file_handler(__LOG_FILE)
+
+
+# create special logger for logger.py
+log = logging.getLogger("Log")
+log.addHandler(__STDOUT_HANDLER)
+log.addHandler(__LOG_FILE_HANDLER)
+log.setLevel(logging.DEBUG)
 
 
 def __get_log_level(level):
@@ -115,7 +128,7 @@ def get_logger(name, level="DEFAULT", file=None):
 def set_level_global(level, enforce=False):
     """ Sets the global log level for all loggers
     Args:
-        level (str): log level, one of: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+        level (str): log level, one of: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "SILENCE"
         enforce (bool): if set to True, the global log level will also
                         be enforced for all future loggers
     """
@@ -135,7 +148,7 @@ def set_level_global(level, enforce=False):
 def set_level_stdout(level):
     """ Sets the log level for console output
     Args:
-        level (str): log level, one of: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+        level (str): log level, one of: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "SILENCE"
     """
     global _LOG_LEVEL_STDOUT
     _LOG_LEVEL_STDOUT = __get_log_level(level)
@@ -145,7 +158,19 @@ def set_level_stdout(level):
     __STDOUT_HANDLER.setLevel(_LOG_LEVEL_STDOUT)
 
 
-log = get_logger("Log")
+def silence_all():
+    """ Silences all existing loggers, can be undone by setting global level """
+    set_level_global("SILENCE")
+
+
+def remove_all():
+    """ Effectively removes all existing loggers and makes them useless """
+    global __loggers
+    for logger in __loggers:
+        logger.handlers.clear()
+    __loggers = []
+    log.info("All existing loggers removed")
+
 
 if __name__ == "__main__":
 
@@ -156,12 +181,27 @@ if __name__ == "__main__":
 
     set_level_global("DEBUG", enforce=True)
 
-    log2.info("YYYYYY You see this, because global log level was changed")
+    log2.info("YYYYYY Now you see this, because global log level was changed")
 
     log3 = get_logger("Log3", level="CRITICAL")
     log3.debug(
-        "YYYYYY This should now still be seen, because global is enforced for new loggers")
+        "YYYYYY This will still be seen, because global is enforced for new loggers")
 
     set_level_stdout("CRITICAL")
     set_level_global("INFO")
-    log.warning("ZZZZZZ This won't be seen on console, but in logs")
+    log3.warning("ZZZZZZ This won't be seen on console, but in logs")
+
+    set_level_stdout("INFO")
+    set_level_global("CRITICAL")
+    log3.warning("ZZZZZZ This won't be seen on console OR in logs")
+
+    silence_all()
+    log3.info("helllllp")
+    log3.critical("AAAAA No one can hear this")
+
+    set_level_global("INFO")
+    log3.critical("AAAAA back again")
+
+    remove_all()
+    log2.info("This logger has become useless")
+    log3.debug("And it won't ever speak again")

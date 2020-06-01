@@ -13,8 +13,7 @@ from azts import mock_model
 
 from azts.config import WHITE, POS_DTYPE,\
         EDGE_DTYPE, IDX_DTYPE, \
-        AMPLIFY_RESULT, EXPLORATION
-
+        EXPLORATION, ROLLOUT_PAYOFFS
 # pylint: disable=W0621
 # index of values that get stored
 # in each edge
@@ -50,7 +49,12 @@ class AztsNode():
     """
 
     # pylint: disable=C0326
-    def __init__(self, statemachine, model, color=WHITE):
+    def __init__(self, \
+            statemachine, \
+            model, \
+            color=WHITE, \
+            exploration=EXPLORATION, \
+            payoffs=ROLLOUT_PAYOFFS):
         """
         :param StateMachine statemachine: is a state machine that
         translates from tensor indices to fen/uci notation and
@@ -66,6 +70,8 @@ class AztsNode():
         self.color = color
         self.statemachine = statemachine
         self.model = model
+        self.payoffs = payoffs
+        self.exploration = exploration
 
         if statemachine.game_over():
             # game over: this is a leaf node
@@ -73,8 +79,8 @@ class AztsNode():
             # of the game
             self.endposition = True
 
-            result = statemachine.get_result()
-            self.evaluation = result * self.color * AMPLIFY_RESULT
+            state = statemachine.get_state()
+            self.evaluation = self.payoffs[self.color][state]
             self.children = []
 
         else: 
@@ -117,7 +123,19 @@ class AztsNode():
                          + f"\t{metrics[0]} normal tree nodes\n" \
                          + f"\t{metrics[4]} was maximal tree depth\n" \
                          + f"\t{str(avg_num_of_move_possibilities)[0:5]}" \
-                         + " was average number of move possibilities per move"
+                         + " was average number of move possibilities per move\n\n" \
+                         + "Move statistics:\n"
+        move_stats = self._get_distribution_statistics()
+        for i in move_stats.keys():
+            filler = {"move": "\t\t", "score": "\t\t\t", "rating": "\t"}
+            select = i.split(" ")[1]
+            distr_metric = f"\t{i}:{filler[select]}{str(move_stats[i])[0:5]}\n"
+            metric_string += distr_metric 
+
+        metric_string += "\n\nNote that the scores change dynamically\n" \
+                + "during rollouts and do not determine\n" \
+                + "the distribution; they rather determine\n" \
+                + "the first move for the next rollout."
 
         return tree_string + metric_string
 
@@ -138,13 +156,15 @@ class AztsNode():
         rep = []
         metrics = (1, 0, 0, 0, level, len(self.children))
         maxlevel = level
+        edge_scores = self._edge_scores()
         for i, j in enumerate(self.children):
             if j:
                 # pylint: disable=W0212
                 child_metrics, string = j._print_tree(level + 1)
+                score = str(edge_scores[i])[0:5]
                 metrics = [k + l for k, l in zip(metrics, child_metrics)]
                 maxlevel = max(maxlevel, child_metrics[4])
-                rep.append(str(i) + ": " + string)
+                rep.append(f"{i}: scored {score}: {string}")
                 # pylint: enable=W0212
 
         metrics[4] = maxlevel
@@ -169,6 +189,60 @@ class AztsNode():
         repstr = "node, {:0.3f}\n".format(self.evaluation) + repstr
         return metrics, repstr
 
+    def _get_tree_statistics(self):
+        '''
+        get information about the current state of the rollout tree
+        :return dict: dictionary containing several kpis
+        '''
+        metrics, _ = self._print_tree(0)
+
+        num_of_nodes = metrics[0] + metrics[1] + metrics[2]
+        avg_legal_moves = metrics[5] / num_of_nodes
+        tree_overflow = metrics[3] != 0
+        
+        stats = {"tree overflow": tree_overflow, \
+                "number of nodes": num_of_nodes, \
+                "leaf nodes": metrics[1], \
+                "end positions": metrics[2], \
+                "normal tree nodes": metrics[0], \
+                "maximal tree depth": metrics[4], \
+                "avg num of legal moves per pos": avg_legal_moves} 
+        
+        return stats
+
+    def _get_distribution_statistics(self, heat = 1):
+        '''
+        gather information about the move distribution
+        and return it as dictionary
+        '''
+
+        move_distribution = self.get_move_distribution(heat) 
+        scores = self._edge_scores()
+        stats = {}
+
+        for i in ["first", "second", "third", "fourth"]:
+            j = i + " rating"
+            k = i + " move"
+            l = i + " score"
+            select = move_distribution.argmax()
+            stats[j] = move_distribution[select] 
+            move_index = self._legal_to_total_index(select)
+            move = self.statemachine.move_index_to_fen(move_index)
+            stats[k] = move
+            move_distribution[select] = 0
+            stats[l] = scores[select]
+
+        stats["rest rating"] = move_distribution.sum() 
+        return stats
+    
+    def get_move_statistics(self, heat = 1):
+        stats = {}
+        stats["tree"] = self._get_tree_statistics()
+        stats["move distribution"] = self._get_distribution_statistics(heat) 
+
+        return stats
+
+
     def get_policy_tensor(self):
         """
         :return: tensor with distributions from
@@ -184,12 +258,50 @@ class AztsNode():
         policy_tensor[self.legal_move_indices] = policy_weights
         return policy_tensor
 
-    def get_move(self):
+    def get_move_distribution(self, heat=1):
+        '''
+        calculates the current move distribution from
+        which the next move is being sampled. Every legal
+        move is being assigned a probability which is determined
+        by the simulations of that move; all move probabilities
+        add up to 1.
+        :param float heat: control explorative behaviour:
+        heat > 1 more exploration (less deterministic)
+        0 < heat < 1 more exploitation
+        :return np.array: distribution of moves; indices in this
+        array correspond to the indices in self.edges and need
+        to be translated to actual moves with _legal_to_total_index
+        '''
+        distribution = self.edges[:, NCOUNT] / max(self.edges[:, NCOUNT].sum(), 1)
+        if heat != 1:
+            heat = max(heat, 0.0001)
+            distribution = np.power(distribution, 1 / heat)
+            distribution /= distribution.sum()
+
+        return distribution
+
+    def get_move(self, heat=1):
         """
         :return: best move according to current state of
         tree search in fen notation
         :rtype: str
         """
+        distribution = self.get_move_distribution(heat)
+
+        order = distribution.argsort()
+        draw = np.random.rand(1)[0]
+        category = 0
+
+        # going through the distribution from smallest to
+        # largest value
+        for i in order:
+            category += distribution[i]
+            if draw < category:
+                # select this move.
+                move = self._legal_to_total_index(i)
+                return self.statemachine.move_index_to_fen(move)
+
+        # something went wrong: return best move 
         i = np.argmax(self.edges[:, NCOUNT])
         i = self._legal_to_total_index(i)
         return self.statemachine.move_index_to_fen(i)
@@ -216,9 +328,12 @@ class AztsNode():
         if next_node is None:
             # terminate recursion
             # on leaf expansion 
-            leaf = AztsNode(self.statemachine,
-                            self.model,
-                            self.color)
+            leaf = AztsNode(statemachine=self.statemachine, \
+                            model=self.model, \
+                            color=self.color, \
+                            exploration=self.exploration, \
+                            payoffs=self.payoffs) 
+
             evaluation = leaf.evaluation
             self.children[i] = leaf
 
@@ -245,17 +360,26 @@ class AztsNode():
 
         return evaluation
 
+    def _edge_scores(self):
+        '''
+        from the four metrics in each edge, calculate
+        a score for each edge. highest score is being
+        selected in rollouts.
+        :return np.array: list of scores whos indices
+        are aligned to self.edges
+        '''
+        U = self.edges[:, PPRIOR] / (self.edges[:, NCOUNT] + 1)
+        U *= self.exploration
+        Q = self.edges[:, QMEANVALUE]
+
+        return Q + U
+
     def _index_of_best_move(self):
         """
         :return: index of best move
         :rtype: int
-        """
-
-        U = self.edges[:, PPRIOR] / (self.edges[:, NCOUNT] + 1)
-        U *= EXPLORATION
-        Q = self.edges[:, QMEANVALUE]
-        best_move_index = (Q + U).argmax()
-
+        """ 
+        best_move_index = self._edge_scores().argmax()
         return best_move_index
 
     def _legal_to_total_index(self, index):

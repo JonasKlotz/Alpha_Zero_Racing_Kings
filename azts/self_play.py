@@ -7,32 +7,16 @@ This module simulates many games of RacingsKings.
 import os.path
 import time
 import pickle
+
+from Player import config
+
+from azts import player
 from azts import self_match
-from azts.config import *
-
-from lib.timing import timing, runtime_summary, prettify_time
-from lib.logger import get_logger
-log = get_logger("self_play")
-
-
-def unused_filename(i=0):
-    '''
-    function to find the lowest unused
-    filename within games folder according
-    to naming scheme "game_0000.pkl"
-    '''
-    filenumber = i
-
-    filenumberstring = str(filenumber).zfill(4)
-    filename = f"game_{filenumberstring}.pkl"
-    filepath = os.path.join(GAMEDIR, filename)
-    while os.path.isfile(filepath):
-        filenumber += 1
-        filenumberstring = str(filenumber).zfill(4)
-        filename = f"game_{filenumberstring}.pkl"
-        filepath = os.path.join(GAMEDIR, filename)
-
-    return filepath
+from azts import mock_model
+from azts import utility
+from azts.config import GAMEDIR, \
+    RUNS_PER_MOVE, DEFAULT_PLAYER, \
+    SHOW_GAME
 
 
 class SelfPlay():
@@ -49,11 +33,17 @@ class SelfPlay():
     matches.
     '''
 
-    def __init__(self, model, runs_per_move=RUNS_PER_MOVE):
-        self.model = model
-        self.match = self_match.SelfMatch(
-            self.model, runs_per_move=runs_per_move)
+    def __init__(self,
+                 player_one,
+                 player_two,
+                 runs_per_move=RUNS_PER_MOVE,
+                 game_id="UNNAMED_MATCH",
+                 show_game=SHOW_GAME):
+
+        self.players = [player_one, player_two]
         self.runs_per_move = runs_per_move
+        self.game_id = game_id
+        self.show_game = show_game
 
     def start(self, iterations=10):
         '''
@@ -65,49 +55,38 @@ class SelfPlay():
         to be simulated
         '''
         for i in range(iterations):
-            self.match.simulate()
-            data = [tuple(j) for j in self.match.data_collection]
+            switch = i % 2
+            print(f"\nMATCH {i+1} OF {iterations}:")
+            match = self_match.SelfMatch(
+                player_one=self.players[switch],
+                player_two=self.players[1 - switch],
+                runs_per_move=self.runs_per_move,
+                show_game=self.show_game)
+            match.simulate()
+            data = [tuple(j) for j in match.data_collection]
 
-            filepath = unused_filename(i)
+            filepath = utility.get_unused_filepath(
+                f"game_{self.game_id}",
+                GAMEDIR,
+                i)
 
             pickle.dump(data, open(filepath, "wb"))
 
-            del self.match
-            self.match = self_match.SelfMatch(
-                self.model, runs_per_move=self.runs_per_move)
+            del match
+            for i in self.players:
+                i.reset()
 
 
 if __name__ == "__main__":
 
-    MAX_RUNS = 4
-    SP_LENGTH = 4
+    player_defs = ("default_config", "SpryGibbon")
+    game_id = utility.get_unused_match_handle(*player_defs)
+    players = utility.load_players(*player_defs, True)
 
-    from Model.model import AZero
-    from Player.config import Config
-    conf = Config("Player/config.yaml")
-    model = AZero(conf)
-    play = SelfPlay(model)
-
-    half_dataset_done = False
-    # Generate
-    for i in range(MAX_RUNS):
-        if half_dataset_done:  # expects new model to be ready soon
-            log.info("Half-time done")
-            start = time.perf_counter()
-            if not model.new_model_available():
-                log.info("Waiting for newest model")
-            while not model.new_model_available():
-                # NOTE: thread could just continue to create dataset (not const chunksize!)
-                time.sleep(1)
-            log.info("Found new model")
-            elapsed = time.perf_counter() - start
-            log.info("Thread blocked for {}".format(prettify_time(elapsed)))
-            model.restore_latest_model()
-        log.info("Beginning Self-play iteration {}/{}, \
-            game chunk-size: {}".format(i, MAX_RUNS, SP_LENGTH))
-        play.start(SP_LENGTH)
-        half_dataset_done = not half_dataset_done
-
-
+    play = SelfPlay(player_one=players[0],
+                    player_two=players[1],
+                    game_id=game_id,
+                    show_game=True)
+    play.start(3)
 # pylint: enable=E0401
 # pylint: enable=E0602

@@ -47,13 +47,17 @@ class Options(object):
                 log.warning("ignoring unknown parameter " + param)
 
     def get_items(self):
-        """ returns a list of member attributes
+        """ returns a list of tuples (member, value) 
         """
         return [(attr, getattr(self, attr)) for attr in dir(self) if not callable(getattr(self, attr))
                 and "__" not in attr]
 
     def as_dictionary(self):
-        return dict(self.get_items())
+        d = dict(self.get_items())
+        for key, value in d.items():
+            if isinstance(value, Options):
+                d[key] = value.as_dictionary()
+        return d
 
     def __str__(self, indent=""):
         out = ""
