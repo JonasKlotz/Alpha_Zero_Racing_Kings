@@ -1,3 +1,8 @@
+"""
+provides functions to use stockfish with
+python-chess library
+"""
+
 import sys
 from copy import copy
 import io
@@ -13,7 +18,7 @@ import chess.svg
 from cairosvg import svg2png
 from PIL import Image
 
-from Interface.TensorNotation import DATATYPE, move_to_tensor_indices, tensor_to_fen
+from Interface.TensorNotation import DATATYPE, move_to_tensor_indices
 from azts.config import *
 
 
@@ -253,27 +258,26 @@ class Game:
         self.make_move(rnd_move)
 
     # if not working make engine/stockfish-x86_64 executable
-    def play_stockfish(self, limit=1.0):
+    def play_stockfish(self, limit=1.0, path="Engine/stockfish-x86_64"):
         """
         stockfish plays move
+        :param path: gives path to Stockfish Engine. Defaults to this (sub)directory.
         :param limit:
         :return:
         """
         if not self.engine:
-            self.engine = chess.engine.SimpleEngine.popen_uci(
-                "Engine/stockfish-x86_64")
+            self.engine = chess.engine.SimpleEngine.popen_uci(path)
         result = self.engine.play(self.board, chess.engine.Limit(time=limit))
         self.make_move(result.move)
 
-    def get_policy(self):
+    def get_policy(self, path="Engine/stockfish-x86_64"):
         """
 
         :rtype: [[UCI String][Centipawnscore]]
         :return: Policy as list of lists
         """
         if not self.engine:
-            self.engine = chess.engine.SimpleEngine.popen_uci(
-                "Engine/stockfish-x86_64")
+            self.engine = chess.engine.SimpleEngine.popen_uci(path)
 
         policy = []
 
@@ -310,24 +314,26 @@ class Game:
             return winning_probability
         except:
             print(self.board)
+
             raise RuntimeError("coudlt calculate probability")  # TODO: LOGG
 
-    def get_evaluation(self):
+    def get_evaluation(self, path="Engine/stockfish-x86_64"):
         """
         :return: int with position evaluation score
         """
 
         if not self.engine:
-            self.engine = chess.engine.SimpleEngine.popen_uci(
-                "Engine/stockfish-x86_64")
+            self.engine = chess.engine.SimpleEngine.popen_uci(path)
 
         try:
             info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
-            centipawn = info["score"].white().score(mate_score=100000) #/ 100
+            centipawn = info["score"].white().score(mate_score=100000)  # / 100
             return centipawn
         except:
             print(self.board)
+            # self.show_game()
             raise RuntimeError("coudlt calculate evaluation score")  # TODO: LOGG
+
 
 def normalize_policy(policy, x=-1):
     """
@@ -344,26 +350,27 @@ def normalize_policy(policy, x=-1):
 
     return policy
 
-def evaluate_position(position):
-    """
-    :param np.array: current game position
-        in tensor notation
-    :return: int with position evaluation score
-    """
-    g = Game()
-    g.board = tensor_to_fen(position)
-    return g.get_evaluation()
 
-def get_policy_from_position(position):
-    """
-    Returns normalized policy for a given position in tensor notation
-    :param position: np.array: current game position
-        in tensor notation
-    :return: normalized policy tensor
-    """
-    g = Game()
-    g.board = tensor_to_fen(position)
-    return policy_to_tensor(normalize_policy(g.get_policy()))
+# def evaluate_position(position, path="Engine/stockfish-x86_64"):
+#     """
+#     :param np.array: current game position
+#         in tensor notation
+#     :return: int with position evaluation score
+#     """
+#     g = Game()
+#     g.board = tensor_to_fen(position)
+#     return g.get_evaluation(path)
+
+# def get_policy_from_position(position):
+#     """
+#     Returns normalized policy for a given position in tensor notation
+#     :param position: np.array: current game position
+#         in tensor notation
+#     :return: normalized policy tensor
+#     """
+#     g = Game()
+#     g.board = tensor_to_fen(position)
+#     return policy_to_tensor(normalize_policy(g.get_policy()))
 
 
 def policy_to_tensor(policy):
@@ -378,9 +385,10 @@ def policy_to_tensor(policy):
 
     return tensor
 
+
 if __name__ == "__main__":
-# game.make_move(policy[3][0])
-# print(game.get_scoring())
+    # game.make_move(policy[3][0])
+    # print(game.get_scoring())
     game = Game()
     i = 0
     while not game.is_ended():
