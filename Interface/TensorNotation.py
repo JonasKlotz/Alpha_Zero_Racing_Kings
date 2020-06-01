@@ -60,6 +60,20 @@ PIECE_LETTERS_WHITE = [
 STD_FEN = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
 
 
+def unravel_board_fen(board_fen):
+    """
+    Replace digits by number of "1"s and split String into rows
+    Args:
+        board_fen: str First part of the FEN string
+
+    Returns: Array[str]
+
+    """
+    for i in range(2, 9):
+        board_fen = board_fen.replace(str(i), "1" * i)
+    return board_fen.split("/")
+
+
 def fen_to_tensor(fen=STD_FEN):
     """
     Converts FEN String to tensor notation
@@ -75,10 +89,7 @@ def fen_to_tensor(fen=STD_FEN):
     tensor = np.zeros((8, 8, 11)).astype(DATATYPE)
     fen = fen.split()
 
-    # replace digits by number of "1"s and split String into rows
-    for i in range(2, 9):
-        fen[0] = fen[0].replace(str(i), "1" * i)
-    board_fen = fen[0].split("/")
+    board_fen = unravel_board_fen(fen[0])
     # check who is to move, set indices and tensor accordingly
     if fen[1] == "w":
         piece_indices = PIECE_INDICES_WHITE
@@ -322,14 +333,59 @@ def move_from_two_tensors(from_tensor, to_tensor):
 
     diff = np.subtract(converted_from_tensor[:, :, :10], to_tensor[:, :, :10])
     from_index = np.argwhere(diff == 1)
-    to_index = np.argwhere(diff == -1)
 
-    print(diff)
+    try:
+        if np.iinfo(diff.dtype).min == 0:
+            to_index = np.argwhere(diff == np.iinfo(diff.dtype).max)
+        else:
+            to_index = np.argwhere(diff == -1)
+    except ValueError:
+        to_index = np.argwhere(diff == -1)
 
-    print(from_index)
-    print(to_index)
+    if 2 >= from_index.shape[0] >= 1 and to_index.shape[0] == 1:
+        if from_index[0][2] != to_index[0][2]:
+            from_index = np.delete(from_index, 0, 0)
+        else:
+            from_index = np.delete(from_index, 1, 0)
+        uci = chr(ord("A") + from_index[0][1]).lower() + str(8 - from_index[0][0])
+        uci += chr(ord("A") + to_index[0][1]).lower() + str(8 - to_index[0][0])
+        return uci
 
-    uci = chr(ord("A") + from_index[0][1]).lower() + str(8 - from_index[0][0])
-    uci += chr(ord("A") + to_index[0][1]).lower() + str(8 - to_index[0][0])
+    if from_index.shape[0] == 0 and to_index.shape[0] == 0:
+        print("No piece moved")
+        return None
 
-    return uci
+    if from_index.shape[0] > 1 and to_index.shape[0] > 1:
+        print("More than 1 piece moved")
+        return None
+
+
+def move_from_two_fen(from_fen, to_fen):
+    from_fen = from_fen.split()
+    to_fen = to_fen.split()
+
+    from_fen_board = unravel_board_fen(from_fen[0])
+    to_fen_board = unravel_board_fen(to_fen[0])
+
+    from_index = []
+    to_index = []
+
+    for i in range(8):
+        for j in range(8):
+            if from_fen_board[i][j] != to_fen_board[i][j]:
+                if to_fen_board[i][j] == "1":
+                    from_index.append([i, j])
+                else:
+                    to_index.append([i, j])
+
+    if len(to_index) == 1 and len(from_index) == 1:
+        if from_fen_board[from_index[0][0]][from_index[0][1]] != to_fen_board[to_index[0][0]][to_index[0][1]]:
+            print("Could not get move from two fen")
+            return None
+        uci = chr(ord("A") + from_index[0][1]).lower() + str(8 - from_index[0][0])
+        uci += chr(ord("A") + to_index[0][1]).lower() + str(8 - to_index[0][0])
+
+        return uci
+    else:
+        print(f"Could not get move from {from_fen[0]} to {to_fen[0]}")
+        return None

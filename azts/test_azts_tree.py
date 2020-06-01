@@ -8,22 +8,26 @@ from azts import azts_tree
 from azts import state_machine
 from azts import mock_model
 
-from azts.config import *
+from azts.config import WHITE, BLACK, \
+        RUNNING, DRAW, DRAW_BY_STALE_MATE, \
+        WHITE_WINS, BLACK_WINS
 
 @pytest.fixture
 def tree_white_start():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, WHITE, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=WHITE, \
+            runs_per_move=10)
     return tree
 
 @pytest.fixture
 def tree_white_other_turn():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, WHITE, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=WHITE, \
+            runs_per_move=10)
     tree.make_move()
     return tree
 
@@ -31,8 +35,9 @@ def tree_white_other_turn():
 def tree_stale_mate():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, BLACK, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=BLACK, \
+            runs_per_move=10)
     stale_mate = "8/8/8/8/8/8/R7/5K1k b - - 10 20"
     tree.set_to_fen_state(stale_mate)
     return tree
@@ -41,8 +46,9 @@ def tree_stale_mate():
 def tree_won():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, BLACK, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=BLACK, \
+            runs_per_move=10)
     win_position = "7k/8/8/8/8/8/R7/5K2 w - - 10 20"
     tree.set_to_fen_state(win_position)
     return tree
@@ -51,8 +57,9 @@ def tree_won():
 def suspension_draw():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(statemachine, \
-            model, BLACK, 10)
+    tree = azts_tree.AztsTree(model=model, \
+            color=BLACK, \
+            runs_per_move=10)
     suspended_draw = "7K/k7/7R/8/8/8/8/1R6 b - - 10 20"
     tree.set_to_fen_state(suspended_draw)
     return tree
@@ -97,7 +104,7 @@ def test_game_state_running(\
 
 def test_game_start_result_zero(\
         tree_white_start):
-    assert tree_white_start.game_result() == 0
+    assert tree_white_start.game_result() == RUNNING
 
 def test_no_move_in_other_turn(tree_white_other_turn):
     with pytest.raises(Exception):
@@ -136,7 +143,7 @@ def test_stalemate_game_over(\
 
 def test_stalemate_result_zero(\
         tree_stale_mate):
-    assert tree_stale_mate.game_result() == 0
+    assert tree_stale_mate.game_result() == DRAW
 
 def test_won_game_over(tree_won):
     assert tree_won.game_over()
@@ -145,7 +152,7 @@ def test_won_registered(tree_won):
     assert tree_won.statemachine.actual_game.board.is_variant_end()
 
 def test_won_result(tree_won):
-    assert tree_won.game_result() == BLACK
+    assert tree_won.game_result() == BLACK_WINS
 
 def test_won_game_state(tree_won):
     assert tree_won.game_state() == BLACK_WINS

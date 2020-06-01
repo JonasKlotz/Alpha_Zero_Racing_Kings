@@ -38,7 +38,7 @@ class Game:
         self.end = False
         self.draw = False
         self.history = {}
-        self.history[self.board.fen()] = 1
+        self.history[self.board_fen_hash()] = 1
         self.state = RUNNING
 
         # print(self.board)
@@ -121,15 +121,19 @@ class Game:
         except:
             raise ValueError(f"move {input} illegal")
 
+    def board_fen_hash(self):
+        return self.board.fen().split(' ')[0]
+
     def after_mode(self, ):
         self.move_count += 1
         self.player_to_move *= -1
 
+        board_fen = self.board_fen_hash()
         try:
-            if self.board.fen() in self.history:
-                self.history[self.board.fen()] += 1
+            if board_fen in self.history:
+                self.history[board_fen] += 1
             else:
-                self.history[self.board.fen()] = 1
+                self.history[board_fen] = 1
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
@@ -201,11 +205,12 @@ class Game:
                 self.state = DRAW_BY_STALE_MATE
             self.end = True
 
+        print("history count: {}".format(self.history[self.board_fen_hash()]))
         try:
-            if self.history[self.board.fen()] > 2:
+            if self.history[self.board_fen_hash()] > 2:
                 self.state = DRAW_BY_REP
                 self.end = True
-            self.draw |= self.history[self.board.fen()] > 2
+                self.draw = True
         except:
             # to keep performance, we dont check if self.board.fen
             # is in self.history.keys(). we just try and pass

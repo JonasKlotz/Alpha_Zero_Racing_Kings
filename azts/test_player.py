@@ -1,29 +1,44 @@
 # pylint: disable=C0116
 import pytest
 from azts import player
+from azts import mock_model
 
-from azts.config import *
+from azts.config import WHITE, BLACK, \
+        RUNNING, DRAW_BY_STALE_MATE, \
+        BLACK_WINS
 
 @pytest.fixture
 def player_white():
-    player_white = player.Player(WHITE, 10)
+    model = mock_model.MockModel()
+    player_white = player.Player(color=WHITE, \
+            model=model, \
+            runs_per_move=10)
     return player_white
 
 @pytest.fixture
 def other_players_turn():
-    player_black = player.Player(BLACK, 10)
+    model = mock_model.MockModel()
+    player_black = player.Player(color=BLACK, \
+            model=model, \
+            runs_per_move=10)
     return player_black
 
 @pytest.fixture
 def stale_mate():
-    player_black = player.Player(BLACK, 10) 
+    model = mock_model.MockModel()
+    player_black = player.Player(color=BLACK, \
+            model=model, \
+            runs_per_move=10)
     new_state = "8/8/8/8/8/8/R7/5K1k b - - 10 20" 
     player_black.set_game_state(new_state)
     return player_black
 
 @pytest.fixture
 def win_position():
-    player_black = player.Player(BLACK, 10)
+    model = mock_model.MockModel()
+    player_black = player.Player(color=BLACK, \
+            model=model, \
+            runs_per_move=10)
     win_position = "7k/8/8/8/8/8/R7/5K2 w - - 10 20"
     player_black.set_game_state(win_position)
     return player_black
