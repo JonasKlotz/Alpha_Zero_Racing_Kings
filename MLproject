@@ -1,0 +1,5 @@
+name: mini_alpha_zero
+
+entry_points:
+  main:
+    command: "python3 Model/test_run.py"

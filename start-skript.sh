@@ -36,8 +36,7 @@ module load nvidia/tensorrt/6.0.1.5
 #commands to be executed
 cd
 source ~/env/bin/activate
-cd AlphaZero
-python3 test_run.py
+mlflow run AlphaZero --no-conda
 deactivate
 
 ##scontrol show job $SLURM_JOBID                # for debugin
