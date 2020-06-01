@@ -13,6 +13,7 @@ from Player import config
 from azts import self_play
 from azts import mock_model
 from azts import player
+from azts import utility
 from azts.config import *
 
 parser = argparse.ArgumentParser(description = \
@@ -42,118 +43,85 @@ parser.add_argument("--fork_method", type=str, \
         default="spawn", help="depending on operating " \
         + "system, different fork methods are valid for " \
         + "multithreading. \"spawn\" has apparently the " \
-        + "widest compatibility. Other options are "\
-        + "\"fork\" and \"forkserver\". See "\
-        + "https://docs.python.org/3/library/multiprocessing.html "\
+        + "widest compatibility. Other options are " \
+        + "\"fork\" and \"forkserver\". See " \
+        + "https://docs.python.org/3/library/multiprocessing.html " \
         + "for details. Defaults to \"spawn\".")
 parser.add_argument("--player_one", type=str, \
         default="Player/default_config.yaml", \
-        help="Player one configuration file") 
+        help="Player one configuration file. Is by default " \
+        + "set to \"Player/default_config.yaml\".") 
 parser.add_argument("--player_two", type=str, \
         default="Player/default_config.yaml", \
-        help="Player two configuration file")
+        help="Player two configuration file. Is by default " \
+        + "set to \"Player/default_config.yaml\".") 
+parser.add_argument("--mock", type=bool, \
+        default=False, help="If set to True, use " \
+        + "random generator instead of actual model." \
+        + "Default is False.")
 
 
 args = parser.parse_args()
 
-# from https://pynative.com/python-generate-random-string/
-def random_string(length=8):
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(length))
 
-def unused_filename(num_of_games, match_name):
-    filenumber = 0
+def create_dataset(yamlpaths, \
+        rollouts_per_move, \
+        num_of_parallel_processes, \
+        num_of_games_per_process, \
+        fork_method="spawn", \
+        mockmodel=False):
+    '''
+    starts parallel training which creates
+    many different game_[...].pkl files in
+    GAMEDIR and then calls assemble_dataset
+    which creates a dataset in DATASETDIR
+    from all created games in GAMESDIR
+    '''
+    handle = utility.get_unused_match_handle(*tuple(yamlpaths))
+    print(f"STARTING MATCHES WITH HANDLE {handle}")
 
-    filenumberstring = str(filenumber).zfill(4)
-    filename = f"dataset_{match_name}_" \
-            + f"{filenumberstring}_{num_of_games}_games.pkl"
-    filepath = os.path.join(DATASETDIR, filename)
-    while os.path.isfile(filepath):
-        filenumber += 1
-        filenumberstring = str(filenumber).zfill(4)
-        filename = f"dataset_{match_name}_" \
-                + f"{filenumberstring}_{num_of_games}_games.pkl"
-        filepath = os.path.join(DATASETDIR, filename)
+    parallel_matches(yamlpaths=yamlpaths, \
+        handle=handle, \
+        rollouts_per_move=rollouts_per_move, \
+        num_of_parallel_processes=num_of_parallel_processes, \
+        num_of_games_per_process=num_of_games_per_process, \
+        fork_method=fork_method, \
+        mockmodel=mockmodel)
 
-    return filepath
+    assemble_dataset(handle)
+    
 
-
-
-
-
-
-
-
-if __name__ == "__main__":
-    # pylint: disable=C0103
-    conf_one = config.Config(args.player_one)
-    conf_two = config.Config(args.player_two)
-
-    player_names = [conf_one.name, conf_two.name]
-    player_names.sort()
-
-
-    match_name = f"{player_names[0]}-{player_names[1]}" 
-    game_id = random_string(8)
-    game_name = f"game_{game_id}_{match_name}"
-
-    filepath = os.path.join(GAMEDIR, f"{game_name}_0000.pkl")
-    while os.path.exists(filepath): 
-        game_id = random_string(8)
-        game_name = f"game_{game_id}_{match_name}"
-        filepath = os.path.join(GAMEDIR, f"{game_name}_0000.pkl")
-
-    # according to
-    # https://docs.python.org/3/library/multiprocessing.html
-    multiprocessing.set_start_method(args.fork_method)
-    processes = []
-    selfplays = []
-
-
-    for i in range(args.num_of_parallel_processes):
-        model = mock_model.MockModel()
-        
-        player_one = player.Player(model=model, \
-                name=conf_one.name, \
-                **(conf_one.player.as_dictionary()))
-
-        player_two = player.Player(model=model, \
-                name=conf_two.name, \
-                **(conf_two.player.as_dictionary()))
-
-
-        selfplay = self_play.SelfPlay(\
-                player_one=player_one, \
-                player_two=player_two, \
-                runs_per_move=args.rollouts_per_move, \
-                game_id=game_id, \
-                show_game=False)
-        process = multiprocessing.Process(target = selfplay.start, \
-                args = (args.num_of_games_per_process,))
-
-        process.start()
-        processes.append(process) 
-        selfplays.append(selfplay)
-
-    for i in processes:
-        i.join()
+    return 0
 
 
 
-    dataset = []
-
-
+def assemble_dataset(handle):
+    '''
+    collects all game files with a specific handle
+    and assembles them into a dataset that is being
+    stored in dataset directory
+    :param str handle: handle string in the format
+    of [NAME1].v[VERSION1].m[REVISION1]-\
+            [NAME2].v[VERSION2].m[REVISION2]_\
+            [8-DIGIT-RANDOM-KEY]
+    only filenames that contain this string will
+    be considered for assembling the dataset
+    '''
+    dataset = [] 
     counter = 0
+
     for filename in os.listdir(GAMEDIR):
-        if game_name in filename and filename.endswith(".pkl"):
+        if f"game_{handle}" in filename and filename.endswith(".pkl"):
             filepath = os.path.join(GAMEDIR, filename)
             counter += 1
             game_data = pickle.load(open(filepath, "rb"))
             for i in game_data:
                 dataset.append(i)
-            print(f"added {filename} to dataset.")
+            print(f"added {filename} to dataset.") 
 
-    dataset_path = unused_filename(counter, match_name)
+    dataset_path = utility.get_unused_filepath(\
+            f"dataset_{handle}", \
+            DATASETDIR)
 
     pickle.dump(dataset, open(dataset_path, "wb"))
     print(f"saved data of {counter} games to {dataset_path}.")
@@ -167,7 +135,71 @@ if __name__ == "__main__":
             + f"with {len(test_load[0])} entries of type\n" \
             + f"{type(test_load[0][0])}, {type(test_load[0][1])}, " \
             + f"{type(test_load[0][2])}.")
+
+    return
+
+
+def parallel_matches(yamlpaths, \
+        handle, \
+        rollouts_per_move, \
+        num_of_parallel_processes, \
+        num_of_games_per_process, \
+        fork_method="spawn", \
+        mockmodel=False):
+    '''
+    start parallel self play matches on different
+    processes.
+    :param list yamlpaths: list or tuple containing
+    player configuration yaml paths
+    :param str handle: identifier string for this
+    self play session
+    :param int rollouts_per_move: number of rollouts
+    per move for each ai player. the higher this
+    number, the longer a move and thus a game takes
+    :param boolean mockmodel: if set to true, the
+    random generator from azts.mock_model is 
+    instantiated instead of an actual neural network.
+    for testing purposes.
+    '''
+    # according to
+    # https://docs.python.org/3/library/multiprocessing.html
+    multiprocessing.set_start_method(fork_method)
+    processes = []
+    selfplays = [] 
+
+    for i in range(num_of_parallel_processes):
+        players = utility.load_players(*tuple(yamlpaths), mockmodel) 
+        selfplay = self_play.SelfPlay(\
+                player_one=players[0], \
+                player_two=players[1], \
+                runs_per_move=rollouts_per_move, \
+                game_id=handle, \
+                show_game=False)
+        process = multiprocessing.Process(target=selfplay.start, \
+                args=(num_of_games_per_process,)) 
+        process.start()
+        processes.append(process) 
+        selfplays.append(selfplay)
+
+    for i in processes:
+        i.join()
+    # returns after all parallel games are finished and
+    # written to disk
+    return
+
+
+
+
+
+if __name__ == "__main__":
+    # pylint: disable=C0103
     # pylint: enable=C0103
+    create_dataset(yamlpaths=[args.player_one, args.player_two], \
+            rollouts_per_move=args.rollouts_per_move, \
+            num_of_parallel_processes=args.num_of_parallel_processes, \
+            num_of_games_per_process=args.num_of_games_per_process, \
+            fork_method=args.fork_method, \
+            mockmodel=args.mock) 
 
 # pylint: enable=E0401
 # pylint: enable=E0602
