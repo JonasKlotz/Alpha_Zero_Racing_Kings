@@ -128,10 +128,17 @@ class StateMachine():
 
     def get_actual_position(self):
         '''
-        :return str: position of actual game in fen
+        :return np.array: position of actual game in tensor
         notation
         '''
         return tn.fen_to_tensor(self.actual_game.board.fen())
+
+    def get_actual_fen_position(self):
+        '''
+        :return np.array: position of actual game in fen
+        notation
+        '''
+        return self.actual_game.board.fen()
 
     def get_player_color(self):
         '''
