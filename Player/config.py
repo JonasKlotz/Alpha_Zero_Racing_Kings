@@ -97,11 +97,14 @@ class Config(Options):
     """
     DEFAULT_CONFIG_FILE = "Player/default_config.yaml"
 
-    def __init__(self, config_file):
+    def __init__(self, config_file=None):
         yaml_default = yaml.safe_load(
             stream=open(self.DEFAULT_CONFIG_FILE, 'r'))
         default = DefaultOptions(yaml_default)
-        yaml_dict = yaml.safe_load(stream=open(config_file, 'r'))
+        if config_file is None:
+            yaml_dict = yaml_default
+        else:
+            yaml_dict = yaml.safe_load(stream=open(config_file, 'r'))
         self.__yaml_dict = yaml_dict
         super().__init__(yaml_dict, default)
 
