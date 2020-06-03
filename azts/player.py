@@ -129,14 +129,21 @@ class Player():
 
 
 class CLIPlayer(Player):
+    '''
+    class that represents a human player.
+    calls to make_move() actually trigger
+    communication with the player over
+    a command line interface (cli).
+    '''
 
     def __init__(self, \
             name="UNNAMED PLAYER", \
             color=WHITE):
-
-        # player is actually not keeping any state,
-        # so no need to store statemachine or model
-        # in self
+        '''
+        CLIPlayer is indeed keeping state,
+        because there is no azts_tree
+        involved to keep state
+        ''' 
         self.name = name
         self.color = color
         self.statemachine = state_machine.StateMachine()
@@ -153,11 +160,18 @@ class CLIPlayer(Player):
         self.statemachine = state_machine.StateMachine()
 
     def make_move(self):
+        '''
+        poll the player for a move
+        '''
         move = self._parse_user_input()
         self.receive_move(move)
         return move
 
     def _parse_user_input(self):
+        '''
+        manage user input, handle
+        options etc.
+        '''
         position = self.statemachine.get_actual_fen_position()
         print(f"> current state is {position}.")
         print("> select move in UCI or \"h\" for help")
@@ -191,6 +205,10 @@ class CLIPlayer(Player):
 
 
     def receive_move(self, move):
+        '''
+        update own state machine and
+        print feedback to player
+        '''
         if self.color is not self.statemachine.get_player_color():
             print(f"> Other player played {move}")
         self.statemachine.actual_fen_move(move)
