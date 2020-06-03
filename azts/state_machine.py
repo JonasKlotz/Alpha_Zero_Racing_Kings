@@ -142,7 +142,7 @@ class StateMachine():
 
     def get_player_color(self):
         '''
-        :return int: 1 for white, -1 for black
+        :return enum type: as defined in azts/config.py
         '''
         if self.actual_game.board.turn:
             return WHITE

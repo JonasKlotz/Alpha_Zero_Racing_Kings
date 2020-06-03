@@ -5,6 +5,7 @@ an ai player with a simple
 API.
 '''
 import sys
+import os
 
 from Player import config
 
@@ -159,28 +160,30 @@ class CLIPlayer(Player):
     def _parse_user_input(self):
         position = self.statemachine.get_actual_fen_position()
         print(f"> current state is {position}.")
-        print("> select move in UCI or type\n" \
-                + "> \"help\" for help\n" \
-                + "> \"list\" to list all possible moves\n" \
-                + "> \"exit\" to exit")
+        print("> select move in UCI or \"h\" for help")
 
         user_input = "unknown"
+        consequences = {"h": lambda x: print("> \"list\": list legal moves\n" \
+                + "> \"clear\": clear screen\n" \
+                + "> \"exit\": exit game"), \
+                "exit": lambda x: sys.exit(), \
+                "list": lambda x: [print(i) for i in x], \
+                "ls": lambda x: [print(i) for i in x], \
+                "clear": lambda x: os.system('cls' if os.name == 'nt' \
+                        else 'clear')}
+
 
         legal_moves = self.statemachine.rollout_game.get_moves_observation()
-        choices = legal_moves + ["help", "list", "exit"]
+        choices = legal_moves + list(consequences.keys())
 
+        user_input = input("> ")
 
         while user_input not in choices:
+            print(f"> {user_input} is not a legal move")
             user_input = input("> ")
 
         if user_input in legal_moves:
             return user_input
-
-        consequences = {"help": lambda x: print("Try to " \
-                + "put your king on the last rank. Prevent " \
-                + "your opponent from doing the same.\n"), \
-                "exit": lambda x: sys.exit(), \
-                "list": lambda x: [print(i) for i in x]}
 
         consequences[user_input](legal_moves)
         
@@ -188,7 +191,8 @@ class CLIPlayer(Player):
 
 
     def receive_move(self, move):
-        print(f"Other player played {move}")
+        if self.color is not self.statemachine.get_player_color():
+            print(f"> Other player played {move}")
         self.statemachine.actual_fen_move(move)
 
     #TODO: implement other getters and setters
