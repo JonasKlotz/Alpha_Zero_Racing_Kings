@@ -177,7 +177,7 @@ if __name__ == "__main__":
     # Tests
 
     log2 = get_logger("Log2", level="CRITICAL")
-    log2.info("XXXXX You won't see this, Log2 doesn't log info messages")
+    log2.info("XXXXX You won't see this, since Log2 doesn't log info messages")
 
     set_level_global("DEBUG", enforce=True)
 
@@ -185,18 +185,25 @@ if __name__ == "__main__":
 
     log3 = get_logger("Log3", level="CRITICAL")
     log3.debug(
-        "YYYYYY This will still be seen, because global is enforced for new loggers")
+        "YYYYYY This will still be seen, "
+        "because global is enforced for new loggers")
+
+    set_level_global("INFO")
+    log3.warning("ZZZZZZ This will be seen again, global changed. "
+                 "Also, global level is not enforced anymore for new loggers "
+                 "(enforce=False is default)")
 
     set_level_stdout("CRITICAL")
-    set_level_global("INFO")
     log3.warning("ZZZZZZ This won't be seen on console, but in logs")
 
     set_level_stdout("INFO")
     set_level_global("CRITICAL")
-    log3.warning("ZZZZZZ This won't be seen on console OR in logs")
+    log3.warning(
+        "ZZZZZZ This won't be seen on console OR in logs, "
+        "since it is filtered first by logger's level")
 
     silence_all()
-    log3.info("helllllp")
+    log3.info("AAAAA helllllp")
     log3.critical("AAAAA No one can hear this")
 
     set_level_global("INFO")
@@ -204,4 +211,4 @@ if __name__ == "__main__":
 
     remove_all()
     log2.info("This logger has become useless")
-    log3.debug("And it won't ever speak again")
+    log3.debug("And it won't ever log again")
