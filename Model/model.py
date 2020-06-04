@@ -78,7 +78,7 @@ class AZero:
                      i, MAX_RUNS, dataset_file)
             self.train(train_data, epochs=-1)
 
-    @timing
+    # @timing
     def inference(self, input):
         policy, value = self.model.predict(input[None, :])
         return policy.squeeze(), value.squeeze()
