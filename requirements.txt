@@ -30,6 +30,7 @@ mccabe==0.6.1
 mcts==1.0.4
 mockito==1.2.1
 more-itertools==8.2.0
+mlflow==1.8.0
 numpy==1.18.4
 packaging==20.3
 pathlib2==2.3.5
@@ -50,6 +51,7 @@ python-docs-theme==2020.1
 pytz==2020.1
 pyxdg==0.25
 PyYAML==5.3.1
+pysftp==0.2.9
 requests==2.23.0
 scipy==1.4.1
 SecretStorage==2.3.1

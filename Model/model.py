@@ -13,6 +13,9 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
 
+import mlflow
+import mlflow.keras
+
 from lib.timing import timing
 
 from azts.config import GAMEDIR
@@ -55,6 +58,8 @@ class AZero:
         self.remember_model_architecture()
         self.restore_latest_model()
         self.setup_callbacks()
+
+        mlflow.set_tracking_uri="http://35.223.113.101:8000"
 
     def auto_run_training(self):
         """ Automatically enters a training loop that fetches newest datasets
@@ -120,14 +125,25 @@ class AZero:
             epochs = 10000
 
         # begin training
-        train_logs = self.model.fit(x_train, y_train,
-                                    batch_size=batch_size,
-                                    epochs=initial_epoch + epochs,
-                                    shuffle=True,
-                                    callbacks=self.callbacks,
-                                    initial_epoch=initial_epoch,
-                                    verbose=2)
-        self.initial_epoch = train_logs.history['epoch']
+        with mlflow.start_run():
+            train_logs = self.model.fit(x_train, y_train,
+                                        batch_size=batch_size,
+                                        epochs=initial_epoch + epochs,
+                                        shuffle=True,
+                                        callbacks=self.callbacks,
+                                        initial_epoch=initial_epoch,
+                                        verbose=2)
+            self.initial_epoch = train_logs.history['epoch']
+
+            # mlflow logging
+            mlflow.log_param("epochs", epochs)
+            mlflow.log_metric("idk", 42)
+            mlflow.keras.log_model(artifact_path="model",
+                                   keras_model=self.model,
+                                   keras_module=keras,
+                                   registered_model_name="test_models")
+            # idk wo die config gerade ist. im prinzip loggt man die da
+            # mlflow.log_artifact(artifact_path="config", local_path="path/to/config")
 
     def summary(self):
         """ Prints a summary of the model architecture """
