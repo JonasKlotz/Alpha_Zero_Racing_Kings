@@ -28,7 +28,7 @@ def repetition():
     player_two = player.Player(model=model) 
     startpos = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
     match = self_match.SelfMatch(player_one, player_two)
-    match.game.history[startpos] = 5
+    match.game.history[startpos.split(" ")[0]] = 5
     return match
 
 @pytest.fixture

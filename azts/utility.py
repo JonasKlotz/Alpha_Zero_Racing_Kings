@@ -122,6 +122,39 @@ def load_player_conf(location):
     return player
 
 
+
+def load_model(config, mock=False): 
+    '''
+    load model from configuration
+    :param Configuration conf: configuration
+    of model
+    :param boolean mock: load random generator
+    instead
+    '''
+    model = mock_model.MockModel() if mock \
+            else AZero(config)
+
+    return model
+
+
+def load_player(location, mock=False):
+    '''
+    load player from .yaml-path
+    :param str location: relative path 
+    to yaml configuration file
+    :return player: configured player
+    object
+    '''
+    config = load_player_conf(location)
+
+    model = load_model(config, mock)
+    new_player = player.Player(name=config.name, \
+            **(config.player.as_dictionary()))
+
+    return new_player
+
+
+
 def load_players(loc_1, loc_2, mock = False):
     '''
     load players from .yaml-configuration file
@@ -142,12 +175,10 @@ def load_players(loc_1, loc_2, mock = False):
 
     if selfplay:
         # same model for both players
-        model = mock_model.MockModel() if mock \
-                else AZero(configurations[0])
+        model = load_model(configurations[0], mock)
         models = [model, model]
     else:
-        models = [mock_model.MockModel() for i in configurations] if mock \
-                else [AZero(i) for i in configurations]
+        models = [load_model(i, mock) for i in configurations]
 
     for model, config in zip(models, configurations):
         players.append(player.Player(model=model, \
