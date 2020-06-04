@@ -4,6 +4,8 @@ player class representing
 an ai player with a simple
 API.
 '''
+import sys
+import os
 
 from Player import config
 
@@ -43,7 +45,6 @@ class Player():
         # so no need to store statemachine or model
         # in self
         self.name = name
-        statemachine = state_machine.StateMachine()
         self.tree = azts_tree.AztsTree(model=model,
                                        color=color,
                                        runs_per_move=runs_per_move,
@@ -127,6 +128,102 @@ class Player():
         return [self.tree.get_position(),
                 self.tree.get_policy_tensor(),
                 None]
+
+
+class CLIPlayer(Player):
+    '''
+    class that represents a human player.
+    calls to make_move() actually trigger
+    communication with the player over
+    a command line interface (cli).
+    '''
+
+    def __init__(self,
+                 name="UNNAMED PLAYER",
+                 color=WHITE):
+        '''
+        CLIPlayer is indeed keeping state,
+        because there is no azts_tree
+        involved to keep state
+        '''
+        self.name = name
+        self.color = color
+        self.statemachine = state_machine.StateMachine()
+
+    def set_color(self, color):
+        self.color = color
+
+    def reset(self):
+        '''
+        reset all stateful things
+        which is only the statemachine
+        in command line players
+        '''
+        self.statemachine = state_machine.StateMachine()
+
+    def make_move(self):
+        '''
+        poll the player for a move
+        '''
+        move = self._parse_user_input()
+        self.receive_move(move)
+        return move
+
+    def _parse_user_input(self):
+        '''
+        manage user input, handle
+        options etc.
+        '''
+        position = self.statemachine.get_actual_fen_position()
+        print(f"> current state is {position}.")
+        print("> select move in UCI or \"h\" for help")
+
+        user_input = "unknown"
+        consequences = {"h": lambda x: print("> \"list\": list legal moves\n"
+                                             + "> \"clear\": clear screen\n"
+                                             + "> \"exit\": exit game"),
+                        "exit": lambda x: sys.exit(),
+                        "list": lambda x: [print(i) for i in x],
+                        "ls": lambda x: [print(i) for i in x],
+                        "clear": lambda x: os.system('cls' if os.name == 'nt'
+                                                     else 'clear')}
+
+        legal_moves = self.statemachine.rollout_game.get_moves_observation()
+        choices = legal_moves + list(consequences.keys())
+
+        user_input = input("> ")
+
+        while user_input not in choices:
+            print(f"> {user_input} is not a legal move")
+            user_input = input("> ")
+
+        if user_input in legal_moves:
+            return user_input
+
+        consequences[user_input](legal_moves)
+
+        return self._parse_user_input()
+
+    def receive_move(self, move):
+        '''
+        update own state machine and
+        print feedback to player
+        '''
+        if self.color is not self.statemachine.get_player_color():
+            print(f"> Other player played {move}")
+        self.statemachine.actual_fen_move(move)
+
+    # TODO: implement other getters and setters
+
+    def game_over(self):
+        return self.statemachine.actual_game_over()
+
+    def get_stats(self):
+        return None
+
+    def dump_data(self):
+        return [None, None, None]
+
 
 
 if __name__ == "__main__":
