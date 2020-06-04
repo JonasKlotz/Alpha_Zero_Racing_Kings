@@ -7,6 +7,7 @@ from Model.model import AZero
 from azts.config import GAMEDIR, PLAYERDIR
 from azts import player
 from azts import mock_model
+from azts import stockfish_model
 
 GAME = "game"
 STATS = "stats"
@@ -133,6 +134,14 @@ def load_model(config, mock=False):
     '''
     model = mock_model.MockModel() if mock \
             else AZero(config)
+
+    return model
+
+def load_stockfish_model(config):
+    '''
+    load stockfish model
+    '''
+    model = stockfish_model.StockfishModel()
 
     return model
 

@@ -15,8 +15,7 @@ from azts import self_match
 from azts import mock_model
 from azts import utility
 from azts.config import GAMEDIR, \
-        RUNS_PER_MOVE, DEFAULT_PLAYER, \
-        SHOW_GAME
+        RUNS_PER_MOVE, SHOW_GAME
 
 
 class SelfPlay():

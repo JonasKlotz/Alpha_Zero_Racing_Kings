@@ -274,7 +274,7 @@ class Game:
         result = self.engine.play(self.board, chess.engine.Limit(time=limit))
         self.make_move(result.move)
 
-    def get_policy(self, path="Engine/stockfish-x86_64"):
+    def get_policy(self, path="Engine/stockfish-x86_64", time_limit=0.1, depth_limit=None):
         """
 
         :rtype: [[UCI String][Centipawnscore]]
@@ -289,7 +289,8 @@ class Game:
             self.board.push(move)
 
             try:
-                info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
+                info = self.engine.analyse(self.board, chess.engine.Limit(
+                    time=time_limit, depth=depth_limit))
                 t = [move.uci(), info["score"].white().score(mate_score=100000)]
                 policy.append(t)
             except:
@@ -321,7 +322,7 @@ class Game:
 
             raise RuntimeError("coudlt calculate probability")  # TODO: LOGG
 
-    def get_evaluation(self, path="Engine/stockfish-x86_64"):
+    def get_evaluation(self, path="Engine/stockfish-x86_64", time_limit=0.1, depth_limit=None):
         """
         :return: int with position evaluation score
         """
@@ -330,7 +331,8 @@ class Game:
             self.engine = chess.engine.SimpleEngine.popen_uci(path)
 
         try:
-            info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
+            info = self.engine.analyse(self.board, chess.engine.Limit(
+                time=time_limit, depth=depth_limit))
             centipawn = info["score"].white().score(mate_score=100000)  # / 100
             return centipawn
         except:

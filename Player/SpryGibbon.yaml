@@ -29,6 +29,14 @@ player:
             draw_by_rep: 0
             draw_by_stale_mate: 0
             draw_by_two_wins: 0
+#stockfish parameters
+stockfish:
+    #use stockfish instead of model
+    enable: False
+    #given time limit for move evaluation
+    time_limit: 0.1
+    #maximum tree search depth
+    search_depth: 10
 #model parameters
 model:
     #input feature dimensions

@@ -8,8 +8,7 @@ import sys
 import os.path
 import os 
 
-# from azts import mock_model, stockfish_model
-from azts.stockfish_model import *
+from azts import mock_model
 
 def find_rootdir():
     rootdir = os.path.split(\
@@ -97,20 +96,6 @@ TO_STRING = {0: "undefined", \
         DRAW_BY_REP: "draw by repetition", \
         DRAW_BY_STALE_MATE: "draw by stale mate", \
         DRAW_BY_TWO_WINS: "draw by simultaneous finish"}
-
-# Enum types representing models
-# MODEL = mock_model.MockModel()
-MODEL = StockfishModel()
-
-
-DEFAULT_PLAYER = {\
-        "name": "default player", \
-        "azts_settings": {\
-            "payoffs": ROLLOUT_PAYOFFS, \
-            "exploration": EXPLORATION, \
-            "heat" : HEAT, \
-            "model": MODEL} \
-        }
 
 # Data types for size of
 # np.arrays
