@@ -21,7 +21,6 @@ from PIL import Image
 from Interface.TensorNotation import DATATYPE, move_to_tensor_indices
 from azts.config import *
 
-
 class Game:
     # pylint: disable=too-many-instance-attributes
     # Eight is reasonable in this case.
@@ -205,7 +204,7 @@ class Game:
                 self.state = DRAW_BY_STALE_MATE
             self.end = True
 
-        print("history count: {}".format(self.history[self.board_fen_hash()]))
+        #print("history count: {}".format(self.history[self.board_fen_hash()])) #TODO LOG
         try:
             if self.history[self.board_fen_hash()] > 2:
                 self.state = DRAW_BY_REP
