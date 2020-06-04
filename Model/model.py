@@ -2,16 +2,24 @@
 """
 import os
 import re
+import pickle
+import time
 import numpy as np
 import keras
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-from keras.callbacks import ReduceLROnPlateau
+# from keras.callbacks import ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
 
 from lib.timing import timing
+
+from azts.config import GAMEDIR
+from Player.config import Config
+
+from lib.logger import get_logger
+log = get_logger("Model")
 
 
 class AZero:
@@ -23,36 +31,59 @@ class AZero:
 
     Functions:
         train: starts the training process
-        restore_weights: restores newest weights from model directory
+        restore_latest_model: restores newest weights from model directory
         remember_model_architecture: makes sure the architecture along with config is saved once
         build_model: builds model
         plot_model: plots the network graph
-        summary: ouputs config parameters and model summary
+        summary: prints config parameters and model summary
     """
 
     def __init__(self, config):
+        """
+        Args:
+            config (Config): Player Configuration file
+        """
 
         assert config is not None, "ERROR! no config provided"
-
         self.config = config
+
+        self.initial_epoch = 0
+        self.checkpoint_file = None
+
         self.build_model()
         self.compile_model()
         self.remember_model_architecture()
-        self.initial_epoch = 0
-        self.restore_weights()
+        self.restore_latest_model()
+        self.setup_callbacks()
 
-    def train(self, train_data, batch_size=64, epochs=10, initial_epoch=0):
-        """ enters the training loop
+    def auto_run_training(self):
+        """ Automatically enters a training loop that fetches newest datasets
         """
-        # prepare data
-        x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
-        x_train = np.stack(x_train.flatten(), axis=0)
-        y_train_p = np.stack(y_train_p.flatten(), axis=0)
-        y_train_v = np.stack(y_train_v.flatten(), axis=0)
-        y_train = {"policy_head": y_train_p,
-                   "value_head":  y_train_v}
 
-        # Callbacks
+        MAX_RUNS = 3
+
+        # latest_dataset =
+        for i in range(MAX_RUNS):
+            dataset_file = get_latest_dataset_file()
+            if dataset_file is None:
+                log.info("Waiting for dataset..")
+                while dataset_file is None:
+                    time.sleep(1)
+                    dataset_file = get_latest_dataset_file()
+            self.setup_callbacks(auto_run=True)  # new file, new callback
+            with open(dataset_file, 'rb') as f:
+                train_data = pickle.load(f)
+            log.info("New Dataset available")
+            log.info("Commencing training %i/%i on %s",
+                     i, MAX_RUNS, dataset_file)
+            self.train(train_data, epochs=-1)
+
+    # @timing
+    def inference(self, input):
+        policy, value = self.model.predict(input[None, :])
+        return policy.squeeze(), value.squeeze()
+
+    def setup_callbacks(self, auto_run=False):
         checkpoint_file = os.path.join(self.config.checkpoint_dir,
                                        "{epoch:02d}-{loss:.2f}.hdf5")
         checkpoint = ModelCheckpoint(filepath=checkpoint_file,
@@ -66,37 +97,53 @@ class AZero:
         #                                patience=5,
         #                                min_lr=0.5e-6)
         # callbacks = [checkpoint, lr_reducer]
-        callbacks = [checkpoint]
 
-        if initial_epoch == 0:
+        epoch = CountEpochs()
+
+        callbacks = [checkpoint, epoch]
+
+        if auto_run:
+            auto_fetch_dataset = AutoFetchDataset(get_latest_dataset_file())
+            callbacks.append(auto_fetch_dataset)
+
+        self.callbacks = callbacks
+
+    def train(self, train_data, batch_size=64, epochs=10, initial_epoch=None):
+        """ Enters the training loop """
+
+        x_train, y_train = prepare_dataset(train_data)
+
+        if initial_epoch is None:
             initial_epoch = self.initial_epoch
 
+        if epochs == -1:  # train indefinitely; XXX: review
+            epochs = 10000
+
         # begin training
-        self.model.fit(x_train, y_train,
-                       batch_size=batch_size,
-                       epochs=initial_epoch + epochs,
-                       shuffle=True,
-                       callbacks=callbacks,
-                       initial_epoch=initial_epoch)
-        self.initial_epoch = initial_epoch + epochs
+        train_logs = self.model.fit(x_train, y_train,
+                                    batch_size=batch_size,
+                                    epochs=initial_epoch + epochs,
+                                    shuffle=True,
+                                    callbacks=self.callbacks,
+                                    initial_epoch=initial_epoch,
+                                    verbose=2)
+        self.initial_epoch = train_logs.history['epoch']
 
     def summary(self):
-        """ prints a summary of the model architecture
-        """
+        """ Prints a summary of the model architecture """
         print("Model Name: " + self.config.model_name)
         print("Configuration Settings:")
         print(self.config)
         self.model.summary()
 
     def plot_model(self):
-        """ plots the whole model architecture as a graph
-        """
+        """ Plots the whole model architecture as a graph """
         # graphviz (not a python package) has to be installed https://www.graphviz.org/
         plot_model(self.model, to_file='Model/%s.png' % self.config.model_name,
                    show_shapes=True, show_layer_names=True)
 
     def remember_model_architecture(self):
-        """ makes sure that the architecture and config file
+        """ Makes sure that the architecture and config file
         are stored once per model version
         """
         # save model
@@ -115,31 +162,52 @@ class AZero:
         """ Restores model architecture from yaml file """
         self.model = keras.models.model_from_yaml(file)
 
-    def restore_weights(self, checkpoint_file=None):
-        """ Checks for latest model checkpoint and restores
-        unless a checkpoint is given
+    def new_model_available(self):
+        """ checks whether a new checkpoint file is available 
+        not very robust; only checks for file name """
+        new_checkpoint_file, _ = self.newest_checkpoint_file()
+        return not new_checkpoint_file == self.checkpoint_file
+
+    def newest_checkpoint_file(self):
+        """ searches checkpoint dir for newest checkpoint,
+        goes by file mtime..
+        Returns:
+            file (str): filepath
+            epoch (int): checkpoint's epoch
         """
-        if checkpoint_file is None:
-            chk_dir = self.config.checkpoint_dir
-            self.initial_epoch = 0
-            for file_name in reversed(sorted(os.listdir(chk_dir))):
-                file = os.path.join(chk_dir, file_name)
-                if os.path.isfile(file):
-                    reg = re.search("^0*(\d+).*?\.hdf5", file_name)
-                    if reg is not None:
-                        self.initial_epoch = int(reg.group(1))
-                        checkpoint_file = file
-                        break
+        chkpt_dir = self.config.checkpoint_dir
+
+        def chkpt_sort(file):   # XXX go for newest epoch?
+            return os.path.getmtime(os.path.join(chkpt_dir, file))
+
+        files = reversed(sorted(os.listdir(chkpt_dir), key=chkpt_sort))
+
+        for file_name in files:
+            file = os.path.join(chkpt_dir, file_name)
+            if os.path.isfile(file):
+                reg = re.search("^0*(\d+).*?\.hdf5", file_name)
+                if reg is not None:
+                    epoch = int(reg.group(1))
+                    return file, epoch
+        return None, 0
+
+    def restore_latest_model(self):
+        """ Checks for latest model checkpoint and restores the weights """
+        checkpoint_file, self.initial_epoch = self.newest_checkpoint_file()
 
         if checkpoint_file is not None:
-            print("restoring from checkpoint " + checkpoint_file)
-            self.model.load_weights(checkpoint_file)
+            self.restore_from_checkpoint(checkpoint_file)
         else:
-            print("no previous checkpoint found")
+            log.info("No previous checkpoint found - initializing new network.")
+
+    def restore_from_checkpoint(self, checkpoint_file):
+        """ Restores weights from given checkpoint """
+        log.info("Restoring from checkpoint %s", checkpoint_file)
+        self.model.load_weights(checkpoint_file)
+        self.checkpoint_file = checkpoint_file
 
     def compile_model(self):
-        """ compiles the model
-        """
+        """ Compiles the model """
         losses = {"policy_head": "categorical_crossentropy",
                   "value_head": "mean_squared_error"}
         self.model.compile(loss=losses,
@@ -147,8 +215,7 @@ class AZero:
                            metrics=['accuracy'])
 
     def build_model(self):
-        """ Builds the ResNet model via config parameters
-        """
+        """ Builds the ResNet model via config parameters """
 
         def residual_layer(input,
                            num_filters,
@@ -206,7 +273,6 @@ class AZero:
                 y = _x
                 for layer in range(num_layers):
                     if layer == num_layers - 1:
-                        # XXX Why does resnet do this?
                         _x = res_layer(_x, activation=None)
                     else:
                         _x = res_layer(_x)
@@ -283,11 +349,95 @@ class AZero:
                                         name=self.config.model_name)
 
 
-if __name__ == "__main__":
-    # TEST
+def get_latest_dataset_file():
+    """ Returns newest dataset file in game dir """
+    _dir = GAMEDIR
+    files = os.listdir(_dir)
+    if len(files) == 0:
+        return None
 
-    from Player.config import Config
-    config = Config("Player/config.yaml")
+    def key_map(file):
+        return os.path.getmtime(os.path.join(_dir, file))
+    newest_file = max(files, key=key_map)
+    return os.path.join(_dir, newest_file)
+
+
+def prepare_dataset(train_data):
+    """ Transforms dataset to format that keras.model expects """
+    x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
+    x_train = np.stack(x_train.flatten(), axis=0)
+    y_train_p = np.stack(y_train_p.flatten(), axis=0)
+    y_train_v = np.stack(y_train_v.flatten(), axis=0)
+    y_train = {"policy_head": y_train_p,
+               "value_head":  y_train_v}
+    return x_train, y_train
+
+
+class CountEpochs(keras.callbacks.Callback):
+    """ keras Callback Class, used to count epochs """
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs["epoch"] = epoch
+        # print(logs)
+
+
+class AutoFetchDataset(keras.callbacks.Callback):
+    """ keras Callback Class, used to abort training
+    if new datasets are available """
+
+    def __init__(self, dataset_file):
+        # pylint: disable=bad-super-call
+        super(keras.callbacks.Callback, self).__init__()
+        # pylint: enable=bad-super-call
+        self.current_dataset_file = dataset_file
+
+    def on_train_batch_end(self, batch, logs=None):
+        new_dataset_file = get_latest_dataset_file()
+        if not self.current_dataset_file == new_dataset_file:   # XXX use mtime instead?
+            log.info("New dataset found: %s", new_dataset_file)
+            log.info("Aborting training.")
+            self.model.stop_training = True
+
+
+if __name__ == "__main__":
+
+    config = Config()
 
     model = AZero(config)
-    model.summary()
+    model.auto_run_training()
+
+
+# if __name__ == "__main__":
+
+#     from lib.timing import timing, runtime_summary, prettify_time
+#     from lib.logger import get_logger
+#     log = get_logger("self_play")
+
+#     MAX_RUNS = 4
+#     SP_LENGTH = 4
+
+#     from Model.model import AZero
+#     from Player.config import Config
+#     conf = Config("Player/config.yaml")
+#     model = AZero(conf)
+#     play = SelfPlay(model)
+
+#     half_dataset_done = False
+#     # Generate
+#     for i in range(MAX_RUNS):
+#         if half_dataset_done:  # expects new model to be ready soon
+#             log.info("Half-time done")
+#             start = time.perf_counter()
+#             if not model.new_model_available():
+#                 log.info("Waiting for newest model")
+#             while not model.new_model_available():
+#                 # NOTE: thread could just continue to create dataset (not const chunksize!)
+#                 time.sleep(1)
+#             log.info("Found new model")
+#             elapsed = time.perf_counter() - start
+#             log.info("Thread blocked for {}".format(prettify_time(elapsed)))
+#             model.restore_latest_model()
+#         log.info("Beginning Self-play iteration {}/{}, \
+#             game chunk-size: {}".format(i, MAX_RUNS, SP_LENGTH))
+#         play.start(SP_LENGTH)
+#         half_dataset_done = not half_dataset_done

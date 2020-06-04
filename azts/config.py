@@ -6,27 +6,30 @@ More local configuration parameters can be found in azts.py
 import numpy as np
 import sys
 import os.path
-import os 
+import os
+
 
 from azts import mock_model
 
+
 def find_rootdir():
-    rootdir = os.path.split(\
-            os.path.dirname(\
+    rootdir = os.path.split(
+        os.path.dirname(
             os.path.join(os.getcwd(), __file__)))[0]
 
     if rootdir is None:
-        raise Exception("Could not find Root Directory!\n" \
-                + "Please set PYTHONPATH variable to project:\n" \
-                + f"Navigate to project root folder and type:\n" \
-                + "export PYTHONPATH=`pwd`")
+        raise Exception("Could not find Root Directory!\n"
+                        + "Please set PYTHONPATH variable to project:\n"
+                        + f"Navigate to project root folder and type:\n"
+                        + "export PYTHONPATH=`pwd`")
 
     if rootdir not in sys.path:
         sys.path.append(rootdir)
 
     return rootdir
 
-ROOTDIR = find_rootdir() 
+
+ROOTDIR = find_rootdir()
 
 # Paths
 # Folder to store self-game files,
@@ -45,7 +48,7 @@ PLAYERDIR = os.path.join(ROOTDIR, PLAYERFOLDER)
 for i in [GAMEDIR, RESOURCESDIR, DATASETDIR]:
     if not os.path.exists(i):
         print(f"Could not find {i} -- making dir {i}")
-        os.makedirs(i) 
+        os.makedirs(i)
 
 EXPLORATION = 0.1
 HEAT = 1
@@ -69,44 +72,44 @@ DRAW_BY_REP = "draw_by_rep"
 DRAW_BY_STALE_MATE = "draw_by_stale_mate"
 DRAW_BY_TWO_WINS = "draw_by_two_wins"
 
-TRAINING_PAYOFFS = {WHITE_WINS: 1, \
-        BLACK_WINS: -1, \
-        DRAW: 0, \
-        DRAW_BY_REP: 0, \
-        DRAW_BY_STALE_MATE: 0, \
-        DRAW_BY_TWO_WINS: 0}
+TRAINING_PAYOFFS = {WHITE_WINS: 1,
+                    BLACK_WINS: -1,
+                    DRAW: 0,
+                    DRAW_BY_REP: 0,
+                    DRAW_BY_STALE_MATE: 0,
+                    DRAW_BY_TWO_WINS: 0}
 
-ROLLOUT_PAYOFFS = {WHITE: {WHITE_WINS: 1, \
-        BLACK_WINS: -1, \
-        DRAW: 0, \
-        DRAW_BY_REP: 0, \
-        DRAW_BY_STALE_MATE: 0, \
-        DRAW_BY_TWO_WINS: 0}, \
-        BLACK: {WHITE_WINS: -1, \
-        BLACK_WINS: 1, \
-        DRAW: 0, \
-        DRAW_BY_REP: 0, \
-        DRAW_BY_STALE_MATE: 0, \
-        DRAW_BY_TWO_WINS: 0}}
+ROLLOUT_PAYOFFS = {WHITE: {WHITE_WINS: 1,
+                           BLACK_WINS: -1,
+                           DRAW: 0,
+                           DRAW_BY_REP: 0,
+                           DRAW_BY_STALE_MATE: 0,
+                           DRAW_BY_TWO_WINS: 0},
+                   BLACK: {WHITE_WINS: -1,
+                           BLACK_WINS: 1,
+                           DRAW: 0,
+                           DRAW_BY_REP: 0,
+                           DRAW_BY_STALE_MATE: 0,
+                           DRAW_BY_TWO_WINS: 0}}
 
-TO_STRING = {0: "undefined", \
-        WHITE_WINS: "white won", \
-        BLACK_WINS: "black won", \
-        DRAW: "draw", \
-        DRAW_BY_REP: "draw by repetition", \
-        DRAW_BY_STALE_MATE: "draw by stale mate", \
-        DRAW_BY_TWO_WINS: "draw by simultaneous finish"}
+TO_STRING = {0: "undefined",
+             WHITE_WINS: "white won",
+             BLACK_WINS: "black won",
+             DRAW: "draw",
+             DRAW_BY_REP: "draw by repetition",
+             DRAW_BY_STALE_MATE: "draw by stale mate",
+             DRAW_BY_TWO_WINS: "draw by simultaneous finish"}
 
 
 MODEL = mock_model.MockModel()
-DEFAULT_PLAYER = {\
-        "name": "default player", \
-        "azts_settings": {\
-            "payoffs": ROLLOUT_PAYOFFS, \
-            "exploration": EXPLORATION, \
-            "heat" : HEAT, \
-            "model": MODEL} \
-        }
+DEFAULT_PLAYER = {
+    "name": "default player",
+    "azts_settings": {
+            "payoffs": ROLLOUT_PAYOFFS,
+            "exploration": EXPLORATION,
+            "heat": HEAT,
+            "model": MODEL}
+}
 
 # Data types for size of
 # np.arrays

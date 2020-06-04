@@ -11,11 +11,13 @@ import numpy as np
 MOVE_DIMENSIONS = (8, 8, 64)
 POS_DIMENSIONS = (8, 8, 11)
 
+
 class MockModel():
     """
     for testing alpha zero tree search
     until we have real models
     """
+
     def inference(self, position):
         '''
         mock inference.
