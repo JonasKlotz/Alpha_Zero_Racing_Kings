@@ -65,7 +65,7 @@ class AZero:
         """ Automatically enters a training loop that fetches newest datasets
         """
 
-        MAX_RUNS = 3
+        MAX_RUNS = 1
 
         # latest_dataset =
         for i in range(MAX_RUNS):
@@ -81,7 +81,8 @@ class AZero:
             log.info("New Dataset available")
             log.info("Commencing training %i/%i on %s",
                      i, MAX_RUNS, dataset_file)
-            self.train(train_data, epochs=-1)
+            # TODO: MAX_RUNS and epochs are reduce for testing purposes
+            self.train(train_data, epochs=20)
 
     # @timing
     def inference(self, input):
@@ -122,18 +123,27 @@ class AZero:
             initial_epoch = self.initial_epoch
 
         if epochs == -1:  # train indefinitely; XXX: review
-            epochs = 10000
+            # TODO: Increase epochs here, but i want it to be quick
+            epochs = 10
 
         # begin training
         with mlflow.start_run():
-            train_logs = self.model.fit(x_train, y_train,
+            '''train_logs = self.model.fit(x_train, y_train,
                                         batch_size=batch_size,
                                         epochs=initial_epoch + epochs,
                                         shuffle=True,
                                         callbacks=self.callbacks,
                                         initial_epoch=initial_epoch,
+                                        verbose=2)'''
+            train_logs = self.model.fit(x_train, y_train,
+                                        batch_size=batch_size,
+                                        epochs=initial_epoch + epochs,
+                                        shuffle=True,
+                                        callbacks=self.callbacks,
+                                        initial_epoch=0,
                                         verbose=2)
-            self.initial_epoch = train_logs.history['epoch']
+            # TODO: fix the epoch stuff
+            # self.initial_epoch = train_logs.history['epoch']
 
             # mlflow logging
             mlflow.log_param("epochs", epochs)
@@ -142,7 +152,7 @@ class AZero:
                                    keras_model=self.model,
                                    keras_module=keras,
                                    registered_model_name="test_models")
-            # idk wo die config gerade ist. im prinzip loggt man die da
+            # idk wo die config gerade ist. im prinzip loggt man die so
             # mlflow.log_artifact(artifact_path="config", local_path="path/to/config")
 
     def summary(self):
