@@ -109,7 +109,7 @@ class AZero:
         self.callbacks = callbacks
 
     def train(self, train_data, batch_size=64, epochs=10, initial_epoch=None):
-        """ enters the training loop """
+        """ Enters the training loop """
 
         x_train, y_train = prepare_dataset(train_data)
 
@@ -130,20 +130,20 @@ class AZero:
         self.initial_epoch = train_logs.history['epoch']
 
     def summary(self):
-        """ prints a summary of the model architecture """
+        """ Prints a summary of the model architecture """
         print("Model Name: " + self.config.model_name)
         print("Configuration Settings:")
         print(self.config)
         self.model.summary()
 
     def plot_model(self):
-        """ plots the whole model architecture as a graph """
+        """ Plots the whole model architecture as a graph """
         # graphviz (not a python package) has to be installed https://www.graphviz.org/
         plot_model(self.model, to_file='Model/%s.png' % self.config.model_name,
                    show_shapes=True, show_layer_names=True)
 
     def remember_model_architecture(self):
-        """ makes sure that the architecture and config file
+        """ Makes sure that the architecture and config file
         are stored once per model version
         """
         # save model
@@ -198,7 +198,7 @@ class AZero:
         if checkpoint_file is not None:
             self.restore_from_checkpoint(checkpoint_file)
         else:
-            log.info("No previous checkpoint found")
+            log.info("No previous checkpoint found - initializing new network.")
 
     def restore_from_checkpoint(self, checkpoint_file):
         """ Restores weights from given checkpoint """
@@ -378,7 +378,7 @@ class CountEpochs(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         logs["epoch"] = epoch
-        print(logs)
+        # print(logs)
 
 
 class AutoFetchDataset(keras.callbacks.Callback):
@@ -401,7 +401,7 @@ class AutoFetchDataset(keras.callbacks.Callback):
 
 if __name__ == "__main__":
 
-    config = Config("Player/config.yaml")
+    config = Config()
 
     model = AZero(config)
     model.auto_run_training()
