@@ -107,7 +107,7 @@ def search_config_file(name):
         return name
 
     for _dir in [CONFIGDIR]:
-        file = os.path.join(_dir, name)
+        file = os.path.join(ROOTDIR, _dir, name)
         if os.path.exists(file):
             return file
 
