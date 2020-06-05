@@ -14,7 +14,7 @@ from azts import screen
 from azts.config import ROLLOUT_PAYOFFS, \
         EXPLORATION, HEAT, BLACK, WHITE, \
         RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
-        SHOW_GAME, DEFAULT_PLAYER
+        SHOW_GAME
 
 REPORT_CYCLE = 10
 

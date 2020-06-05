@@ -78,7 +78,7 @@ class SelfPlay():
 
 if __name__ == "__main__":
 
-    player_defs = ("default_config", "SpryGibbon")
+    player_defs = ("default_config", "FamiliarChicken")
     game_id = utility.get_unused_match_handle(*player_defs)
     players = utility.load_players(*player_defs, True)
 

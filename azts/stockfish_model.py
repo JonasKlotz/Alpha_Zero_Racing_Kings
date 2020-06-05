@@ -23,8 +23,10 @@ class StockfishModel():
     according to stockfish engine
     """
 
-    def __init__(self):
+    def __init__(self, config):
         self.game = game.Game()
+        self.time_limit = config.stockfish.time_limit
+        self.search_depth = config.stockfish.search_depth
 
     def inference(self, position):
         """
@@ -39,7 +41,8 @@ class StockfishModel():
         self.game.board.set_fen(tensor_to_fen(position))
         evaluation = self.game.get_evaluation(PATH_TO_ENGINE)
         policy = game.policy_to_tensor(game.normalize_policy(
-            self.game.get_policy(PATH_TO_ENGINE)))
+            self.game.get_policy(
+                PATH_TO_ENGINE, time_limit=self.time_limit, depth_limit=self.search_depth)))
 
         return (policy, evaluation)
 
