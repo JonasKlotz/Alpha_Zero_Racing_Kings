@@ -5,8 +5,9 @@ import sys
 import re
 import pickle
 import time
-import numpy as np
 import keras
+import mlflow
+import numpy as np
 
 # add root folder to python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,7 +21,7 @@ from keras.utils.vis_utils import plot_model
 
 from lib.timing import timing
 
-from azts.config import GAMEDIR
+from azts.config import DATASETDIR
 from Player.config import Config
 
 from lib.logger import get_logger
@@ -49,39 +50,45 @@ class AZero:
             config (Config): Player Configuration file
         """
 
-        assert config is not None, "ERROR! no config provided"
         self.config = config
 
         self.initial_epoch = 0
         self.checkpoint_file = None
 
-        self.build_model()
+        if self.config.model.load_from_mlflow:
+            self.load_mlflow()  # XXX are all parameters set?
+        else:
+            self.build_model()
+            self.remember_model_architecture()
+            self.restore_latest_model()
+
         self.compile_model()
-        self.remember_model_architecture()
-        self.restore_latest_model()
         self.setup_callbacks()
 
-    def auto_run_training(self):
+    def load_mlflow(self, version=None):
+        if version is None:
+            model_uri = self.config.model_uri
+        else:
+            model_uri = self.config.model_uri_format.format(version)
+        self.model = mlflow.keras.load_model(model_uri)
+
+    def auto_run_training(self, max_iterations=3, max_epochs=1000):
         """ Automatically enters a training loop that fetches newest datasets
         """
 
-        MAX_RUNS = 3
-
-        # latest_dataset =
-        for i in range(MAX_RUNS):
+        for i in range(max_iterations):
             dataset_file = get_latest_dataset_file()
             if dataset_file is None:
-                log.info("Waiting for dataset..")
+                log.info("No dataset found in %s. Waiting..", DATASETDIR)
                 while dataset_file is None:
                     time.sleep(1)
                     dataset_file = get_latest_dataset_file()
             self.setup_callbacks(auto_run=True)  # new file, new callback
             with open(dataset_file, 'rb') as f:
                 train_data = pickle.load(f)
-            log.info("New Dataset available")
-            log.info("Commencing training %i/%i on %s",
-                     i, MAX_RUNS, dataset_file)
-            self.train(train_data, epochs=-1)
+            log.info("Commencing training %i/%i on dataset %s.",
+                     i, max_iterations, dataset_file)
+            self.train(train_data, epochs=max_epochs)
 
     # @timing
     def inference(self, input):
@@ -122,7 +129,7 @@ class AZero:
             initial_epoch = self.initial_epoch
 
         if epochs == -1:  # train indefinitely; XXX: review
-            epochs = 2  # 10000
+            epochs = 10000
 
         # begin training
         train_logs = self.model.fit(x_train, y_train,
@@ -216,8 +223,10 @@ class AZero:
         """ Compiles the model """
         losses = {"policy_head": "categorical_crossentropy",
                   "value_head": "mean_squared_error"}
+        learning_rate = self.config.model.training.learning_rate
+        optimizer = Adam(learning_rate=learning_rate)
         self.model.compile(loss=losses,
-                           optimizer=Adam(learning_rate=1e-3),
+                           optimizer=optimizer,
                            metrics=['accuracy'])
 
     def build_model(self):
@@ -357,7 +366,7 @@ class AZero:
 
 def get_latest_dataset_file():
     """ Returns newest dataset file in game dir """
-    _dir = GAMEDIR
+    _dir = DATASETDIR
     files = os.listdir(_dir)
     if len(files) == 0:
         return None
