@@ -1,11 +1,16 @@
 """ handles the AlphaZero model
 """
 import os
+import sys
 import re
 import pickle
 import time
 import numpy as np
 import keras
+
+# add root folder to python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
@@ -117,7 +122,7 @@ class AZero:
             initial_epoch = self.initial_epoch
 
         if epochs == -1:  # train indefinitely; XXX: review
-            epochs = 10000
+            epochs = 2  # 10000
 
         # begin training
         train_logs = self.model.fit(x_train, y_train,
@@ -127,7 +132,8 @@ class AZero:
                                     callbacks=self.callbacks,
                                     initial_epoch=initial_epoch,
                                     verbose=2)
-        self.initial_epoch = train_logs.history['epoch']
+        self.initial_epoch = train_logs.history['epoch'][-1] + 1
+        print(self.initial_epoch)
 
     def summary(self):
         """ Prints a summary of the model architecture """
@@ -156,7 +162,7 @@ class AZero:
         # save config
         config_file = os.path.join(self.config.checkpoint_dir, "config.yaml")
         if not os.path.isfile(config_file):
-            self.config.dump_yaml(config_file)
+            self.config.dump(config_file)
 
     def load_model_architecture(self, file):
         """ Restores model architecture from yaml file """
@@ -369,7 +375,7 @@ def prepare_dataset(train_data):
     y_train_p = np.stack(y_train_p.flatten(), axis=0)
     y_train_v = np.stack(y_train_v.flatten(), axis=0)
     y_train = {"policy_head": y_train_p,
-               "value_head":  y_train_v}
+               "value_head": y_train_v}
     return x_train, y_train
 
 
@@ -378,7 +384,6 @@ class CountEpochs(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         logs["epoch"] = epoch
-        # print(logs)
 
 
 class AutoFetchDataset(keras.callbacks.Callback):
@@ -402,6 +407,7 @@ class AutoFetchDataset(keras.callbacks.Callback):
 if __name__ == "__main__":
 
     config = Config()
+    print(config)
 
     model = AZero(config)
     model.auto_run_training()
