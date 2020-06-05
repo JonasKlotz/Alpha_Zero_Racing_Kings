@@ -122,7 +122,7 @@ def load_player_conf(location):
     return player
 
 
-def load_model(conf, mock=False):
+def load_model(conf):
     '''
     load model from configuration
     :param Configuration conf: configuration
@@ -130,9 +130,21 @@ def load_model(conf, mock=False):
     :param boolean mock: load random generator
     instead
     '''
-    model = mock_model.MockModel() if mock \
-        else stockfish_model.StockfishModel(config) if conf.stockfish.enable \
-        else AZero(config)
+    # model = mock_model.MockModel() if mock \
+    #     else model = stockfish_model.StockfishModel(conf) if conf.stockfish.enable \
+    #     else AZero(conf)
+    model = None
+
+    if conf.mock:
+        model = mock_model.MockModel()
+    elif conf.stockfish.enable:
+        model = stockfish_model.StockfishModel(conf)
+    else:
+        AZero(conf)
+
+    if model == None:
+        raise Exception("No model chosen in player config: %s. (maybe you are using default_config.yaml?)"
+                        % conf.name)
 
     return model
 
@@ -156,7 +168,7 @@ def load_player(location, mock=False):
     return new_player
 
 
-def load_players(loc_1, loc_2, mock=False):
+def load_players(loc_1, loc_2):
     '''
     load players from .yaml-configuration file
     locations.
@@ -176,10 +188,10 @@ def load_players(loc_1, loc_2, mock=False):
 
     if selfplay:
         # same model for both players
-        model = load_model(configurations[0], mock)
+        model = load_model(configurations[0])
         models = [model, model]
     else:
-        models = [load_model(i, mock) for i in configurations]
+        models = [load_model(i) for i in configurations]
 
     for model, config in zip(models, configurations):
         players.append(player.Player(model=model, \

@@ -1,15 +1,19 @@
 ### YAML DEFAULT Config-File
 
 #name of the model
-name: 'FamiliarChicken'
+name: 'MockingBird'
 #the config version should be updated whenever the old config looses compatibility,
 #i.e. a change is made in the architecture of the model; new parameters
-config_version: 1
-#model revision is changed whenever the parameters are reconfigured
+version: 1
+#revision is changed whenever the parameters are reconfigured
 #the model then gets a new unique name and a new folder for checkpoints, etc.
-model_revision: 0
-#folder to save checkpoints and training data
-data_dir: "_Data"
+revision: 0
+#directories
+dirs:
+    base: "_Data"
+    checkpoint_dir: "model_checkpoints"
+    game_dir: "games"
+    dataset_dir: "datasets"
 #player parameters
 player:
     heat: 1
@@ -22,17 +26,19 @@ player:
             draw_by_rep: 0
             draw_by_stale_mate: 0
             draw_by_two_wins: 0
-        black: 
+        black:
             white_wins: -1
             black_wins: 1
             draw: 0
             draw_by_rep: 0
             draw_by_stale_mate: 0
             draw_by_two_wins: 0
+#use mock model instead of azts/stockfish
+mock: True
 #stockfish parameters
 stockfish:
     #use stockfish instead of model
-    enable: True
+    enable: False
     #given time limit for move evaluation
     time_limit: 0.1
     #maximum tree search depth
@@ -87,7 +93,7 @@ model:
             activation: 'tanh'
 
 
-# # # Leela Zero Config # # # 
+# # # Leela Zero Config # # #
 #model:
 #    input_shape: [8,8,64?]
 #    resnet_depth: 15
@@ -98,7 +104,7 @@ model:
 #        filter_stride: 1
 #        batch_normalization: True
 #    ...
-# # # Alpha Zero Config # # # 
+# # # Alpha Zero Config # # #
 #model:
 #    input_shape: [8,8,73]
 #    resnet_depth: 17
@@ -109,7 +115,7 @@ model:
 #        filter_stride: 1
 #        batch_normalization: True
 #    ...
-# # # Alpha Go Config # # # 
+# # # Alpha Go Config # # #
 #model:
 #    input_shape: [8,8,?]
 #    resnet_depth: 40

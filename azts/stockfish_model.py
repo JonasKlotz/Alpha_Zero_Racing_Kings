@@ -26,7 +26,8 @@ class StockfishModel():
     def __init__(self, config):
         self.game = game.Game()
         self.time_limit = config.stockfish.time_limit
-        self.search_depth = config.stockfish.search_depth
+        # self.search_depth = config.stockfish.search_depth
+        self.search_depth = None
 
     def inference(self, position):
         """
@@ -44,6 +45,7 @@ class StockfishModel():
             self.game.get_policy(
                 PATH_TO_ENGINE, time_limit=self.time_limit, depth_limit=self.search_depth)))
 
+        # print("stockfish move")
         return (policy, evaluation)
 
 

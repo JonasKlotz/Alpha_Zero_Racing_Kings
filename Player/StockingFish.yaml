@@ -1,19 +1,15 @@
 ### YAML DEFAULT Config-File
 
 #name of the model
-name: 'AlphaZero'
+name: 'StockingFish'
 #the config version should be updated whenever the old config looses compatibility,
 #i.e. a change is made in the architecture of the model; new parameters
-version: 1
-#revision is changed whenever the parameters are reconfigured
+config_version: 1
+#model revision is changed whenever the parameters are reconfigured
 #the model then gets a new unique name and a new folder for checkpoints, etc.
-revision: 0
-#directories
-dirs:
-    base: "_Data"
-    checkpoint_dir: "model_checkpoints"
-    game_dir: "games"
-    dataset_dir: "datasets"
+model_revision: 0
+#folder to save checkpoints and training data
+data_dir: "_Data"
 #player parameters
 player:
     heat: 1
@@ -38,9 +34,9 @@ mock: False
 #stockfish parameters
 stockfish:
     #use stockfish instead of model
-    enable: False
+    enable: True
     #given time limit for move evaluation
-    time_limit: 0.1
+    time_limit: 0.2
     #maximum tree search depth
     search_depth: 10
 #model parameters

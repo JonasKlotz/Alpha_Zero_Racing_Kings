@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     players = {}
     for i, j in zip(["player_one", "player_two"],
-                    ["default_config.yaml", "SpryGibbon.yaml"]):
+                    ["default_config.yaml", "StockingFish.yaml"]):
         path = "Player/" + j
         configuration = config.Config(path)
         players[i] = player.Player(model=model,
