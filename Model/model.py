@@ -79,8 +79,7 @@ class AZero:
             log.info("New Dataset available")
             log.info("Commencing training %i/%i on %s",
                      i, MAX_RUNS, dataset_file)
-            # TODO: MAX_RUNS and epochs are reduce for testing purposes
-            self.train(train_data, epochs=20)
+            self.train(train_data, epochs=-1)
 
     # @timing
     def inference(self, input):
@@ -145,8 +144,9 @@ class AZero:
             # self.initial_epoch = train_logs.history['epoch']
 
             # mlflow logging
-            mlflow.log_param("epochs", epochs)
-            mlflow.log_metric("idk", 42)
+            mlflow.log_param("epochs", 15)
+            mlflow.log_metric("loss", 5)
+            mlflow.log_metric("loss", 10)
             mlflow.keras.log_model(artifact_path="model",
                                    keras_model=self.model,
                                    keras_module=keras,
