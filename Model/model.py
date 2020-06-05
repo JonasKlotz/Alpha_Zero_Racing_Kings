@@ -216,7 +216,20 @@ class AZero:
     def restore_from_checkpoint(self, checkpoint_file):
         """ Restores weights from given checkpoint """
         log.info("Restoring from checkpoint %s", checkpoint_file)
-        self.model.load_weights(checkpoint_file)
+        tries = 3
+        while tries:
+            try:
+                self.model.load_weights(checkpoint_file)
+                break
+            except OSError:
+                if tries:
+                    log.warning(
+                        "Could not open checkpoint. Retrying in 5 seconds..")
+                    time.sleep(5)
+                    tries -= 1
+                else:
+                    raise(OSError)
+
         self.checkpoint_file = checkpoint_file
 
     def compile_model(self):
@@ -416,7 +429,6 @@ class AutoFetchDataset(keras.callbacks.Callback):
 if __name__ == "__main__":
 
     config = Config()
-    print(config)
 
     model = AZero(config)
     model.auto_run_training()
