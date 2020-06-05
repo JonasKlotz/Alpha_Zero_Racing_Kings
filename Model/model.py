@@ -59,7 +59,7 @@ class AZero:
         self.restore_latest_model()
         self.setup_callbacks()
 
-        mlflow.set_tracking_uri="http://35.223.113.101:8000"
+        mlflow.set_tracking_uri = "http://35.223.113.101:8000"
 
     def auto_run_training(self):
         """ Automatically enters a training loop that fetches newest datasets
@@ -151,7 +151,7 @@ class AZero:
             mlflow.keras.log_model(artifact_path="model",
                                    keras_model=self.model,
                                    keras_module=keras,
-                                   registered_model_name="test_models")
+                                   registered_model_name=self.config.model_name)
             # idk wo die config gerade ist. im prinzip loggt man die so
             # mlflow.log_artifact(artifact_path="config", local_path="path/to/config")
 
