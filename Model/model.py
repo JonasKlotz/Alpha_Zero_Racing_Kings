@@ -59,8 +59,6 @@ class AZero:
         self.restore_latest_model()
         self.setup_callbacks()
 
-        mlflow.set_tracking_uri = "http://35.223.113.101:8000"
-
     def auto_run_training(self):
         """ Automatically enters a training loop that fetches newest datasets
         """
@@ -127,6 +125,7 @@ class AZero:
             epochs = 10
 
         # begin training
+        mlflow.set_tracking_uri = "http://35.223.113.101:8000"
         with mlflow.start_run():
             '''train_logs = self.model.fit(x_train, y_train,
                                         batch_size=batch_size,
