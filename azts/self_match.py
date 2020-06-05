@@ -18,6 +18,7 @@ from azts.config import ROLLOUT_PAYOFFS, \
 
 REPORT_CYCLE = 10
 
+
 class SelfMatch():
     '''
     Self match puts two ai players in
@@ -31,11 +32,12 @@ class SelfMatch():
     of rollouts that each player does per
     move
     '''
-    def __init__(self, \
-            player_one, \
-            player_two, \
-            runs_per_move=RUNS_PER_MOVE, \
-            show_game=SHOW_GAME):
+
+    def __init__(self,
+                 player_one,
+                 player_two,
+                 runs_per_move=RUNS_PER_MOVE,
+                 show_game=SHOW_GAME):
 
         self.players = []
 
@@ -79,8 +81,8 @@ class SelfMatch():
         '''
         moves = 1
         time1 = time.time()
-        print(f"\nWHITE: {self.players[0].name}\n" \
-                + f"BLACK: {self.players[1].name}\n")
+        print(f"\nWHITE: {self.players[0].name}\n"
+              + f"BLACK: {self.players[1].name}\n")
         while True:
             # check break condition:
             if self.game.is_ended():
@@ -105,7 +107,7 @@ class SelfMatch():
 
         result = self.game.board.result()
         state = self.game.get_game_state()
-        print(f"game ended after {moves} " \
+        print(f"game ended after {moves} "
               + f"moves with {result} ({TO_STRING[state]}).")
         score = self.training_payoffs[state]
 
@@ -113,7 +115,6 @@ class SelfMatch():
             i[2] = score
 
         return state
-
 
     def _show_game(self):
         if self.show_game:
@@ -124,10 +125,11 @@ class SelfMatch():
         time_now = time.time()
         elapsed = time_now - time_before
         avg_per_move = elapsed / REPORT_CYCLE
-        print(f"total moves: {moves}; {REPORT_CYCLE} moves in " \
-                + f"{str(elapsed)[0:5]}s, average of " \
+        print(f"total moves: {moves}; {REPORT_CYCLE} moves in "
+              + f"{str(elapsed)[0:5]}s, average of "
                 + f"{str(avg_per_move)[0:4]}s per move.")
         return time_now
+
 
 if __name__ == "__main__":
     SHOW_GAME = True
@@ -136,13 +138,13 @@ if __name__ == "__main__":
     model = mock_model.MockModel()
 
     players = {}
-    for i, j in zip(["player_one", "player_two"], \
-            ["default_config.yaml", "SpryGibbon.yaml"]):
+    for i, j in zip(["player_one", "player_two"],
+                    ["default_config.yaml", "SpryGibbon.yaml"]):
         path = "Player/" + j
         configuration = config.Config(path)
-        players[i] = player.Player(model=model, \
-                name=configuration.name, \
-                **(configuration.player.as_dictionary())) 
+        players[i] = player.Player(model=model,
+                                   name=configuration.name,
+                                   **(configuration.player.as_dictionary()))
 
     match = SelfMatch(**players)
     match.simulate()

@@ -4,12 +4,16 @@
 name: 'AlphaZero'
 #the config version should be updated whenever the old config looses compatibility,
 #i.e. a change is made in the architecture of the model; new parameters
-config_version: 1
-#model revision is changed whenever the parameters are reconfigured
+version: 1
+#revision is changed whenever the parameters are reconfigured
 #the model then gets a new unique name and a new folder for checkpoints, etc.
-model_revision: 0
-#folder to save checkpoints and training data
-data_dir: "_Data"
+revision: 0
+#directories
+dirs:
+    base: "_Data"
+    checkpoint_dir: "model_checkpoints"
+    game_dir: "games"
+    dataset_dir: "datasets"
 #player parameters
 player:
     heat: 1

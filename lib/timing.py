@@ -16,8 +16,9 @@ report for accumulated run-times:
 
 import time
 import functools
+
 from lib.logger import get_logger
-log = get_logger("Timing")
+log = get_logger("Timing", level="DEBUG")
 
 _RT_START = time.perf_counter()
 
@@ -49,7 +50,7 @@ def timing(_func=None, *, bin=None):
             value = func(*args, **kwargs)
             run_time = time.perf_counter() - start_time
             name = func.__name__ + "()"
-            log.info('{:s} took {:s}'.format(name, prettify(run_time)))
+            log.debug('%s took %s', name, prettify_time(run_time))
             # store run_time of func
             if name not in _RT_FUNCS:
                 _RT_FUNCS[name] = run_time
@@ -81,7 +82,7 @@ def runtime_summary():
             perc = int(100 * run_time / total)
             perc_import = int(100 * run_time / elapsed_since_import)
             log.info("{}: {}% total: {} ({:.4f} seconds) [{}%]".format(
-                _bin, perc, prettify(run_time), run_time, perc_import))
+                _bin, perc, prettify_time(run_time), run_time, perc_import))
 
     log.info("================== Runtime Summary ==================")
     if _RT_BINS:
@@ -92,7 +93,7 @@ def runtime_summary():
     log.info("[runtime % since import]")
 
 
-def prettify(seconds):
+def prettify_time(seconds):
     """ converts seconds to human readable time
     Args:
         seconds (float)

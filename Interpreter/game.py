@@ -204,7 +204,6 @@ class Game:
                 self.state = DRAW_BY_STALE_MATE
             self.end = True
 
-        #print("history count: {}".format(self.history[self.board_fen_hash()])) #TODO LOG
         try:
             if self.history[self.board_fen_hash()] > 2:
                 self.state = DRAW_BY_REP

@@ -41,12 +41,12 @@ class Player():
         # so no need to store statemachine or model
         # in self
         self.name = name
-        self.tree = azts_tree.AztsTree(model=model, \
-                              color=color, \
-                              runs_per_move=runs_per_move, \
-                              exploration=exploration, \
-                              payoffs=rollout_payoffs, \
-                              heat=heat)
+        self.tree = azts_tree.AztsTree(model=model,
+                                       color=color,
+                                       runs_per_move=runs_per_move,
+                                       exploration=exploration,
+                                       payoffs=rollout_payoffs,
+                                       heat=heat)
 
     def set_color(self, color):
         '''
@@ -121,8 +121,8 @@ class Player():
         as np.array; second is current policy
         tensor as np.array
         '''
-        return [self.tree.get_position(), \
-                self.tree.get_policy_tensor(), \
+        return [self.tree.get_position(),
+                self.tree.get_policy_tensor(),
                 None]
 
 
@@ -134,14 +134,14 @@ class CLIPlayer(Player):
     a command line interface (cli).
     '''
 
-    def __init__(self, \
-            name="UNNAMED PLAYER", \
-            color=WHITE):
+    def __init__(self,
+                 name="UNNAMED PLAYER",
+                 color=WHITE):
         '''
         CLIPlayer is indeed keeping state,
         because there is no azts_tree
         involved to keep state
-        ''' 
+        '''
         self.name = name
         self.color = color
         self.statemachine = state_machine.StateMachine()
@@ -175,15 +175,14 @@ class CLIPlayer(Player):
         print("> select move in UCI or \"h\" for help")
 
         user_input = "unknown"
-        consequences = {"h": lambda x: print("> \"list\": list legal moves\n" \
-                + "> \"clear\": clear screen\n" \
-                + "> \"exit\": exit game"), \
-                "exit": lambda x: sys.exit(), \
-                "list": lambda x: [print(i) for i in x], \
-                "ls": lambda x: [print(i) for i in x], \
-                "clear": lambda x: os.system('cls' if os.name == 'nt' \
-                        else 'clear')}
-
+        consequences = {"h": lambda x: print("> \"list\": list legal moves\n"
+                                             + "> \"clear\": clear screen\n"
+                                             + "> \"exit\": exit game"),
+                        "exit": lambda x: sys.exit(),
+                        "list": lambda x: [print(i) for i in x],
+                        "ls": lambda x: [print(i) for i in x],
+                        "clear": lambda x: os.system('cls' if os.name == 'nt'
+                                                     else 'clear')}
 
         legal_moves = self.statemachine.rollout_game.get_moves_observation()
         choices = legal_moves + list(consequences.keys())
@@ -198,9 +197,8 @@ class CLIPlayer(Player):
             return user_input
 
         consequences[user_input](legal_moves)
-        
-        return self._parse_user_input()
 
+        return self._parse_user_input()
 
     def receive_move(self, move):
         '''
@@ -211,7 +209,7 @@ class CLIPlayer(Player):
             print(f"> Other player played {move}")
         self.statemachine.actual_fen_move(move)
 
-    #TODO: implement other getters and setters
+    # TODO: implement other getters and setters
 
     def game_over(self):
         return self.statemachine.actual_game_over()
@@ -224,13 +222,11 @@ class CLIPlayer(Player):
 
 
 
-
-
 if __name__ == "__main__":
     model = mock_model.MockModel()
     configuration = config.Config("Player/default_config.yaml")
-    player = Player(model=model, \
-            **(configuration.player.as_dictionary()))
+    player = Player(model=model,
+                    **(configuration.player.as_dictionary()))
     print(f"First move of white player is {player.make_move()}.")
     print(player.get_stats())
 # pylint: enable=E0401

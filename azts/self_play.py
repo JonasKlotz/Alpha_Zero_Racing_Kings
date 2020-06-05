@@ -15,7 +15,7 @@ from azts import self_match
 from azts import mock_model
 from azts import utility
 from azts.config import GAMEDIR, \
-        RUNS_PER_MOVE, SHOW_GAME
+    RUNS_PER_MOVE, SHOW_GAME
 
 
 class SelfPlay():
@@ -31,14 +31,15 @@ class SelfPlay():
     parallelisation of creating data for many
     matches.
     '''
-    def __init__(self, \
-            player_one, \
-            player_two, \
-            runs_per_move=RUNS_PER_MOVE, \
-            game_id="UNNAMED_MATCH", \
-            show_game=SHOW_GAME):
 
-        self.players = [player_one, player_two] 
+    def __init__(self,
+                 player_one,
+                 player_two,
+                 runs_per_move=RUNS_PER_MOVE,
+                 game_id="UNNAMED_MATCH",
+                 show_game=SHOW_GAME):
+
+        self.players = [player_one, player_two]
         self.runs_per_move = runs_per_move
         self.game_id = game_id
         self.show_game = show_game
@@ -53,20 +54,20 @@ class SelfPlay():
         to be simulated
         '''
         for i in range(iterations):
-            switch = i % 2 
+            switch = i % 2
             print(f"\nMATCH {i+1} OF {iterations}:")
-            match = self_match.SelfMatch(\
-                    player_one=self.players[switch], \
-                    player_two=self.players[1 - switch], \
-                    runs_per_move=self.runs_per_move, \
-                    show_game=self.show_game)
+            match = self_match.SelfMatch(
+                player_one=self.players[switch],
+                player_two=self.players[1 - switch],
+                runs_per_move=self.runs_per_move,
+                show_game=self.show_game)
             match.simulate()
             data = [tuple(j) for j in match.data_collection]
 
-            filepath = utility.get_unused_filepath( \
-                    f"game_{self.game_id}", \
-                    GAMEDIR, \
-                    i)
+            filepath = utility.get_unused_filepath(
+                f"game_{self.game_id}",
+                GAMEDIR,
+                i)
 
             pickle.dump(data, open(filepath, "wb"))
 
@@ -75,17 +76,16 @@ class SelfPlay():
                 i.reset()
 
 
-
 if __name__ == "__main__":
 
     player_defs = ("default_config", "FamiliarChicken")
     game_id = utility.get_unused_match_handle(*player_defs)
     players = utility.load_players(*player_defs, True)
 
-    play = SelfPlay(player_one=players[0], \
-            player_two=players[1], \
-            game_id=game_id, \
-            show_game=True)
+    play = SelfPlay(player_one=players[0],
+                    player_two=players[1],
+                    game_id=game_id,
+                    show_game=True)
     play.start(3)
 # pylint: enable=E0401
 # pylint: enable=E0602

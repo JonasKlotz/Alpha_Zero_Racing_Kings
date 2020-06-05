@@ -3,10 +3,16 @@ combines default settings, warning for unknown settings
 and type checking
 """
 import os
+import sys
 import yaml
 
+ROOTDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(ROOTDIR)
+
 from lib.logger import get_logger
-log = get_logger("config")
+log = get_logger("Config")
+
+CONFIGDIR = "Player"
 
 
 class Options(object):
@@ -21,10 +27,11 @@ class Options(object):
 
     def load_options_safe(self, d, default_options):
         """ safely set member attributes of Options class
-            while using default attributes (that are already set in instantiated object),
-            type-assertion for overridden values
-            and warning for unknown parameters (assuming unset members are unused)
-        Args: d (dict): dictionary containing attribute, value to be set
+        while using default attributes;
+        type-assertion for overridden values,
+        warning for unknown parameters  
+        Args: 
+            d (dict): dictionary containing attribute, value to be set
                         if value is a dictionary itself, another Options class
                         with dictionary values will be added recursively
         """
@@ -36,7 +43,7 @@ class Options(object):
                     setattr(self, member, opt)
                 else:
                     assert isinstance(default_value, type(dict_value)), \
-                        "attempted to set member %r (%r) to incorrect type %r" % (
+                        "Attempted to set member %r (%r) to incorrect type %r." % (
                         member, type(default_value), type(dict_value))
                     setattr(self, member, dict_value)
             else:
@@ -44,15 +51,17 @@ class Options(object):
         for param in d:
             # found parameter in config that does not have set default value
             if not hasattr(default_options, param):
-                log.warning("ignoring unknown parameter " + param)
+                log.warning("Ignoring unknown parameter %s", param)
 
     def get_items(self):
-        """ returns a list of tuples (member, value) 
-        """
-        return [(attr, getattr(self, attr)) for attr in dir(self) if not callable(getattr(self, attr))
+        """ Returns a list of tuples (member, value) """
+        return [(attr, getattr(self, attr))
+                for attr in dir(self)
+                if not callable(getattr(self, attr))
                 and "__" not in attr]
 
     def as_dictionary(self):
+        """ Returns yaml-style dictionary; recursive for all Options instances """
         d = dict(self.get_items())
         for key, value in d.items():
             if isinstance(value, Options):
@@ -64,7 +73,7 @@ class Options(object):
         for member, value in self.get_items():
             out += indent + member + ": "
             if isinstance(value, Options):
-                out += "\n" + value.__str__(indent=indent + "    ")
+                out += "\n" + value.__str__(indent=indent + 4 * " ")
             else:
                 out += value.__str__() + "\n"
         return out
@@ -76,10 +85,11 @@ class DefaultOptions(Options):
         self.load_options_force(d)
 
     def load_options_force(self, d):
-        """ set member attributes of Options class
-        Args: d (dict): dictionary containing attribute, value to be set
-                        if value is a dictionary itself, another Options class
-                        with dictionary values will be added recursively
+        """ Set member attributes of Options class
+        Args:
+            d (dict): dictionary containing attribute, value to be set
+                      if value is a dictionary itself, another Options class
+                      with dictionary values will be added recursively
         """
         for attr, value in d.items():
             if isinstance(value, dict):
@@ -88,50 +98,73 @@ class DefaultOptions(Options):
                 setattr(self, attr, value)
 
 
-class Config(Options):
-    """ contains the default config settings
-    attributes of interest:
-        checkpoint_dir
-        self_play_dir
-        train_data_dir
-    """
-    DEFAULT_CONFIG_FILE = "Player/default_config.yaml"
+def search_config_file(name):
+    splits = name.split(".yaml")
+    if len(splits) == 1:
+        name += ".yaml"
 
-    def __init__(self, config_file):
-        yaml_default = yaml.safe_load(
-            stream=open(self.DEFAULT_CONFIG_FILE, 'r'))
-        default = DefaultOptions(yaml_default)
-        yaml_dict = yaml.safe_load(stream=open(config_file, 'r'))
-        self.__yaml_dict = yaml_dict
+    if os.path.exists(name):
+        return name
+
+    for _dir in [CONFIGDIR]:
+        file = os.path.join(_dir, name)
+        if os.path.exists(file):
+            return file
+
+    raise Exception("Could not find config %s." % name)
+
+
+class Config(Options):
+    """ Config Class """
+
+    def __init__(self, config_file=None):
+
+        default_config_file = search_config_file("default_config")
+
+        default_options = yaml.safe_load(
+            stream=open(default_config_file, 'r'))
+
+        if config_file is None:
+            log.info("No config provided; using default config.")
+            yaml_dict = default_options
+        else:
+            config_file = search_config_file(config_file)
+            log.info("Loading Config from %s.", config_file)
+            yaml_dict = yaml.safe_load(stream=open(config_file, 'r'))
+
+        default = DefaultOptions(default_options)
         super().__init__(yaml_dict, default)
 
+        self.__yaml_dict = yaml_dict
+
         # pylint: disable=no-member
-        self.model_name = self.name + \
-            '%dv%dr%d' % (self.model.resnet_depth,
-                          self.config_version,
-                          self.model_revision)
+        self.model_name = "%s%dv%dr%d" % (self.name,
+                                          self.model.resnet_depth,
+                                          self.version,
+                                          self.revision)
 
-        # set directories
-        self.checkpoint_dir = os.path.join(
-            self.data_dir, "model_checkpoints", self.model_name)
-        self.self_play_dir = os.path.join(
-            self.data_dir, "selfplay", self.model_name)
-        self.train_data_dir = os.path.join(self.data_dir, "training_data")
+        # assign directories as members and create if non-existant
+        dirs = self.dirs.as_dictionary()
+        base = dirs.pop("base")
+        for attr, _dir in dirs.items():
+            dir_abs = os.path.join(ROOTDIR, base, self.model_name, _dir)
+            setattr(self, attr, dir_abs)
+            if not os.path.exists(dir_abs):
+                log.info("Creating directory %s.", dir_abs)
+                os.makedirs(dir_abs)
 
-        # create directories if non-existant
-        for _dir in [self.checkpoint_dir, self.self_play_dir, self.train_data_dir]:
-            if not os.path.exists(_dir):
-                os.makedirs(_dir)
-
-    def dump_yaml(self, file):
-        """ dump yaml to a file
+    def dump(self, file):
+        """ Dump yaml to a file;
         Args: file (str): path to file
         """
         with open(file, 'w') as _f:
-            yaml.dump(self.__yaml_dict, _f)
+            yaml.dump(self.as_dictionary(), _f)
 
 
 if __name__ == "__main__":
     # TEST
-    config = Config("Player/config.yaml")
-    print(config)
+    config = Config("SpryGibbon")
+    config = Config("Player/SpryGibbon")
+    config = Config("SpryGibbon.yaml")
+    config = Config()
+    config.dump("Player/config.yaml")
