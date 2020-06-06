@@ -56,6 +56,18 @@ def get_match_player_names(player1, player2):
     return match_name
 
 
+def get_unused_match_handle(selfplayer):
+    '''
+    create an unused match handle to store all
+    data attached to this match
+    '''
+    if type(selfplayer) is str:
+        selfplayer = load_player_conf(selfplayer)
+
+    match_player = f"{selfplayer.model_name}"
+    return test_handle(match_player, False)[0]
+
+
 def get_unused_match_handle(player1, player2):
     '''
     create an unused match handle to store all
@@ -155,6 +167,21 @@ def load_player(location):
     config = load_player_conf(location) 
 
     model = load_model(config)
+    new_player = player.Player(name=config.name, \
+            model=model, \
+            **(config.player.as_dictionary()))
+
+    return new_player
+
+
+def load_player_with_model(model, config):
+    '''
+    load player with a preloaded model
+    :param AZero model: preloaded AZero model
+    :param config conf: configuration of player
+    :return Player: a player with model as model
+    and configured by conf
+    '''
     new_player = player.Player(name=config.name, \
             model=model, \
             **(config.player.as_dictionary()))

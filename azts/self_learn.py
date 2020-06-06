@@ -1,8 +1,66 @@
 import argparse
+import copy
+import multiprocessing
 
 from Model.model import AZero
-from azts.create_dataset import create_dataset
+from azts.create_dataset import assemble_dataset
+from azts import self_play
 from azts import utility
+
+def parallel_matches_with_preloaded_model(yamlpath, \
+        model, \
+        handle, \
+        rollouts_per_move, \
+        num_of_parallel_processes, \
+        num_of_games_per_process, \
+        fork_method="spawn"):
+    '''
+    this version of parallel matches takes a preloaded
+    model as input and creates a deepcopy for each thread
+    to achieve real parallel processing without loading
+    the model n-times from the mlflow server
+    '''
+
+    # according to
+    # https://docs.python.org/3/library/multiprocessing.html
+    if multiprocessing.get_start_method(allow_none=True) is None:
+        multiprocessing.set_start_method(fork_method)
+
+
+    processes = []
+    selfplays = []
+
+    for _ in range(num_of_parallel_processes):
+        # create a model copy for each parallel
+        # process
+        modelcopy = copy.deepcopy(model)
+        players = [utility.load_player_with_model(model=modelcopy, \
+                config=utility.load_player_conf(yamlpath)) for _ \
+                in range(2)]
+
+        # self play, so both sides are played by
+        # same player
+        selfplay = self_play.SelfPlay(
+            player_one=players[0],
+            player_two=players[1],
+            runs_per_move=rollouts_per_move,
+            game_id=handle,
+            show_game=False)
+        selfplays.append(selfplay)
+
+    for i in selfplays:
+        process = multiprocessing.Process(target=i.start, \
+                args=(num_of_games_per_process,))
+        process.start()
+        processes.append(process)
+
+    for i in processes:
+        i.join()
+
+    # just to make sure: clean up
+    for i in selfplays:
+        del i
+
 
 
 
@@ -52,16 +110,22 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    
+    # first load model from mlflow server
+    model = utility.load_model(utility.load_player_conf(args.player))
+
     for _ in range(args.selflearnruns):
+        handle = utility.get_unused_match_handle(args.player, args.player)
+        print(f"STARTING MATCHES WITH HANDLE {handle}")
 
-        create_dataset(yamlpaths=[args.player, args.player],
-                       rollouts_per_move=args.rollouts_per_move,
-                       num_of_parallel_processes=args.num_of_parallel_processes,
-                       num_of_games_per_process=args.num_of_games_per_process,
-                       fork_method=args.fork_method)
+        parallel_matches_with_preloaded_model(yamlpath=args.player, \
+                model=model, \
+                handle=handle, \
+                rollouts_per_move=args.rollouts_per_move, \
+                num_of_parallel_processes=args.num_of_parallel_processes, \
+                num_of_games_per_process=args.num_of_games_per_process, \
+                fork_method=args.fork_method)
 
-        model = utility.load_model(utility.load_player_conf(args.player))
+        assemble_dataset(handle=handle)
 
         model.auto_run_training(max_iterations=args.iterations, \
                 max_epochs=args.epochs)

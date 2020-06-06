@@ -18,7 +18,7 @@ dirs:
 
 #player parameters
 player:
-    heat: 1
+    heat: 10
     exploration: 1
     rollout_payoffs:
         white:
