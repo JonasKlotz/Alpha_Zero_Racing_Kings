@@ -93,7 +93,6 @@ def create_dataset(yamlpaths, \
     return 0
 
 
-
 def assemble_dataset(handle):
     '''
     collects all game files with a specific handle
@@ -185,10 +184,6 @@ def parallel_matches(yamlpaths, \
     # returns after all parallel games are finished and
     # written to disk
     return
-
-
-
-
 
 if __name__ == "__main__":
     # pylint: disable=C0103
