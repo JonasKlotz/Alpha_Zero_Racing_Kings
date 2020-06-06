@@ -75,6 +75,8 @@ def create_dataset(yamlpaths,
     GAMEDIR and then calls assemble_dataset
     which creates a dataset in DATASETDIR
     from all created games in GAMESDIR
+    :return str: path to the newly created
+    dataset to be used in gradient descent
     '''
     handle = utility.get_unused_match_handle(*tuple(yamlpaths))
     print(f"STARTING MATCHES WITH HANDLE {handle}")
@@ -87,9 +89,8 @@ def create_dataset(yamlpaths,
                      fork_method=fork_method,
                      mockmodel=mockmodel)
 
-    assemble_dataset(handle)
+    return assemble_dataset(handle)
 
-    return 0
 
 
 def assemble_dataset(handle):
@@ -97,12 +98,11 @@ def assemble_dataset(handle):
     collects all game files with a specific handle
     and assembles them into a dataset that is being
     stored in dataset directory
-    :param str handle: handle string in the format
-    of [NAME1].v[VERSION1].m[REVISION1]-\
-            [NAME2].v[VERSION2].m[REVISION2]_\
-            [8-DIGIT-RANDOM-KEY]
+    :param str handle: handle string as provided
+    by config-object
     only filenames that contain this string will
     be considered for assembling the dataset
+    :return str: filepath to the created dataset
     '''
     dataset = []
     counter = 0
@@ -133,7 +133,7 @@ def assemble_dataset(handle):
             + f"{type(test_load[0][0])}, {type(test_load[0][1])}, "
             + f"{type(test_load[0][2])}.")
 
-    return
+    return dataset_path
 
 
 def parallel_matches(yamlpaths,
