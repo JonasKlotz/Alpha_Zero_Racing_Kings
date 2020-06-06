@@ -61,7 +61,7 @@ if __name__ == "__main__":
                        num_of_games_per_process=args.num_of_games_per_process,
                        fork_method=args.fork_method)
 
-        model = utility.load_model(args.player)
+        model = utility.load_model(utility.load_player_conf(args.player))
 
         model.auto_run_training(max_iterations=args.iterations, \
                 max_epochs=args.epochs)
