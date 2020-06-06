@@ -138,7 +138,7 @@ def load_model(conf):
         model = stockfish_model.StockfishModel(conf)
     else:
         #TODO: connect to mlflow here!
-        AZero(conf)
+        model = AZero(conf)
 
     if model == None:
         raise Exception("No model chosen in player config: %s. (maybe you are using default_config.yaml?)"
