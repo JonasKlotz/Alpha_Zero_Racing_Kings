@@ -106,8 +106,13 @@ def search_config_file(name):
     if os.path.exists(name):
         return name
 
+    path = os.path.join(ROOTDIR, name)
+    if os.path.exists(path):
+        return path
+
     for _dir in [CONFIGDIR]:
         file = os.path.join(ROOTDIR, _dir, name)
+
         if os.path.exists(file):
             return file
 
@@ -128,6 +133,7 @@ class Config(Options):
             log.info("No config provided; using default config.")
             yaml_dict = default_options
         else:
+            print(config_file)
             config_file = search_config_file(config_file)
             log.info("Loading Config from %s.", config_file)
             yaml_dict = yaml.safe_load(stream=open(config_file, 'r'))

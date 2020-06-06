@@ -7,6 +7,7 @@ from Model.model import AZero
 from azts.config import GAMEDIR, PLAYERDIR
 from azts import player
 from azts import mock_model
+from azts import stockfish_model
 
 GAME = "game"
 STATS = "stats"
@@ -46,7 +47,7 @@ def get_match_player_names(player1, player2):
     thus can be reconstructed 
     '''
 
-    player_names = [i.model_name for i in
+    player_names = [i.model_name for i in \
                     [player1, player2]]
 
     player_names.sort()
@@ -121,7 +122,7 @@ def load_player_conf(location):
     return player
 
 
-def load_model(config, mock=False):
+def load_model(conf):
     '''
     load model from configuration
     :param Configuration conf: configuration
@@ -129,17 +130,23 @@ def load_model(config, mock=False):
     :param boolean mock: load random generator
     instead
     '''
-    if mock:
-        model = mock_model.MockModel()
-    elif config.stockfish.enabled:
-        pass    # TODO: return stockfish model
-    else:
-        model = AZero(config)
+    model = None
 
+    if conf.mock:
+        model = mock_model.MockModel()
+    elif conf.stockfish.enable:
+        model = stockfish_model.StockfishModel(conf)
+    else:
+        #TODO: connect to mlflow here!
+        AZero(conf)
+
+    if model == None:
+        raise Exception("No model chosen in player config: %s. (maybe you are using default_config.yaml?)"
+                        % conf.name) 
     return model
 
 
-def load_player(location, mock=False):
+def load_player(location):
     '''
     load player from .yaml-path
     :param str location: relative path 
@@ -147,16 +154,17 @@ def load_player(location, mock=False):
     :return player: configured player
     object
     '''
-    config = load_player_conf(location)
+    config = load_player_conf(location) 
 
-    model = load_model(config, mock)
-    new_player = player.Player(name=config.name,
-                               **(config.player.as_dictionary()))
+    model = load_model(config)
+    new_player = player.Player(name=config.name, \
+            model=model, \
+            **(config.player.as_dictionary()))
 
     return new_player
 
 
-def load_players(loc_1, loc_2, mock=False):
+def load_players(loc_1, loc_2):
     '''
     load players from .yaml-configuration file
     locations.
@@ -176,14 +184,14 @@ def load_players(loc_1, loc_2, mock=False):
 
     if selfplay:
         # same model for both players
-        model = load_model(configurations[0], mock)
+        model = load_model(configurations[0])
         models = [model, model]
     else:
-        models = [load_model(i, mock) for i in configurations]
+        models = [load_model(i) for i in configurations]
 
     for model, config in zip(models, configurations):
-        players.append(player.Player(model=model,
-                                     name=config.name,
-                                     **(config.player.as_dictionary())))  # ~* dynamite
+        players.append(player.Player(model=model, \
+                                     name=config.name, \
+                                     **(config.player.as_dictionary())))#~* dynamite
 
     return players

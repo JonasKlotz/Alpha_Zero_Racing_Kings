@@ -1,0 +1,58 @@
+
+grep ROOT:
+./azts/config.py:ROOTDIR = find_rootdir()
+./azts/config.py:GAMEDIR = os.path.join(ROOTDIR, GAMEFOLDER)
+./azts/config.py:RESOURCESDIR = os.path.join(ROOTDIR, RESOURCESFOLDER)
+./azts/config.py:DATASETDIR = os.path.join(ROOTDIR, DATASETFOLDER)
+./azts/config.py:PLAYERDIR = os.path.join(ROOTDIR, PLAYERFOLDER)
+Binary file ./azts/__pycache__/config.cpython-37.pyc matches
+./Player/config.py:ROOTDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+./Player/config.py:sys.path.append(ROOTDIR)
+./Player/config.py:    path = os.path.join(ROOTDIR, name)
+./Player/config.py:        file = os.path.join(ROOTDIR, _dir, name)
+./Player/config.py:            dir_abs = os.path.join(ROOTDIR, base, self.model_name, _dir)
+Binary file ./Player/__pycache__/config.cpython-37.pyc matches
+
+
+grep GAMEDIR:
+./refactor.txt:./azts/config.py:GAMEDIR = os.path.join(ROOTDIR, GAMEFOLDER)
+./refactor.txt:grep GAMEDIR:
+./azts/config.py:GAMEDIR = os.path.join(ROOTDIR, GAMEFOLDER)
+./azts/config.py:for i in [GAMEDIR, RESOURCESDIR, DATASETDIR]:
+./azts/utility.py:from azts.config import GAMEDIR, PLAYERDIR
+./azts/utility.py:        test.append(os.path.join(GAMEDIR, f"{i}_{handle}_0000.pkl"))
+Binary file ./azts/__pycache__/config.cpython-37.pyc matches
+Binary file ./azts/__pycache__/self_play.cpython-37.pyc matches
+Binary file ./azts/__pycache__/utility.cpython-37.pyc matches
+./azts/self_play.py:from azts.config import GAMEDIR, \
+./azts/self_play.py:                GAMEDIR,
+./azts/create_dataset.py:                                 + f"and each game is stored in {GAMEDIR}. Games are "
+./azts/create_dataset.py:    GAMEDIR and then calls assemble_dataset
+./azts/create_dataset.py:    for filename in os.listdir(GAMEDIR):
+./azts/create_dataset.py:            filepath = os.path.join(GAMEDIR, filename)
+Binary file ./Model/__pycache__/model.cpython-37.pyc matches
+
+
+grep PLAYERDIR: 
+./refactor.txt:./azts/config.py:PLAYERDIR = os.path.join(ROOTDIR, PLAYERFOLDER)
+./refactor.txt:./azts/utility.py:from azts.config import GAMEDIR, PLAYERDIR
+./refactor.txt:grep PLAYERDIR: 
+./azts/config.py:PLAYERDIR = os.path.join(ROOTDIR, PLAYERFOLDER)
+./azts/utility.py:from azts.config import GAMEDIR, PLAYERDIR
+Binary file ./azts/__pycache__/config.cpython-37.pyc matches
+Binary file ./azts/__pycache__/utility.cpython-37.pyc matches
+
+grep DATASETDIR:
+./refactor.txt:./azts/config.py:DATASETDIR = os.path.join(ROOTDIR, DATASETFOLDER)
+./refactor.txt:./azts/config.py:for i in [GAMEDIR, RESOURCESDIR, DATASETDIR]:
+./refactor.txt:grep DATASETDIR:
+./azts/config.py:DATASETDIR = os.path.join(ROOTDIR, DATASETFOLDER)
+./azts/config.py:for i in [GAMEDIR, RESOURCESDIR, DATASETDIR]:
+Binary file ./azts/__pycache__/config.cpython-37.pyc matches
+./azts/create_dataset.py:                                 + f"stored in {DATASETDIR}. The dataset is "
+./azts/create_dataset.py:    which creates a dataset in DATASETDIR
+./azts/create_dataset.py:        DATASETDIR)
+Binary file ./azts/.create_dataset.py.swp matches
+./Model/model.py:from azts.config import DATASETDIR
+./Model/model.py:                log.info("No dataset found in %s. Waiting..", DATASETDIR)
+./Model/model.py:    _dir = DATASETDIR
