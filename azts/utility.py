@@ -127,8 +127,6 @@ def load_model(conf):
     load model from configuration
     :param Configuration conf: configuration
     of model
-    :param boolean mock: load random generator
-    instead
     '''
     model = None
 

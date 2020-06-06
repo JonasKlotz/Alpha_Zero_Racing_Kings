@@ -16,59 +16,12 @@ from azts import player
 from azts import utility
 from azts.config import *
 
-parser = argparse.ArgumentParser(description="Multiprocessing generation of self-play "
-                                 + "games. Each process generates games independently "
-                                 + f"and each game is stored in {GAMEDIR}. Games are "
-                                 + "collected after all processes are finished and "
-                                 + "assembled into a single dataset, which is "
-                                 + f"stored in {DATASETDIR}. The dataset is "
-                                 + "being verified by loading it and providing "
-                                 + "a print message with details before the "
-                                 + "script terminates.")
-parser.add_argument("-p", "--num_of_parallel_processes",
-                    type=int, default=2,
-                    help="choose number of processes which generate "
-                    + "games. The number of your CPU cores is a good "
-                    + "starting point. Defaults to 2")
-parser.add_argument("-g", "--num_of_games_per_process",
-                    type=int, default=10,
-                    help="number of games to be created by each "
-                    + "process. Defaults to 10")
-parser.add_argument("-r", "--rollouts_per_move",
-                    type=int, default=100, help="number of "
-                    + "rollouts that the engine performs while "
-                    + "determinating a single move. Defaults to 100.")
-parser.add_argument("--fork_method", type=str,
-                    default="spawn", help="depending on operating "
-                    + "system, different fork methods are valid for "
-                    + "multithreading. \"spawn\" has apparently the "
-                    + "widest compatibility. Other options are "
-                    + "\"fork\" and \"forkserver\". See "
-                    + "https://docs.python.org/3/library/multiprocessing.html "
-                    + "for details. Defaults to \"spawn\".")
-parser.add_argument("--player_one", type=str,
-                    default="Player/default_config.yaml",
-                    help="Player one configuration file. Is by default "
-                    + "set to \"Player/default_config.yaml\".")
-parser.add_argument("--player_two", type=str,
-                    default="Player/default_config.yaml",
-                    help="Player two configuration file. Is by default "
-                    + "set to \"Player/default_config.yaml\".")
-parser.add_argument("--mock", type=bool,
-                    default=False, help="If set to True, use "
-                    + "random generator instead of actual model."
-                    + "Default is False.")
-
-
-args = parser.parse_args()
-
 
 def create_dataset(yamlpaths,
                    rollouts_per_move,
                    num_of_parallel_processes,
                    num_of_games_per_process,
-                   fork_method="spawn",
-                   mockmodel=False):
+                   fork_method="spawn"):
     '''
     starts parallel training which creates
     many different game_[...].pkl files in
@@ -83,8 +36,7 @@ def create_dataset(yamlpaths,
                      rollouts_per_move=rollouts_per_move,
                      num_of_parallel_processes=num_of_parallel_processes,
                      num_of_games_per_process=num_of_games_per_process,
-                     fork_method=fork_method,
-                     mockmodel=mockmodel)
+                     fork_method=fork_method)
     assemble_dataset(handle)
     return 0
 
@@ -137,8 +89,7 @@ def parallel_matches(yamlpaths,
                      rollouts_per_move,
                      num_of_parallel_processes,
                      num_of_games_per_process,
-                     fork_method="spawn",
-                     mockmodel=False):
+                     fork_method="spawn"):
     '''
     start parallel self play matches on different
     processes.
@@ -149,10 +100,6 @@ def parallel_matches(yamlpaths,
     :param int rollouts_per_move: number of rollouts
     per move for each ai player. the higher this
     number, the longer a move and thus a game takes
-    :param boolean mockmodel: if set to true, the
-    random generator from azts.mock_model is 
-    instantiated instead of an actual neural network.
-    for testing purposes.
     '''
     # according to
     # https://docs.python.org/3/library/multiprocessing.html
@@ -163,7 +110,7 @@ def parallel_matches(yamlpaths,
     selfplays = []
 
     for i in range(num_of_parallel_processes):
-        players = utility.load_players(*tuple(yamlpaths), mockmodel)
+        players = utility.load_players(*tuple(yamlpaths))
         selfplay = self_play.SelfPlay(
             player_one=players[0],
             player_two=players[1],
@@ -183,14 +130,54 @@ def parallel_matches(yamlpaths,
     return
 
 if __name__ == "__main__":
-    # pylint: disable=C0103
-    # pylint: enable=C0103
+
+    parser = argparse.ArgumentParser(description="Multiprocessing generation of self-play "
+            + "games. Each process generates games independently "
+            + f"and each game is stored in {GAMEDIR}. Games are "
+            + "collected after all processes are finished and "
+            + "assembled into a single dataset, which is "
+            + f"stored in {DATASETDIR}. The dataset is "
+            + "being verified by loading it and providing "
+            + "a print message with details before the "
+            + "script terminates.")
+    parser.add_argument("-p", "--num_of_parallel_processes",
+            type=int, default=2,
+            help="choose number of processes which generate "
+            + "games. The number of your CPU cores is a good "
+            + "starting point. Defaults to 2")
+    parser.add_argument("-g", "--num_of_games_per_process",
+            type=int, default=10,
+            help="number of games to be created by each "
+            + "process. Defaults to 10")
+    parser.add_argument("-r", "--rollouts_per_move",
+            type=int, default=100, help="number of "
+            + "rollouts that the engine performs while "
+            + "determinating a single move. Defaults to 100.")
+    parser.add_argument("--fork_method", type=str,
+            default="spawn", help="depending on operating "
+            + "system, different fork methods are valid for "
+            + "multithreading. \"spawn\" has apparently the "
+            + "widest compatibility. Other options are "
+            + "\"fork\" and \"forkserver\". See "
+            + "https://docs.python.org/3/library/multiprocessing.html "
+            + "for details. Defaults to \"spawn\".")
+    parser.add_argument("--player_one", type=str,
+            default="Player/default_config.yaml",
+            help="Player one configuration file. Is by default "
+            + "set to \"Player/default_config.yaml\".")
+    parser.add_argument("--player_two", type=str,
+            default="Player/default_config.yaml",
+            help="Player two configuration file. Is by default "
+            + "set to \"Player/default_config.yaml\".")
+
+
+    args = parser.parse_args()
+
     create_dataset(yamlpaths=[args.player_one, args.player_two],
                    rollouts_per_move=args.rollouts_per_move,
                    num_of_parallel_processes=args.num_of_parallel_processes,
                    num_of_games_per_process=args.num_of_games_per_process,
-                   fork_method=args.fork_method,
-                   mockmodel=args.mock)
+                   fork_method=args.fork_method)
 
 # pylint: enable=E0401
 # pylint: enable=E0602
