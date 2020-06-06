@@ -2,7 +2,10 @@ name: mini_alpha_zero
 
 entry_points:
   train:
-    command: "python3 Model/model.py"
+    parameters:
+        max_iter: {type: float, default: 3}
+        max_epochs: {type: float, default: 10000}
+    command: "python3 Model/model.py -i {max_iter} -ep {max_epochs}"
 
   create_dataset:
     parameters:
@@ -19,4 +22,3 @@ entry_points:
         ai_name: {type: string, default: "dryGibbon"}
         human_player_colour: {type: string, default: "white"}
     command: "python3 azts/play.py -n {ai_name} -c {human_player_colour}"
-

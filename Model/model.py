@@ -19,6 +19,7 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 # from keras.callbacks import ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
+import argparse
 
 from lib.timing import timing
 
@@ -73,7 +74,7 @@ class AZero:
             model_uri = self.config.model_uri_format.format(version)
         self.model = mlflow.keras.load_model(model_uri)
 
-    def auto_run_training(self, max_iterations=3, max_epochs=1000):
+    def auto_run_training(self, max_iterations=5, max_epochs=10):
         """ Automatically enters a training loop that fetches newest datasets
         """
 
@@ -146,6 +147,7 @@ class AZero:
             print(self.initial_epoch)
 
             # mlflow logging
+
             mlflow.log_param("epochs", 15)
             mlflow.log_metric("loss", 5)
             mlflow.keras.log_model(artifact_path="model",
@@ -441,11 +443,16 @@ class AutoFetchDataset(keras.callbacks.Callback):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Maximum of Iterations of Training.")
+    parser.add_argument("-i", "--max_iterations",
+                        type=int, default=3)
+    parser.add_argument("-ep", "--max_epochs", type=int, default=10000)
+    args = parser.parse_args()
 
     config = Config()
 
     model = AZero(config)
-    model.auto_run_training()
+    model.auto_run_training(max_epochs=args.max_epochs, max_iterations=args.max_iterations)
 
 
 # if __name__ == "__main__":
