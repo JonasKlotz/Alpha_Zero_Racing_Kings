@@ -160,7 +160,9 @@ def parallel_matches(yamlpaths,
     '''
     # according to
     # https://docs.python.org/3/library/multiprocessing.html
-    multiprocessing.set_start_method(fork_method)
+    if multiprocessing.get_start_method(allow_none=True) is None:
+        multiprocessing.set_start_method(fork_method)
+
     processes = []
     selfplays = []
 
