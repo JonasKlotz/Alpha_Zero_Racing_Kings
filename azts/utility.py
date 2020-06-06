@@ -13,7 +13,6 @@ STATS = "stats"
 MOVES = "moves"
 
 
-
 # from https://pynative.com/python-generate-random-string/
 def random_string(length=8):
     '''
@@ -32,8 +31,8 @@ def get_player_as_string(player):
     :return str: name.version.revision
     '''
     player_str = f"{player.name}.v" \
-            + f"{str(player.config_version)}.m" \
-            + f"{str(player.model_revision)}"
+        + f"{str(player.config_version)}.m" \
+        + f"{str(player.model_revision)}"
     return player_str
 
 
@@ -47,13 +46,13 @@ def get_match_player_names(player1, player2):
     thus can be reconstructed 
     '''
 
-    player_names = [i.model_name for i in \
-            [player1, player2]]
+    player_names = [i.model_name for i in
+                    [player1, player2]]
 
-    player_names.sort() 
-    match_name = f"{player_names[0]}-{player_names[1]}" 
+    player_names.sort()
+    match_name = f"{player_names[0]}-{player_names[1]}"
 
-    return match_name 
+    return match_name
 
 
 def get_unused_match_handle(player1, player2):
@@ -64,10 +63,10 @@ def get_unused_match_handle(player1, player2):
     if type(player1) is str:
         player1 = load_player_conf(player1)
     if type(player2) is str:
-        player2 = load_player_conf(player2) 
+        player2 = load_player_conf(player2)
 
     match_player = f"{get_match_player_names(player1, player2)}"
-    return test_handle(match_player, False)[0] 
+    return test_handle(match_player, False)[0]
 
 
 def test_handle(match_player, isfile):
@@ -75,13 +74,13 @@ def test_handle(match_player, isfile):
     test if a handle is already in use and
     create another one if so
     '''
-    handle = f"{match_player}_{random_string()}" 
+    handle = f"{match_player}_{random_string()}"
     test = []
     for i in [GAME, MOVES, STATS]:
-        test.append(os.path.join(GAMEDIR, f"{i}_{handle}_0000.pkl")) 
+        test.append(os.path.join(GAMEDIR, f"{i}_{handle}_0000.pkl"))
     for i in test:
-        isfile = isfile or os.path.isfile(i) 
-    while isfile: 
+        isfile = isfile or os.path.isfile(i)
+    while isfile:
         handle, isfile = test_handle(match_player, False)
 
     return handle, isfile
@@ -111,7 +110,7 @@ def get_unused_filepath(name_pattern, folder, i=0):
 def load_player_conf(location):
     '''
     load player configuration from .yaml-path
-    ''' 
+    '''
     if not "Player/" in location:
         location = "Player/" + location
 
@@ -122,8 +121,7 @@ def load_player_conf(location):
     return player
 
 
-
-def load_model(config, mock=False): 
+def load_model(config, mock=False):
     '''
     load model from configuration
     :param Configuration conf: configuration
@@ -131,8 +129,12 @@ def load_model(config, mock=False):
     :param boolean mock: load random generator
     instead
     '''
-    model = mock_model.MockModel() if mock \
-            else AZero(config)
+    if mock:
+        model = mock_model.MockModel()
+    elif config.stockfish.enabled:
+        pass    # TODO: return stockfish model
+    else:
+        model = AZero(config)
 
     return model
 
@@ -148,14 +150,13 @@ def load_player(location, mock=False):
     config = load_player_conf(location)
 
     model = load_model(config, mock)
-    new_player = player.Player(name=config.name, \
-            **(config.player.as_dictionary()))
+    new_player = player.Player(name=config.name,
+                               **(config.player.as_dictionary()))
 
     return new_player
 
 
-
-def load_players(loc_1, loc_2, mock = False):
+def load_players(loc_1, loc_2, mock=False):
     '''
     load players from .yaml-configuration file
     locations.
@@ -181,15 +182,8 @@ def load_players(loc_1, loc_2, mock = False):
         models = [load_model(i, mock) for i in configurations]
 
     for model, config in zip(models, configurations):
-        players.append(player.Player(model=model, \
-                name=config.name, \
-                **(config.player.as_dictionary())))#~* dynamite
+        players.append(player.Player(model=model,
+                                     name=config.name,
+                                     **(config.player.as_dictionary())))  # ~* dynamite
 
     return players
-
-
-
-
-
-
-

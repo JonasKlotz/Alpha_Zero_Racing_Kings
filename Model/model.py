@@ -1,11 +1,18 @@
 """ handles the AlphaZero model
 """
 import os
+import sys
 import re
 import pickle
 import time
-import numpy as np
 import keras
+import mlflow
+import mlflow.keras
+import numpy as np
+
+# add root folder to python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
@@ -13,12 +20,9 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras.regularizers import l2
 from keras.utils.vis_utils import plot_model
 
-import mlflow
-import mlflow.keras
-
 from lib.timing import timing
 
-from azts.config import GAMEDIR
+from azts.config import DATASETDIR
 from Player.config import Config
 
 from lib.logger import get_logger
@@ -47,39 +51,45 @@ class AZero:
             config (Config): Player Configuration file
         """
 
-        assert config is not None, "ERROR! no config provided"
         self.config = config
 
         self.initial_epoch = 0
         self.checkpoint_file = None
 
-        self.build_model()
+        if self.config.model.load_from_mlflow:
+            self.load_mlflow()  # XXX are all parameters set?
+        else:
+            self.build_model()
+            self.remember_model_architecture()
+            self.restore_latest_model()
+
         self.compile_model()
-        self.remember_model_architecture()
-        self.restore_latest_model()
         self.setup_callbacks()
 
-    def auto_run_training(self):
+    def load_mlflow(self, version=None):
+        if version is None:
+            model_uri = self.config.model_uri
+        else:
+            model_uri = self.config.model_uri_format.format(version)
+        self.model = mlflow.keras.load_model(model_uri)
+
+    def auto_run_training(self, max_iterations=3, max_epochs=1000):
         """ Automatically enters a training loop that fetches newest datasets
         """
 
-        MAX_RUNS = 1
-
-        # latest_dataset =
-        for i in range(MAX_RUNS):
+        for i in range(max_iterations):
             dataset_file = get_latest_dataset_file()
             if dataset_file is None:
-                log.info("Waiting for dataset..")
+                log.info("No dataset found in %s. Waiting..", DATASETDIR)
                 while dataset_file is None:
                     time.sleep(1)
                     dataset_file = get_latest_dataset_file()
             self.setup_callbacks(auto_run=True)  # new file, new callback
             with open(dataset_file, 'rb') as f:
                 train_data = pickle.load(f)
-            log.info("New Dataset available")
-            log.info("Commencing training %i/%i on %s",
-                     i, MAX_RUNS, dataset_file)
-            self.train(train_data, epochs=-1)
+            log.info("Commencing training %i/%i on dataset %s.",
+                     i, max_iterations, dataset_file)
+            self.train(train_data, epochs=max_epochs)
 
     # @timing
     def inference(self, input):
@@ -120,39 +130,31 @@ class AZero:
             initial_epoch = self.initial_epoch
 
         if epochs == -1:  # train indefinitely; XXX: review
-            # TODO: Increase epochs here, but i want it to be quick
-            epochs = 10
+            epochs = 10000
 
         # begin training
         mlflow.set_tracking_uri = "http://35.223.113.101:8000"
         with mlflow.start_run():
-            '''train_logs = self.model.fit(x_train, y_train,
-                                        batch_size=batch_size,
-                                        epochs=initial_epoch + epochs,
-                                        shuffle=True,
-                                        callbacks=self.callbacks,
-                                        initial_epoch=initial_epoch,
-                                        verbose=2)'''
             train_logs = self.model.fit(x_train, y_train,
                                         batch_size=batch_size,
                                         epochs=initial_epoch + epochs,
                                         shuffle=True,
                                         callbacks=self.callbacks,
-                                        initial_epoch=0,
+                                        initial_epoch=initial_epoch,
                                         verbose=2)
-            # TODO: fix the epoch stuff
-            # self.initial_epoch = train_logs.history['epoch']
+            self.initial_epoch = train_logs.history['epoch'][-1] + 1
+            print(self.initial_epoch)
 
             # mlflow logging
             mlflow.log_param("epochs", 15)
             mlflow.log_metric("loss", 5)
-            mlflow.log_metric("loss", 10)
             mlflow.keras.log_model(artifact_path="model",
                                    keras_model=self.model,
                                    keras_module=keras,
                                    registered_model_name=self.config.model_name)
             # idk wo die config gerade ist. im prinzip loggt man die so
             # mlflow.log_artifact(artifact_path="config", local_path="path/to/config")
+
 
     def summary(self):
         """ Prints a summary of the model architecture """
@@ -181,7 +183,7 @@ class AZero:
         # save config
         config_file = os.path.join(self.config.checkpoint_dir, "config.yaml")
         if not os.path.isfile(config_file):
-            self.config.dump_yaml(config_file)
+            self.config.dump(config_file)
 
     def load_model_architecture(self, file):
         """ Restores model architecture from yaml file """
@@ -228,15 +230,30 @@ class AZero:
     def restore_from_checkpoint(self, checkpoint_file):
         """ Restores weights from given checkpoint """
         log.info("Restoring from checkpoint %s", checkpoint_file)
-        self.model.load_weights(checkpoint_file)
+        tries = 3
+        while tries:
+            try:
+                self.model.load_weights(checkpoint_file)
+                break
+            except OSError:
+                if tries:
+                    log.warning(
+                        "Could not open checkpoint. Retrying in 5 seconds..")
+                    time.sleep(5)
+                    tries -= 1
+                else:
+                    raise(OSError)
+
         self.checkpoint_file = checkpoint_file
 
     def compile_model(self):
         """ Compiles the model """
         losses = {"policy_head": "categorical_crossentropy",
                   "value_head": "mean_squared_error"}
+        learning_rate = self.config.model.training.learning_rate
+        optimizer = Adam(learning_rate=learning_rate)
         self.model.compile(loss=losses,
-                           optimizer=Adam(learning_rate=1e-3),
+                           optimizer=optimizer,
                            metrics=['accuracy'])
 
     def build_model(self):
@@ -376,7 +393,7 @@ class AZero:
 
 def get_latest_dataset_file():
     """ Returns newest dataset file in game dir """
-    _dir = GAMEDIR
+    _dir = DATASETDIR
     files = os.listdir(_dir)
     if len(files) == 0:
         return None
@@ -394,7 +411,7 @@ def prepare_dataset(train_data):
     y_train_p = np.stack(y_train_p.flatten(), axis=0)
     y_train_v = np.stack(y_train_v.flatten(), axis=0)
     y_train = {"policy_head": y_train_p,
-               "value_head":  y_train_v}
+               "value_head": y_train_v}
     return x_train, y_train
 
 
@@ -403,7 +420,6 @@ class CountEpochs(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         logs["epoch"] = epoch
-        # print(logs)
 
 
 class AutoFetchDataset(keras.callbacks.Callback):
