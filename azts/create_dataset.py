@@ -15,8 +15,6 @@ from azts import mock_model
 from azts import player
 from azts import utility
 from azts.config import *
-import mlflow
-import time
 
 parser = argparse.ArgumentParser(description = \
         "Multiprocessing generation of self-play " \
