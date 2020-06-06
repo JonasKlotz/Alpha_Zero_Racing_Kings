@@ -92,11 +92,6 @@ def create_dataset(yamlpaths, \
 
     assemble_dataset(handle)
 
-    mlflow.set_tracking_uri = "http://35.223.113.101:8000"
-    with mlflow.start_run():
-        start_time = time.time()
-        mlflow.log_artifact("test.txt", "test")
-        print("logging took: " + (time.time() - start_time).__str__() + "\n")
     return 0
 
 
