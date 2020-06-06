@@ -32,8 +32,8 @@ def get_player_as_string(player):
     :return str: name.version.revision
     '''
     player_str = f"{player.name}.v" \
-                 + f"{str(player.config_version)}.m" \
-                 + f"{str(player.model_revision)}"
+        + f"{str(player.config_version)}.m" \
+        + f"{str(player.model_revision)}"
     return player_str
 
 
@@ -130,9 +130,6 @@ def load_model(conf):
     :param boolean mock: load random generator
     instead
     '''
-    # model = mock_model.MockModel() if mock \
-    #     else model = stockfish_model.StockfishModel(conf) if conf.stockfish.enable \
-    #     else AZero(conf)
     model = None
 
     if conf.mock:
@@ -140,16 +137,16 @@ def load_model(conf):
     elif conf.stockfish.enable:
         model = stockfish_model.StockfishModel(conf)
     else:
+        #TODO: connect to mlflow here!
         AZero(conf)
 
     if model == None:
         raise Exception("No model chosen in player config: %s. (maybe you are using default_config.yaml?)"
-                        % conf.name)
-
+                        % conf.name) 
     return model
 
 
-def load_player(location, mock=False):
+def load_player(location):
     '''
     load player from .yaml-path
     :param str location: relative path 
@@ -157,13 +154,12 @@ def load_player(location, mock=False):
     :return player: configured player
     object
     '''
-    config = load_player_conf(location)
+    config = load_player_conf(location) 
 
-    # model = load_stockfish_model(config) if config.stockfish.enable \
-    #     else model = load_model(config, mock)
-
+    model = load_model(config)
     new_player = player.Player(name=config.name, \
-                               **(config.player.as_dictionary()))
+            model=model, \
+            **(config.player.as_dictionary()))
 
     return new_player
 
@@ -196,6 +192,6 @@ def load_players(loc_1, loc_2):
     for model, config in zip(models, configurations):
         players.append(player.Player(model=model, \
                                      name=config.name, \
-                                     **(config.player.as_dictionary())))  # ~* dynamite
+                                     **(config.player.as_dictionary())))#~* dynamite
 
     return players

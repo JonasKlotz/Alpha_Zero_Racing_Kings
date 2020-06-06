@@ -77,20 +77,27 @@ def __file_handler(file):
     return handler
 
 
+# create special logger for logger.py
 __LOG_FILE_HANDLER = __file_handler(__LOG_FILE)
 
-
-# create special logger for logger.py
 log = logging.getLogger("Log")
 log.addHandler(__STDOUT_HANDLER)
 log.addHandler(__LOG_FILE_HANDLER)
 log.setLevel(logging.DEBUG)
+log.info(time.strftime("Date: %d.%m.%Y"))
 
 
 def __get_log_level(level):
     """ Returns: log level in logging (int) format """
     assert level in __LOG_LEVELS, "Unrecognized log level " + level
     return __LOG_LEVELS[level]
+
+
+def __file_handler(file):
+    """ creates a new file handler """
+    handler = logging.FileHandler(file)
+    handler.setFormatter(__LOG_FORMATTER)
+    return handler
 
 
 def get_logger(name, level="DEFAULT", file=None):
