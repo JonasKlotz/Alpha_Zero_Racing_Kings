@@ -12,7 +12,6 @@ from Model.model import AZero
 from Player.config import Config
 
 if __name__ == "__main__":
-    # Kurt Start
     SP_LENGTH = 1
     NUM_THREADS = 1
 
@@ -54,4 +53,3 @@ if __name__ == "__main__":
             half_way_done = ~half_way_done
             runtime_summary()
     create_dataset_loop()
-    # Kurt End
