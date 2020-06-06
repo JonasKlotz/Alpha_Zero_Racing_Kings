@@ -139,9 +139,10 @@ def load_model(conf):
         model = stockfish_model.StockfishModel(conf)
     else:
         #TODO: connect to mlflow here!
-        uri = f"models:/{conf.name}/{conf.version}"
-        with mlflow as mf:
-            model = mf.keras.load_model(uri)
+        model = AZero(conf)
+        #uri = f"models:/{conf.name}/{conf.version}"
+        #with mlflow as mf:
+            #model = mf.keras.load_model(uri)
 
     if model == None:
         raise Exception("No model chosen in player config: %s. (maybe you are using default_config.yaml?)"
