@@ -8,6 +8,8 @@ import sys
 import os.path
 import os
 
+from lib.logger import get_logger
+log = get_logger("azts.config")
 
 from azts import mock_model
 
@@ -30,6 +32,7 @@ def find_rootdir():
 
 
 ROOTDIR = find_rootdir()
+#log.info(f"Rootdir is {ROOTDIR}")
 
 # Paths
 # Folder to store self-game files,
@@ -47,14 +50,14 @@ PLAYERDIR = os.path.join(ROOTDIR, PLAYERFOLDER)
 
 for i in [GAMEDIR, RESOURCESDIR, DATASETDIR]:
     if not os.path.exists(i):
-        print(f"Could not find {i} -- making dir {i}")
+        log.info(f"Could not find {i} -- making dir {i}")
         os.makedirs(i)
 
 EXPLORATION = 0.1
 HEAT = 1
 
 # Misc
-RUNS_PER_MOVE = 10  # Sets the number of azts runs
+RUNS_PER_MOVE = 1  # Sets the number of azts runs
 SHOW_GAME = True  # If True boards will be shown in self_play
 
 # Enum Types representing
@@ -99,17 +102,6 @@ TO_STRING = {0: "undefined",
              DRAW_BY_REP: "draw by repetition",
              DRAW_BY_STALE_MATE: "draw by stale mate",
              DRAW_BY_TWO_WINS: "draw by simultaneous finish"}
-
-
-MODEL = mock_model.MockModel()
-DEFAULT_PLAYER = {
-    "name": "default player",
-    "azts_settings": {
-            "payoffs": ROLLOUT_PAYOFFS,
-            "exploration": EXPLORATION,
-            "heat": HEAT,
-            "model": MODEL}
-}
 
 # Data types for size of
 # np.arrays

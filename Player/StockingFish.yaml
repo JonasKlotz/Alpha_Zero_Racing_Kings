@@ -1,21 +1,15 @@
 ### YAML DEFAULT Config-File
 
 #name of the model
-name: 'AlphaZero'
-#the config revision should be updated whenever the old config looses compatibility,
+name: 'StockingFish'
+#the config version should be updated whenever the old config looses compatibility,
 #i.e. a change is made in the architecture of the model; new parameters
-config_revision: 1
-#version is changed whenever the parameters are reconfigured
+config_version: 1
+#model revision is changed whenever the parameters are reconfigured
 #the model then gets a new unique name and a new folder for checkpoints, etc.
-version: 0
-
-#directories
-dirs:
-    base: "_Data"
-    checkpoint_dir: "model_checkpoints"
-    game_dir: "games"
-    dataset_dir: "datasets"
-
+model_revision: 0
+#folder to save checkpoints and training data
+data_dir: "_Data"
 #player parameters
 player:
     heat: 1
@@ -35,32 +29,22 @@ player:
             draw_by_rep: 0
             draw_by_stale_mate: 0
             draw_by_two_wins: 0
-
 #use mock model instead of azts/stockfish
-#for debugging. this overwrites loading of
-#models, regardless of configuration
 mock: False
-
 #stockfish parameters
 stockfish:
-    #use stockfish instead of model; this
-    #overwrites loading of a neural network
-    #model regardless of configuration
-    enable: False
+    #use stockfish instead of model
+    enable: True
     #given time limit for move evaluation
-    time_limit: 0.1
+    time_limit: 0.2
     #maximum tree search depth
     search_depth: 10
-
 #model parameters
 model:
-    load_from_mlflow: False
     #input feature dimensions
     input_shape: [8,8,11]
     #total number of residual blocks
     resnet_depth: 9
-    training:
-        learning_rate: 1.e-3
     #residual block specifications
     residual_block:
         #number of layers in residual block
@@ -103,4 +87,5 @@ model:
             num_filters: 256
             #type of activation function for second dense layer
             activation: 'tanh'
+
 

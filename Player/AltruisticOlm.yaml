@@ -4,10 +4,10 @@
 name: 'AlphaZero'
 #the config revision should be updated whenever the old config looses compatibility,
 #i.e. a change is made in the architecture of the model; new parameters
-config_revision: 1
+config_revision: 0
 #version is changed whenever the parameters are reconfigured
 #the model then gets a new unique name and a new folder for checkpoints, etc.
-version: 0
+version: 3
 
 #directories
 dirs:
@@ -18,7 +18,7 @@ dirs:
 
 #player parameters
 player:
-    heat: 1
+    heat: 10
     exploration: 1
     rollout_payoffs:
         white:
@@ -54,7 +54,7 @@ stockfish:
 
 #model parameters
 model:
-    load_from_mlflow: False
+    load_from_mlflow: True
     #input feature dimensions
     input_shape: [8,8,11]
     #total number of residual blocks

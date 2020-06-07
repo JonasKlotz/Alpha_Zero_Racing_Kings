@@ -1,7 +1,13 @@
+"""
+provides functions to use stockfish with
+python-chess library
+"""
+
 import sys
 from copy import copy
 import io
 import random
+import numpy as np
 
 import chess  # pip install python-chess
 import chess.variant
@@ -12,14 +18,14 @@ import chess.svg
 from cairosvg import svg2png
 from PIL import Image
 
+from Interface.TensorNotation import DATATYPE, move_to_tensor_indices
 from azts.config import *
-
 
 class Game:
     # pylint: disable=too-many-instance-attributes
     # Eight is reasonable in this case.
     std_fen = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
-    engine = None  # TODO does not belong in this class
+    engine = None
     move_count = 0
     history = None  # Dict containing key : fen, value 0-3 for threefold repetition
 
@@ -51,7 +57,7 @@ class Game:
         self.history[self.std_fen] = 1
         return self
 
-    def update(self, board):
+    def update(self, board):  # TODO: Überarbeiten
         """
         Like reset, but resets the position to whatever was supplied for board
         :param chess.Board board: position to reset to
@@ -63,21 +69,21 @@ class Game:
 
     def get_move_list(self):
         """
-        Returns:
+        :returns:
              list <move> all legal moves
         """
         return list(self.board.legal_moves)
 
     def get_current_player(self):
         """
-        Returns:
+        :Returns:
             int: current player idx
         """
         return self.board.turn  # white true, black false
 
     def get_movelist_size(self):
         """
-        Returns:
+        :Returns:
             int: number of all possible actions
         """
         return len(list(self.board.legal_moves))
@@ -85,9 +91,9 @@ class Game:
     def make_move(self, input):
         """
         must check if king landed on 8 rank
-        Input:
+        :input:
             move: move taken by the current player  SAN Notation
-        Returns:
+        :Returns:
             double: score of current player on the current turn
             int: player who plays in the next turn
         """
@@ -159,9 +165,9 @@ class Game:
         """
         won = self.board.is_variant_win()
         if won:
-            if self.get_score() == "1-0":
+            if self.board.result() == "1-0":
                 self.state = WHITE_WINS
-            if self.get_score() == "0-1":
+            if self.board.result() == "0-1":
                 self.state = BLACK_WINS
         return won
 
@@ -206,27 +212,10 @@ class Game:
         except:
             # to keep performance, we dont check if self.board.fen
             # is in self.history.keys(). we just try and pass
-            # if it isnt
+            # if it iss
             pass
 
         return self.draw
-
-    def get_score(self, player):  # 0 for black, 1 for white
-        """
-        Input:
-            player: current player
-        Returns:
-            1, 0 or 1/2 if the game is over, depending on the player.
-            Otherwise, the result is undetermined: *.
-        """
-        res = self.board.result()
-        if res == '*':
-            print("not Ended")
-            return None
-        if res == "1/2-1/2":
-            return 0.5
-        res = res.split('-')
-        return float(res[player])
 
     def clone(self):
         """
@@ -272,34 +261,153 @@ class Game:
         self.make_move(rnd_move)
 
     # if not working make engine/stockfish-x86_64 executable
-    def play_stockfish(self, limit=1.0):
+    def play_stockfish(self, limit=1.0, path="Engine/stockfish-x86_64"):
         """
         stockfish plays move
+        :param path: gives path to Stockfish Engine. Defaults to this (sub)directory.
         :param limit:
         :return:
         """
         if not self.engine:
-            self.engine = chess.engine.SimpleEngine.popen_uci(
-                "Engine/stockfish-x86_64")
+            self.engine = chess.engine.SimpleEngine.popen_uci(path)
         result = self.engine.play(self.board, chess.engine.Limit(time=limit))
         self.make_move(result.move)
 
+    def get_policy(self, path="Engine/stockfish-x86_64", time_limit=0.1, depth_limit=None):
+        """
+
+        :rtype: [[UCI String][Centipawnscore]]
+        :return: Policy as list of lists
+        """
+        if not self.engine:
+            self.engine = chess.engine.SimpleEngine.popen_uci(path)
+
+        policy = []
+
+        for move in self.get_move_list():
+            self.board.push(move)
+
+            try:
+                info = self.engine.analyse(self.board, chess.engine.Limit(
+                    time=time_limit, depth=depth_limit))
+                t = [move.uci(), info["score"].white().score(mate_score=100000)]
+                policy.append(t)
+            except:
+                print("move is null", move.uci())
+                t = [move.uci(), 0]
+
+            self.board.pop()
+
+        return policy
+
+    def get_score(self, path="Engine/stockfish-x86_64", time_limit=0.1, depth_limit=None):
+        """
+        :return: returns winning probabilty in intervall between -1,1
+        """
+        if not self.engine:
+            self.engine = chess.engine.SimpleEngine.popen_uci(path)
+
+        try:
+            info = self.engine.analyse(self.board, chess.engine.Limit(
+                time=time_limit, depth=depth_limit))
+            centipawn = info["score"].white().score(mate_score=10000) / 100
+            # calculate winning probability
+            # https://www.chessprogramming.org/Pawn_Advantage,_Win_Percentage,_and_Elo
+            winning_probability = 1 / (1 + pow(10, -centipawn / 4))
+            winning_probability = (winning_probability - 0.5) * 2.  # scale to [-1, 1]
+            return winning_probability
+        except:
+            print(self.board)
+
+            raise RuntimeError("coudlt calculate probability")  # TODO: LOGG
+
+    def get_evaluation(self, path="Engine/stockfish-x86_64", time_limit=0.1, depth_limit=None):
+        """
+        :return: int with position evaluation score
+        """
+
+        if not self.engine:
+            self.engine = chess.engine.SimpleEngine.popen_uci(path)
+
+        try:
+            info = self.engine.analyse(self.board, chess.engine.Limit(
+                time=time_limit, depth=depth_limit))
+            centipawn = info["score"].white().score(mate_score=5000)  # / 100
+            return centipawn
+        except:
+            print(self.board)
+            # self.show_game()
+            raise RuntimeError("coudlt calculate evaluation score")  # TODO: LOGG
+
+
+def normalize_policy(policy, x=-1):
+    """
+    :param policy: policy as from game.get_policy
+    :param x: value how many values of the policy you want to keep
+    :return: sorted normalized cut policy between [0,1]
+    """
+    policy.sort(key=lambda x: x[1], reverse=True)  # sort policy
+    if x > 0:
+        policy = policy[:x]
+    s = sum(row[1] for row in policy)
+    for i in range(len(policy)):
+        policy[i][1] /= s
+
+    return policy
+
+
+# def evaluate_position(position, path="Engine/stockfish-x86_64"):
+#     """
+#     :param np.array: current game position
+#         in tensor notation
+#     :return: int with position evaluation score
+#     """
+#     g = Game()
+#     g.board = tensor_to_fen(position)
+#     return g.get_evaluation(path)
+
+# def get_policy_from_position(position):
+#     """
+#     Returns normalized policy for a given position in tensor notation
+#     :param position: np.array: current game position
+#         in tensor notation
+#     :return: normalized policy tensor
+#     """
+#     g = Game()
+#     g.board = tensor_to_fen(position)
+#     return policy_to_tensor(normalize_policy(g.get_policy()))
+
+
+def policy_to_tensor(policy):
+    """
+    :param policy: policy as from game.get_policy
+    :return: tensor regarding the policy
+    """
+    tensor = np.zeros((8, 8, 64)).astype(DATATYPE)
+    for uci, prob in policy:
+        index = move_to_tensor_indices(uci)
+        tensor[index[0], index[1], index[2]] = prob
+
+    return tensor
+
 
 if __name__ == "__main__":
-    score = [0] * 3
-    for i in range(50):
-        game = Game()
-        while not game.is_ended():
-            try:
-                # game.play_stockfish(0.01)
-                game.play_random_move()
-            except:
-                # game.show_game()
-                print("Fail")
-                break
-        s = game.get_score(1)
-        print("s ", s)
-        score[int(s * 2)] += 1
+    # game.make_move(policy[3][0])
+    # print(game.get_scoring())
+    game = Game()
+    i = 0
+    while not game.is_ended():
+        # game.get_evaluation()
+        print(game.get_score(), i)
+        game.play_random_move()
+        i += 1
+
     game.show_game()
-    print(score)
-    game.engine.close()
+"""
+asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
+asyncio.run(main())
+
+except:
+print()
+print("Unexpected error:", sys.exc_info()[0])
+"""

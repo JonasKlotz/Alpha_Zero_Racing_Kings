@@ -15,9 +15,10 @@ from azts import self_match
 from azts import mock_model
 from azts import utility
 from azts.config import GAMEDIR, \
-    RUNS_PER_MOVE, DEFAULT_PLAYER, \
-    SHOW_GAME
+    RUNS_PER_MOVE, SHOW_GAME
 
+from lib.logger import get_logger
+log = get_logger("SelfMatch")
 
 class SelfPlay():
     '''
@@ -56,7 +57,7 @@ class SelfPlay():
         '''
         for i in range(iterations):
             switch = i % 2
-            print(f"\nMATCH {i+1} OF {iterations}:")
+            log.info(f"\nMATCH {i+1} OF {iterations}:")
             match = self_match.SelfMatch(
                 player_one=self.players[switch],
                 player_two=self.players[1 - switch],
@@ -79,9 +80,9 @@ class SelfPlay():
 
 if __name__ == "__main__":
 
-    player_defs = ("default_config", "SpryGibbon")
+    player_defs = ("StockingFish", "MockingBird")
     game_id = utility.get_unused_match_handle(*player_defs)
-    players = utility.load_players(*player_defs, True)
+    players = utility.load_players(*player_defs)
 
     play = SelfPlay(player_one=players[0],
                     player_two=players[1],

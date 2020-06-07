@@ -1,0 +1,38 @@
+name: mini_alpha_zero
+
+entry_points:
+  train:
+    parameters:
+        max_iter: {type: float, default: 3}
+        max_epochs: {type: float, default: 10000}
+    command: "python3 Model/model.py -i {max_iter} -ep {max_epochs}"
+
+  create_dataset:
+    parameters:
+        num_proc: {type: float, default: 2}
+        num_game: {type: float, default: 10}
+        fork_meth: {type: string, default: "spawn"}
+        p_one: {type: path, default: "Player/default_config.yaml"}
+        p_two: {type: path, default: "Player/default_config.yaml"}
+    command: "python3 azts/create_dataset.py -p {num_proc} -g {num_game} --fork_method {fork_meth}
+             --player_one {p_one} --player_two {p_two}"
+
+  self_learn:
+    parameters:
+        num_proc: {type: float, default: 2}
+        num_game: {type: float, default: 10}
+        num_roll: {type: float, default: 100}
+        num_iter: {type: float, default: 1}
+        num_epox: {type: float, default: 5}
+        num_cycles: {type: float, default: 5}
+        fork_meth: {type: string, default: "spawn"}
+        ai_to_train: {type: path, default: "Player/AltruisticOlm.yaml"}
+    command: "python3 azts/self_learn.py -p {num_proc} -g {num_game} -r {num_roll}
+             -i {num_iter} -e {num_epox} -s {num_cycles}
+             --fork_method {fork_meth} --player {ai_to_train}"
+
+  play_against_ai:
+    parameters:
+        ai_name: {type: string, default: "dryGibbon"}
+        human_player_colour: {type: string, default: "white"}
+    command: "python3 azts/play.py -n {ai_name} -c {human_player_colour}"

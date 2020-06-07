@@ -17,13 +17,24 @@ player:
             draw_by_rep: 0
             draw_by_stale_mate: 0
             draw_by_two_wins: 0
-        black: 
+        black:
             white_wins: -10
             black_wins: 10
             draw: 0
             draw_by_rep: 0
             draw_by_stale_mate: 0
             draw_by_two_wins: 0
+#use mock model instead of azts/stockfish
+mock: False
+#stockfish parameters
+stockfish:
+    #use stockfish instead of model
+    enable: False
+    #given time limit for move evaluation
+    time_limit: 0.1
+    #maximum tree search depth
+    search_depth: 10
+#model parameters
 model:
     input_shape: [8,8,11]
     resnet_depth: 9

@@ -13,10 +13,7 @@ from azts import azts_tree
 from azts import state_machine
 from azts import mock_model
 
-from azts.config import RUNS_PER_MOVE, WHITE, \
-    EXPLORATION, ROLLOUT_PAYOFFS, HEAT, \
-    MODEL
-
+from azts.config import RUNS_PER_MOVE, WHITE
 
 class Player():
     '''
@@ -30,16 +27,15 @@ class Player():
     to be made in the alpha zero tree
     search for every move
     '''
-
-    def __init__(self,
-                 name="UNNAMED PLAYER",
-                 color=WHITE,
-                 model=MODEL,
-                 runs_per_move=RUNS_PER_MOVE,
-                 exploration=EXPLORATION,
-                 rollout_payoffs=ROLLOUT_PAYOFFS,
-                 heat=HEAT,
-                 **kwargs):
+    def __init__(self, \
+            name="UNNAMED PLAYER", \
+            color=WHITE, \
+            model=None, \
+            runs_per_move=RUNS_PER_MOVE, \
+            exploration=None, \
+            rollout_payoffs=None, \
+            heat=None, \
+            **kwargs):
 
         # player is actually not keeping any state,
         # so no need to store statemachine or model
