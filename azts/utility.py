@@ -174,6 +174,22 @@ def load_player(location):
     return new_player
 
 
+def filter_non_numbers_from_dict(dictionary):
+    '''
+    copies from a given dictionary only those
+    entries which are numbers
+    :return dict: copy of original dictionary
+    with only those entries which were numbers
+    '''
+    new_dict = {}
+    for i in dictionary.keys():
+        j = dictionary[i]
+        if isinstance(j, float) or isinstance(j, int):
+            new_dict[i] = j
+    
+    return new_dict
+
+
 def load_player_with_model(model, config):
     '''
     load player with a preloaded model

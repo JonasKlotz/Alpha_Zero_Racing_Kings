@@ -42,12 +42,11 @@ class SelfMatch():
                  runs_per_move=RUNS_PER_MOVE,
                  show_game=SHOW_GAME):
 
-        self.players = []
+        self.players = [player_one, player_two]
 
-        player_one.set_color(WHITE)
-        self.players.append(player_one)
-        player_two.set_color(BLACK)
-        self.players.append(player_two)
+        for i, j in zip(self.players, [WHITE, BLACK]):
+            i.set_color(j)
+            i.set_runs_per_move(runs_per_move) 
 
         self.game = game.Game()
         self.screen = screen.Screen()

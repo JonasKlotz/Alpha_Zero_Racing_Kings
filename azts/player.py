@@ -54,6 +54,12 @@ class Player():
         '''
         self.tree.set_color(color)
 
+    def set_runs_per_move(self, runs_per_move):
+        '''
+        sets runs per move
+        '''
+        self.tree.runs_per_move = runs_per_move
+
     def reset(self):
         '''
         resets all stateful things
