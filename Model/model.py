@@ -72,6 +72,7 @@ class AZero:
             model_uri = self.config.model_uri
         else:
             model_uri = self.config.model_uri_format.format(version)
+        log.info("Loading model from mlflow server.")
         self.model = mlflow.keras.load_model(model_uri)
 
     def auto_run_training(self, max_iterations=5, max_epochs=10):

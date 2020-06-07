@@ -25,7 +25,6 @@ PATH_TO_ENGINE = os.path.join(ROOTDIR, "Interpreter")
 PATH_TO_ENGINE = os.path.join(PATH_TO_ENGINE, "Engine")
 PATH_TO_ENGINE = os.path.join(PATH_TO_ENGINE, ENGINE[platform.system()])
 
-print(f"engine is at {PATH_TO_ENGINE}")
 
 
 class StockfishModel():

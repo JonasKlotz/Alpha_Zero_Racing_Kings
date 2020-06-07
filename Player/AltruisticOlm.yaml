@@ -7,7 +7,7 @@ name: 'AlphaZero'
 config_revision: 0
 #version is changed whenever the parameters are reconfigured
 #the model then gets a new unique name and a new folder for checkpoints, etc.
-version: 1
+version: 3
 
 #directories
 dirs:

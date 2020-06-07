@@ -22,8 +22,8 @@ entry_points:
         num_proc: {type: float, default: 2}
         num_game: {type: float, default: 10}
         num_roll: {type: float, default: 100}
-        num_iter: {type: float, default: 5}
-        num_epox: {type: float, default: 20}
+        num_iter: {type: float, default: 1}
+        num_epox: {type: float, default: 5}
         num_cycles: {type: float, default: 5}
         fork_meth: {type: string, default: "spawn"}
         ai_to_train: {type: path, default: "Player/AltruisticOlm.yaml"}
