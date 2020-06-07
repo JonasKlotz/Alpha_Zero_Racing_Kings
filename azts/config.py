@@ -8,6 +8,8 @@ import sys
 import os.path
 import os
 
+from lib.logger import get_logger
+log = get_logger("azts.config")
 
 from azts import mock_model
 
@@ -30,6 +32,7 @@ def find_rootdir():
 
 
 ROOTDIR = find_rootdir()
+#log.info(f"Rootdir is {ROOTDIR}")
 
 # Paths
 # Folder to store self-game files,
@@ -47,7 +50,7 @@ PLAYERDIR = os.path.join(ROOTDIR, PLAYERFOLDER)
 
 for i in [GAMEDIR, RESOURCESDIR, DATASETDIR]:
     if not os.path.exists(i):
-        print(f"Could not find {i} -- making dir {i}")
+        log.info(f"Could not find {i} -- making dir {i}")
         os.makedirs(i)
 
 EXPLORATION = 0.1
