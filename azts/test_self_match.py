@@ -6,70 +6,60 @@ import pytest
 from azts import self_match
 from azts import mock_model
 from azts import player
+from azts import utility
 
 from azts.config import DRAW_BY_STALE_MATE, \
         DRAW_BY_REP, DRAW_BY_TWO_WINS, \
         BLACK_WINS, WHITE_WINS
 
 @pytest.fixture
-def stalemate():
+def new_match():
     model = mock_model.MockModel()
-    player_one = player.Player(model=model)
-    player_two = player.Player(model=model) 
+    conf = utility.load_player_conf("Player/default_config")
+    player_one = player.Player(model=model, \
+            runs_per_move=10, \
+            **(conf.player.as_dictionary()))
+    player_two = player.Player(model=model, \
+            runs_per_move=10, \
+            **(conf.player.as_dictionary()))
+    match = self_match.SelfMatch(player_one, player_two)
+    return match
+
+@pytest.fixture
+def stalemate(new_match):
     stale_mate = "8/8/8/8/8/8/R7/5K1k b - - 10 20"
-    match = self_match.SelfMatch(player_one, player_two)
-    match.set_game_state(stale_mate)
-    return match
+    new_match.set_game_state(stale_mate)
+    return new_match
 
 @pytest.fixture
-def repetition():
-    model = mock_model.MockModel()
-    player_one = player.Player(model=model)
-    player_two = player.Player(model=model) 
+def repetition(new_match):
     startpos = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
-    match = self_match.SelfMatch(player_one, player_two)
-    match.game.history[startpos.split(" ")[0]] = 5
-    return match
+    new_match.game.history[startpos.split(" ")[0]] = 5
+    return new_match
 
 @pytest.fixture
-def black_win():
-    model = mock_model.MockModel()
-    player_one = player.Player(model=model)
-    player_two = player.Player(model=model) 
+def black_win(new_match):
     win_state = "7k/8/8/8/8/8/R7/5K2 w - - 10 20"
-    match = self_match.SelfMatch(player_one, player_two)
-    match.set_game_state(win_state)
-    return match
+    new_match.set_game_state(win_state)
+    return new_match
 
 @pytest.fixture
-def white_win():
-    model = mock_model.MockModel()
-    player_one = player.Player(model=model)
-    player_two = player.Player(model=model) 
+def white_win(new_match):
     win_state = "7K/8/8/8/8/8/R7/5k2 b - - 10 20"
-    match = self_match.SelfMatch(player_one, player_two)
-    match.set_game_state(win_state)
-    return match
+    new_match.set_game_state(win_state)
+    return new_match
 
 @pytest.fixture
-def suspension():
-    model = mock_model.MockModel()
-    player_one = player.Player(model=model)
-    player_two = player.Player(model=model) 
+def suspension(new_match):
     suspended_win = "7K/8/k7/8/8/8/7R/8 b - - 10 20"
-    match = self_match.SelfMatch(player_one, player_two)
-    match.set_game_state(suspended_win)
-    return match
+    new_match.set_game_state(suspended_win)
+    return new_match
 
 @pytest.fixture
-def suspension_draw():
-    model = mock_model.MockModel()
-    player_one = player.Player(model=model)
-    player_two = player.Player(model=model) 
+def suspension_draw(new_match):
     suspended_draw = "7K/k7/7R/8/8/8/8/1R6 b - - 10 20"
-    match = self_match.SelfMatch(player_one, player_two)
-    match.set_game_state(suspended_draw)
-    return match
+    new_match.set_game_state(suspended_draw)
+    return new_match
 
 def test_end_on_stalemate(stalemate):
     assert stalemate.simulate() == DRAW_BY_STALE_MATE
