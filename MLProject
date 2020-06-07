@@ -17,6 +17,20 @@ entry_points:
     command: "python3 azts/create_dataset.py -p {num_proc} -g {num_game} --fork_method {fork_meth}
              --player_one {p_one} --player_two {p_two}"
 
+  self_learn:
+    parameters:
+        num_proc: {type: float, default: 2}
+        num_game: {type: float, default: 10}
+        num_roll: {type: float, default: 100}
+        num_iter: {type: float, default: 5}
+        num_epox: {type: float, default: 20}
+        num_cycles: {type: float, default: 5}
+        fork_meth: {type: string, default: "spawn"}
+        ai_to_train: {type: path, default: "Player/AltruisticOlm.yaml"}
+    command: "python3 azts/self_learn.py -p {num_proc} -g {num_game} -r {num_roll}
+             -i {num_iter} -e {num_epox} -s {num_cycles}
+             --fork_method {fork_meth} --player {ai_to_train}"
+
   play_against_ai:
     parameters:
         ai_name: {type: string, default: "dryGibbon"}

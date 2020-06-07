@@ -1,10 +1,13 @@
 """
 fake inference giving values
 according to stockfish engine
-"""
+""" 
+import platform
+import os
 
 from Interface.TensorNotation import tensor_to_fen, fen_to_tensor
 from Interpreter import game
+from azts.config import ROOTDIR
 
 # pylint: disable=W0613
 # pylint: disable=R0201
@@ -14,7 +17,15 @@ from Interpreter import game
 MOVE_DIMENSIONS = (8, 8, 64)
 POS_DIMENSIONS = (8, 8, 11)
 # Provide relative path to Stockfish Engine
-PATH_TO_ENGINE = "../Interpreter/Engine/stockfish-x86_64"
+ENGINE = {"Linux": "stockfish-x86_64", \
+        "Darwin": "stockfish-osx-x86_64", \
+        "Windows": "stockfish-windows-x86_64.exe"}
+
+PATH_TO_ENGINE = os.path.join(ROOTDIR, "Interpreter")
+PATH_TO_ENGINE = os.path.join(PATH_TO_ENGINE, "Engine")
+PATH_TO_ENGINE = os.path.join(PATH_TO_ENGINE, ENGINE[platform.system()])
+
+print(f"engine is at {PATH_TO_ENGINE}")
 
 
 class StockfishModel():
@@ -55,7 +66,17 @@ class StockfishModel():
 
 
 if __name__ == "__main__":
-    sf = StockfishModel()
+    class dummystockfish:
+        time_limit = 0.2
+
+    class dummyconfig:
+        stockfish = dummystockfish
+
+    config = dummyconfig()
+    print(config.stockfish.time_limit)
+
+
+    sf = StockfishModel(config)
     while not sf.game.is_ended():
         pol, ev = sf.inference(fen_to_tensor(sf.game.board.fen()))
         print(ev)
