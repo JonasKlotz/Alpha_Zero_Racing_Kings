@@ -7,6 +7,9 @@ from azts.create_dataset import assemble_dataset
 from azts import self_play
 from azts import utility
 
+from lib.logger import get_logger
+log = get_logger("self_learn")
+
 def parallel_matches_with_preloaded_model(yamlpath, \
         model, \
         handle, \
@@ -115,7 +118,7 @@ if __name__ == "__main__":
 
     for _ in range(args.selflearnruns):
         handle = utility.get_unused_match_handle(args.player, args.player)
-        print(f"STARTING MATCHES WITH HANDLE {handle}")
+        log.info(f"starting matches with handle {handle}")
 
         parallel_matches_with_preloaded_model(yamlpath=args.player, \
                 model=model, \
