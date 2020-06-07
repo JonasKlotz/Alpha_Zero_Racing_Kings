@@ -16,6 +16,8 @@ from azts import player
 from azts import utility
 from azts.config import *
 
+from lib.timing import timing, runtime_summary
+
 parser = argparse.ArgumentParser(description="Multiprocessing generation of self-play "
                                  + "games. Each process generates games independently "
                                  + f"and each game is stored in {GAMEDIR}. Games are "
@@ -63,6 +65,7 @@ parser.add_argument("--mock", type=bool,
 args = parser.parse_args()
 
 
+@timing
 def create_dataset(yamlpaths,
                    rollouts_per_move,
                    num_of_parallel_processes,
@@ -195,6 +198,8 @@ if __name__ == "__main__":
                    num_of_games_per_process=args.num_of_games_per_process,
                    fork_method=args.fork_method,
                    mockmodel=args.mock)
+
+    runtime_summary()
 
 # pylint: enable=E0401
 # pylint: enable=E0602
