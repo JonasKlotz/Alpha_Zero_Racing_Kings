@@ -26,14 +26,11 @@ class Game:
     # Eight is reasonable in this case.
     std_fen = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
     engine = None
-    move_count = 0
     history = None  # Dict containing key : fen, value 0-3 for threefold repetition
 
     # init board either with fen or std fen string
     def __init__(self):
         self.board = chess.variant.RacingKingsBoard()
-        self.player_to_move = 1  # 1 weiß,-1 schwarz
-        self.result = None
         self.end = False
         self.draw = False
         self.history = {}
@@ -48,11 +45,8 @@ class Game:
         :return Game: self
         """
         self.board = chess.variant.RacingKingsBoard()
-        self.player_to_move = 1
-        self.result = None
         self.end = False
         self.draw = False
-        self.move_count = 0
         self.history.clear()
         self.history[self.std_fen] = 1
         return self
@@ -101,13 +95,13 @@ class Game:
         try:
             move = self.board.parse_uci(input)  # UCI
             self.board.push(move)
-            self.after_mode()
+            self.after_move()
             return
         except:
             pass
         try:
             self.board.push(input)  # Move as chessmove
-            self.after_mode()
+            self.after_move()
             return
         except:
             pass
@@ -115,7 +109,7 @@ class Game:
         try:
             move = self.board.parse_san(input)  # SAN
             self.board.push(move)
-            self.after_mode()
+            self.after_move()
             return
         except:
             raise ValueError(f"move {input} illegal")
@@ -123,9 +117,7 @@ class Game:
     def board_fen_hash(self):
         return self.board.fen().split(' ')[0]
 
-    def after_mode(self, ):
-        self.move_count += 1
-        self.player_to_move *= -1
+    def after_move(self, ):
 
         board_fen = self.board_fen_hash()
         try:
