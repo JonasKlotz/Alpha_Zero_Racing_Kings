@@ -300,17 +300,17 @@ class Game:
 
         return policy
 
-    def get_score(self):
+    def get_score(self, path="Engine/stockfish-x86_64", time_limit=0.1, depth_limit=None):
         """
         :return: returns winning probabilty in intervall between -1,1
         """
         if not self.engine:
-            self.engine = chess.engine.SimpleEngine.popen_uci(
-                "Engine/stockfish-x86_64")
+            self.engine = chess.engine.SimpleEngine.popen_uci(path)
 
         try:
-            info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
-            centipawn = info["score"].white().score(mate_score=100000) / 100
+            info = self.engine.analyse(self.board, chess.engine.Limit(
+                time=time_limit, depth=depth_limit))
+            centipawn = info["score"].white().score(mate_score=10000) / 100
             # calculate winning probability
             # https://www.chessprogramming.org/Pawn_Advantage,_Win_Percentage,_and_Elo
             winning_probability = 1 / (1 + pow(10, -centipawn / 4))
@@ -332,7 +332,7 @@ class Game:
         try:
             info = self.engine.analyse(self.board, chess.engine.Limit(
                 time=time_limit, depth=depth_limit))
-            centipawn = info["score"].white().score(mate_score=100000)  # / 100
+            centipawn = info["score"].white().score(mate_score=5000)  # / 100
             return centipawn
         except:
             print(self.board)
@@ -397,9 +397,9 @@ if __name__ == "__main__":
     game = Game()
     i = 0
     while not game.is_ended():
-        game.play_random_move()
-        game.get_score()
+        # game.get_evaluation()
         print(game.get_score(), i)
+        game.play_random_move()
         i += 1
 
     game.show_game()
