@@ -155,6 +155,9 @@ class CLIPlayer(Player):
     def set_color(self, color):
         self.color = color
 
+    def set_runs_per_move(self, runs_per_move):
+        pass
+
     def reset(self):
         '''
         reset all stateful things
