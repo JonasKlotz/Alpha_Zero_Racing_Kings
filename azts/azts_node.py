@@ -206,7 +206,8 @@ class AztsNode():
                 "end positions": metrics[2], \
                 "normal tree nodes": metrics[0], \
                 "maximal tree depth": metrics[4], \
-                "avg num of legal moves per pos": avg_legal_moves} 
+                "avg num of legal moves per pos": avg_legal_moves, \
+                "num of legal moves": len(self.children)}
         
         return stats
 
@@ -225,14 +226,14 @@ class AztsNode():
             k = i + " move"
             l = i + " score"
             select = move_distribution.argmax()
-            stats[j] = move_distribution[select] 
+            stats[j] = float(move_distribution[select])
             move_index = self._legal_to_total_index(select)
             move = self.statemachine.move_index_to_fen(move_index)
             stats[k] = move
             move_distribution[select] = 0
-            stats[l] = scores[select]
+            stats[l] = float(scores[select])
 
-        stats["rest rating"] = move_distribution.sum() 
+        stats["rest rating"] = float(move_distribution.sum())
         return stats
     
     def get_move_statistics(self, heat = 1):

@@ -36,9 +36,10 @@ entry_points:
         p1: {type: path, default: "Player/MockingBird.yaml"}
         p2: {type: path, default: "Player/MockingBird.yaml"}
         num_runs: {type: float, default: 100}
+        rep_cycle: {type: float, default: 10}
         show: {type: float, default: 0}
     command: "python3 azts/analysis_match.py --player_one {p1} --player_two {p2}
-             --runs_per_move {num_runs} --show_game {show}"
+             --runs_per_move {num_runs} --report_cycle {rep_cycle} --show_game {show}"
 
   play_against_ai:
     parameters:

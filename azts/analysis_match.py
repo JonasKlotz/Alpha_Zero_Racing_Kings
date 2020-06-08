@@ -9,7 +9,6 @@ from azts.config import TO_STRING
 from lib.logger import get_logger
 log = get_logger("AnalysisMatch")
 
-REPORT_CYCLE = 10
 
 class AnalysisMatch(self_match.SelfMatch):
 
@@ -57,14 +56,9 @@ class AnalysisMatch(self_match.SelfMatch):
                 # only increment after black move
                 moves += select
                 self._show_game()
-                if moves % REPORT_CYCLE == 0 and select:
+                if moves % self.report_cycle == 0 and select:
                     stats = active_player.get_stats()
-                    # in stats: settings, tree, move distribution
-                    #move_dist_stats = \
-                            #utility.filter_non_numbers_from_dict(\
-                            #stats["move distribution"])
                     self._unpack_metrics(stats, moves)
-                    mlflow.log_metric("move", moves, moves)
                     time1 = self._report(time1, moves)
 
             result = self.game.board.result()
@@ -117,6 +111,10 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--runs_per_move",
             type=int, default=100, \
             help="Simulation runs for each move.")
+    parser.add_argument("-c", "--report_cycle", \
+            type=int, default=10, \
+            help="After how many full turns statistics are being logged. " \
+            + "Default is 10")
     parser.add_argument("--show_game",
             type=int, default=0, \
             help="Show game - 1 for yes, 0 for no. 0 is default.")
@@ -131,6 +129,7 @@ if __name__ == "__main__":
 
     start_args["runs_per_move"] = args.runs_per_move
     start_args["show_game"] = bool(args.show_game)
+    start_args["report_cycle"] = args.report_cycle
 
     match = AnalysisMatch(**start_args)
     match.simulate()

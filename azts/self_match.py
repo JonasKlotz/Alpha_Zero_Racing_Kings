@@ -40,7 +40,8 @@ class SelfMatch():
                  player_one,
                  player_two,
                  runs_per_move=RUNS_PER_MOVE,
-                 show_game=SHOW_GAME):
+                 show_game=SHOW_GAME,
+                 report_cycle=REPORT_CYCLE):
 
         self.players = [player_one, player_two]
 
@@ -54,6 +55,7 @@ class SelfMatch():
 
         self.training_payoffs = TRAINING_PAYOFFS
         self.show_game = show_game
+        self.report_cycle = report_cycle
 
     def set_game_state(self, fen_state):
         '''
@@ -104,7 +106,7 @@ class SelfMatch():
             # only increment after black move
             moves += select
             self._show_game()
-            if moves % REPORT_CYCLE == 0 and select:
+            if moves % self.report_cycle == 0 and select:
                 time1 = self._report(time1, moves)
 
         result = self.game.board.result()
@@ -126,8 +128,8 @@ class SelfMatch():
     def _report(self, time_before, moves):
         time_now = time.time()
         elapsed = time_now - time_before
-        avg_per_move = elapsed / REPORT_CYCLE
-        log.info(f"total moves: {moves}; {REPORT_CYCLE} moves in "
+        avg_per_move = elapsed / self.report_cycle
+        log.info(f"total moves: {moves}; {self.report_cycle} moves in "
               + f"{str(elapsed)[0:5]}s, average of "
                 + f"{str(avg_per_move)[0:4]}s per move.")
         return time_now
