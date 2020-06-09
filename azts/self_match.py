@@ -56,6 +56,7 @@ class SelfMatch():
         self.training_payoffs = TRAINING_PAYOFFS
         self.show_game = show_game
         self.report_cycle = report_cycle
+        self.match_moves = []
 
     def set_game_state(self, fen_state):
         '''

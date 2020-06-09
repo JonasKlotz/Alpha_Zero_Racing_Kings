@@ -1,6 +1,8 @@
 import time
 import argparse
 import mlflow
+import pickle
+import os
 
 from azts import self_match
 from azts import utility 
@@ -51,6 +53,7 @@ class AnalysisMatch(self_match.SelfMatch):
                 self.game.make_move(move)
                 # collect data
                 self.data_collection.append(active_player.dump_data())
+                self.match_moves.append(move)
 
                 # statistics:
                 # only increment after black move
@@ -67,6 +70,15 @@ class AnalysisMatch(self_match.SelfMatch):
                   + f"moves with {result} ({TO_STRING[state]}).")
             score = self.training_payoffs[state]
             mlflow.log_metric("score", score)
+
+            # write list of moves to file and
+            # log it to mlflow server
+            moves_file = "match_moves.pkl"
+            if os.path.exists(moves_file):
+                os.remove(moves_file)
+            pickle.dump(self.match_moves, open(moves_file, "wb"))
+            mlflow.log_artifact(moves_file)
+            os.remove(moves_file)
 
         for i in self.data_collection:
             i[2] = score
