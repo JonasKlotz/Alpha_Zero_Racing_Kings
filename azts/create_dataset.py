@@ -16,6 +16,8 @@ from azts import player
 from azts import utility
 from azts.config import *
 
+from lib.logger import get_logger
+log = get_logger("create_dataset")
 
 def create_dataset(yamlpaths,
                    rollouts_per_move,
@@ -30,7 +32,7 @@ def create_dataset(yamlpaths,
     from all created games in GAMESDIR
     '''
     handle = utility.get_unused_match_handle(*tuple(yamlpaths))
-    print(f"STARTING MATCHES WITH HANDLE {handle}")
+    log.info(f"starting matches with handle {handle}")
     parallel_matches(yamlpaths=yamlpaths,
                      handle=handle,
                      rollouts_per_move=rollouts_per_move,
@@ -62,19 +64,19 @@ def assemble_dataset(handle):
             game_data = pickle.load(open(filepath, "rb"))
             for i in game_data:
                 dataset.append(i)
-            print(f"added {filename} to dataset.")
+            log.info(f"added {filename} to dataset.")
 
     dataset_path = utility.get_unused_filepath(
         f"dataset_{handle}",
         DATASETDIR)
 
     pickle.dump(dataset, open(dataset_path, "wb"))
-    print(f"saved data of {counter} games to {dataset_path}.")
+    log.info(f"saved data of {counter} games to {dataset_path}.")
 
     del dataset
 
     test_load = pickle.load(open(dataset_path, "rb"))
-    print(f"verified integrity of file.\n"
+    log.info(f"verified integrity of file.\n"
           + f"dataset is of type {type(test_load)},\n"
             + f"has {len(test_load)} entries of type {type(test_load[0])}\n"
             + f"with {len(test_load[0])} entries of type\n"

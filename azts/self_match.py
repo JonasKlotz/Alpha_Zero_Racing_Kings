@@ -16,6 +16,9 @@ from azts.config import ROLLOUT_PAYOFFS, \
         RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
         SHOW_GAME
 
+from lib.logger import get_logger
+log = get_logger("SelfMatch")
+
 REPORT_CYCLE = 10
 
 
@@ -81,7 +84,7 @@ class SelfMatch():
         '''
         moves = 1
         time1 = time.time()
-        print(f"\nWHITE: {self.players[0].name}\n"
+        log.info(f"\nWHITE: {self.players[0].name}\n"
               + f"BLACK: {self.players[1].name}\n")
         while True:
             # check break condition:
@@ -107,7 +110,7 @@ class SelfMatch():
 
         result = self.game.board.result()
         state = self.game.get_game_state()
-        print(f"game ended after {moves} "
+        log.info(f"game ended after {moves} "
               + f"moves with {result} ({TO_STRING[state]}).")
         score = self.training_payoffs[state]
 
@@ -125,7 +128,7 @@ class SelfMatch():
         time_now = time.time()
         elapsed = time_now - time_before
         avg_per_move = elapsed / REPORT_CYCLE
-        print(f"total moves: {moves}; {REPORT_CYCLE} moves in "
+        log.info(f"total moves: {moves}; {REPORT_CYCLE} moves in "
               + f"{str(elapsed)[0:5]}s, average of "
                 + f"{str(avg_per_move)[0:4]}s per move.")
         return time_now

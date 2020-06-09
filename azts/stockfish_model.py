@@ -25,7 +25,6 @@ PATH_TO_ENGINE = os.path.join(ROOTDIR, "Interpreter")
 PATH_TO_ENGINE = os.path.join(PATH_TO_ENGINE, "Engine")
 PATH_TO_ENGINE = os.path.join(PATH_TO_ENGINE, ENGINE[platform.system()])
 
-print(f"engine is at {PATH_TO_ENGINE}")
 
 
 class StockfishModel():
@@ -51,7 +50,7 @@ class StockfishModel():
         """
         assert position.shape == POS_DIMENSIONS
         self.game.board.set_fen(tensor_to_fen(position))
-        evaluation = self.game.get_evaluation(PATH_TO_ENGINE)
+        evaluation = self.game.get_score(PATH_TO_ENGINE)
         policy = game.policy_to_tensor(game.normalize_policy(
             self.game.get_policy(
                 PATH_TO_ENGINE, time_limit=self.time_limit, depth_limit=self.search_depth)))

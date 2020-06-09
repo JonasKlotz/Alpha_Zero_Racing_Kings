@@ -19,14 +19,14 @@ class MockModel():
     """
 
     def inference(self, position):
-        '''
+        """
         mock inference.
         :param np.array: current game position
         in tensor notation
         :return tuple: tuple containing np.array
         with policy tensor and int with position
         evaluation
-        '''
+        """
         assert position.shape == POS_DIMENSIONS
         policy = np.random.rand(*MOVE_DIMENSIONS)
         evaluation = np.random.rand(1)[0] - 0.5

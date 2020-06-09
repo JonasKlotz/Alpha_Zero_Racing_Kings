@@ -2,46 +2,43 @@
 import pytest
 from azts import player
 from azts import mock_model
+from azts import utility
 
 from azts.config import WHITE, BLACK, \
         RUNNING, DRAW_BY_STALE_MATE, \
         BLACK_WINS
 
-@pytest.fixture
-def player_white():
-    model = mock_model.MockModel()
-    player_white = player.Player(color=WHITE, \
-            model=model, \
-            runs_per_move=10)
-    return player_white
 
 @pytest.fixture
-def other_players_turn():
+def new_player():
     model = mock_model.MockModel()
-    player_black = player.Player(color=BLACK, \
+    config = utility.load_player_conf("Player/default_config.yaml")
+    new_p = player.Player(color=BLACK, \
             model=model, \
-            runs_per_move=10)
-    return player_black
+            runs_per_move=10, \
+            **(config.player.as_dictionary()))
+    return new_p
 
 @pytest.fixture
-def stale_mate():
-    model = mock_model.MockModel()
-    player_black = player.Player(color=BLACK, \
-            model=model, \
-            runs_per_move=10)
+def player_white(new_player):
+    new_player.set_color(color=WHITE)
+    return new_player
+
+@pytest.fixture
+def other_players_turn(new_player): 
+    return new_player
+
+@pytest.fixture
+def stale_mate(new_player):
     new_state = "8/8/8/8/8/8/R7/5K1k b - - 10 20" 
-    player_black.set_game_state(new_state)
-    return player_black
+    new_player.set_game_state(new_state)
+    return new_player
 
 @pytest.fixture
-def win_position():
-    model = mock_model.MockModel()
-    player_black = player.Player(color=BLACK, \
-            model=model, \
-            runs_per_move=10)
+def win_position(new_player):
     win_position = "7k/8/8/8/8/8/R7/5K2 w - - 10 20"
-    player_black.set_game_state(win_position)
-    return player_black
+    new_player.set_game_state(win_position)
+    return new_player
 
 def test_player_move(player_white):
     legal_moves = \
