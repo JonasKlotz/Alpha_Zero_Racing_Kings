@@ -200,14 +200,14 @@ class AztsNode():
         avg_legal_moves = metrics[5] / num_of_nodes
         tree_overflow = metrics[3] != 0
         
-        stats = {"tree overflow": tree_overflow, \
-                "number of nodes": num_of_nodes, \
-                "leaf nodes": metrics[1], \
-                "end positions": metrics[2], \
-                "normal tree nodes": metrics[0], \
-                "maximal tree depth": metrics[4], \
-                "avg num of legal moves per pos": avg_legal_moves, \
-                "num of legal moves": len(self.children)}
+        stats = {"tree_overflow": tree_overflow, \
+                "number_of_nodes": num_of_nodes, \
+                "leaf_nodes": metrics[1], \
+                "end_positions": metrics[2], \
+                "normal_tree_nodes": metrics[0], \
+                "maximal_tree_depth": metrics[4], \
+                "avg_num_of_legal_moves_per_pos": avg_legal_moves, \
+                "num_of_legal_moves": len(self.children)}
         
         return stats
 
@@ -222,9 +222,9 @@ class AztsNode():
         stats = {}
 
         for i in ["first", "second", "third", "fourth"]:
-            j = i + " rating"
-            k = i + " move"
-            l = i + " score"
+            j = i + "_rating"
+            k = i + "_move"
+            l = i + "_score"
             select = move_distribution.argmax()
             stats[j] = float(move_distribution[select])
             move_index = self._legal_to_total_index(select)
@@ -233,13 +233,13 @@ class AztsNode():
             move_distribution[select] = 0
             stats[l] = float(scores[select])
 
-        stats["rest rating"] = float(move_distribution.sum())
+        stats["rest_rating"] = float(move_distribution.sum())
         return stats
     
     def get_move_statistics(self, heat = 1):
         stats = {}
         stats["tree"] = self._get_tree_statistics()
-        stats["move distribution"] = self._get_distribution_statistics(heat) 
+        stats["move_distribution"] = self._get_distribution_statistics(heat) 
 
         return stats
 

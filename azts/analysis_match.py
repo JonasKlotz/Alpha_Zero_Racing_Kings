@@ -6,7 +6,7 @@ import os
 
 from azts import self_match
 from azts import utility 
-from azts.config import TO_STRING
+from azts.config import TO_STRING, WHITE
 
 from lib.logger import get_logger
 log = get_logger("AnalysisMatch")
@@ -62,7 +62,10 @@ class AnalysisMatch(self_match.SelfMatch):
                 if moves % self.report_cycle == 0 and select:
                     stats = active_player.get_stats()
                     self._unpack_metrics(stats, moves)
+                    color = 1 if active_player.tree.color == WHITE else -1
+                    mlflow.log_metric("player_color", color, moves)
                     time1 = self._report(time1, moves)
+
 
             result = self.game.board.result()
             state = self.game.get_game_state()
@@ -86,7 +89,7 @@ class AnalysisMatch(self_match.SelfMatch):
         return state
 
 
-    def _unpack_metrics(self, dictionary, moves):
+    def _unpack_metrics(self, dictionary, moves, prefix=""):
         '''
         call this function within a mlflow run
         environment to unpack statistic dictionaries
@@ -95,10 +98,11 @@ class AnalysisMatch(self_match.SelfMatch):
         '''
         for i in dictionary.keys():
             j = dictionary[i]
+            new_prefix = f"{i}" if prefix is "" else f"{prefix}-{i}"
             if isinstance(j, dict):
-                self._unpack_metrics(j, moves)
+                self._unpack_metrics(j, moves, new_prefix)
             elif isinstance(j, float) or isinstance(j, int):
-                mlflow.log_metric(i, j, moves)
+                mlflow.log_metric(new_prefix, j, moves)
 
 
     def track_metrics(self):
