@@ -290,7 +290,7 @@ class Game:
             try:
                 info = self.engine.analyse(self.board, chess.engine.Limit(
                     time=time_limit, depth=depth_limit))
-                t = [move.uci(), info["score"].white().score(mate_score=100000)]
+                t = [move.uci(), - info["score"].relative.score(mate_score=100000)]
                 policy.append(t)
             except:
                 print("move is null", move.uci())
@@ -300,13 +300,12 @@ class Game:
 
         return policy
 
-    def get_score(self):
+    def get_score(self, path="Engine/stockfish-x86_64"):
         """
         :return: returns winning probabilty in intervall between -1,1
         """
         if not self.engine:
-            self.engine = chess.engine.SimpleEngine.popen_uci(
-                "Engine/stockfish-x86_64")
+            self.engine = chess.engine.SimpleEngine.popen_uci(path)
 
         try:
             info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
@@ -332,7 +331,7 @@ class Game:
         try:
             info = self.engine.analyse(self.board, chess.engine.Limit(
                 time=time_limit, depth=depth_limit))
-            centipawn = info["score"].white().score(mate_score=100000)  # / 100
+            centipawn = info["score"].relative.score(mate_score=100000)  # / 100
             return centipawn
         except:
             print(self.board)
@@ -349,7 +348,7 @@ def normalize_policy(policy, x=-1):
     policy.sort(key=lambda x: x[1], reverse=True)  # sort policy
     if x > 0:
         policy = policy[:x]
-    s = sum(row[1] for row in policy)
+    s = abs(sum(row[1] for row in policy))
     for i in range(len(policy)):
         policy[i][1] /= s
 
