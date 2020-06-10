@@ -23,8 +23,7 @@ linting:
 unittest:
   stage: Test
   script:
-    
-   - pwd
+  - pwd
   - ls -l
   - export PYTHONPATH="$PYTHONPATH:."
   - python -c "import sys;print(sys.path)"
