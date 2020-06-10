@@ -59,7 +59,8 @@ class AnalysisMatch(self_match.SelfMatch):
                 # only increment after black move
                 moves += select
                 self._show_game()
-                if moves % self.report_cycle == 0 and select:
+                if moves % self.report_cycle == 0 and \
+                        active_player.tree.color == self.track_player:
                     stats = active_player.get_stats()
                     self._unpack_metrics(stats, moves)
                     color = 1 if active_player.tree.color == WHITE else -1
@@ -127,6 +128,10 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--runs_per_move",
             type=int, default=100, \
             help="Simulation runs for each move.")
+    parser.add_argument("-t", "--tracked_player_color", \
+            type=str, default="white", \
+            help="Select for which player statistics are " \
+            + "being tracked: black or white. Default: white.")
     parser.add_argument("-c", "--report_cycle", \
             type=int, default=10, \
             help="After how many full turns statistics are being logged. " \
@@ -146,6 +151,7 @@ if __name__ == "__main__":
     start_args["runs_per_move"] = args.runs_per_move
     start_args["show_game"] = bool(args.show_game)
     start_args["report_cycle"] = args.report_cycle
+    start_args["track_player"] = args.tracked_player_color
 
     match = AnalysisMatch(**start_args)
     match.simulate()

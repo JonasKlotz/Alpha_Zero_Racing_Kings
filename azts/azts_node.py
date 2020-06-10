@@ -127,8 +127,9 @@ class AztsNode():
                          + "Move statistics:\n"
         move_stats = self._get_distribution_statistics()
         for i in move_stats.keys():
-            filler = {"move": "\t\t", "score": "\t\t\t", "rating": "\t"}
-            select = i.split(" ")[1]
+            filler = {"move": "\t\t\t", "score": "\t\t\t\t", "probability": "\t", \
+                    "prior": "\t\t\t\t\t", "visits": "\t\t\t\t\t\t"}
+            select = i.split("_")[1]
             distr_metric = f"\t{i}:{filler[select]}{str(move_stats[i])[0:5]}\n"
             metric_string += distr_metric 
 
@@ -222,9 +223,11 @@ class AztsNode():
         stats = {}
 
         for i in ["first", "second", "third", "fourth"]:
-            j = i + "_rating"
+            j = i + "_probability"
             k = i + "_move"
             l = i + "_score"
+            m = i + "_prior"
+            n = i + "_visits"
             select = move_distribution.argmax()
             stats[j] = float(move_distribution[select])
             move_index = self._legal_to_total_index(select)
@@ -232,8 +235,10 @@ class AztsNode():
             stats[k] = move
             move_distribution[select] = 0
             stats[l] = float(scores[select])
+            stats[m] = float(self.edges[select][PPRIOR])
+            stats[n] = float(self.edges[select][NCOUNT])
 
-        stats["rest_rating"] = float(move_distribution.sum())
+        stats["rest_probability"] = float(move_distribution.sum())
         return stats
     
     def get_move_statistics(self, heat = 1):

@@ -41,7 +41,8 @@ class SelfMatch():
                  player_two,
                  runs_per_move=RUNS_PER_MOVE,
                  show_game=SHOW_GAME,
-                 report_cycle=REPORT_CYCLE):
+                 report_cycle=REPORT_CYCLE,
+                 track_player=WHITE):
 
         self.players = [player_one, player_two]
 
@@ -57,6 +58,7 @@ class SelfMatch():
         self.show_game = show_game
         self.report_cycle = report_cycle
         self.match_moves = []
+        self.track_player = track_player
 
     def set_game_state(self, fen_state):
         '''
@@ -107,7 +109,7 @@ class SelfMatch():
             # only increment after black move
             moves += select
             self._show_game()
-            if moves % self.report_cycle == 0 and select:
+            if moves % self.report_cycle == 0 and ~select:
                 time1 = self._report(time1, moves)
 
         result = self.game.board.result()

@@ -39,7 +39,7 @@ class MatchReplay():
             self.game.make_move(self.match_moves[self.move_count])
             self.move_count += 1 
             print(f"this is move {self.move_count} in " \
-                    + f"turn {int((self.move_count + 2)/2)}.")
+                    + f"turn {int((self.move_count + 1)/2)}.")
         else:
             print("this is the final position")
 
