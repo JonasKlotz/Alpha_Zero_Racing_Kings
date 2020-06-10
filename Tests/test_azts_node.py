@@ -83,7 +83,7 @@ def test_start_is_not_endpostion(initial_node):
     assert initial_node.endposition is False 
 
 def test_stats_num_of_nodes_on_start(initial_node):
-    assert initial_node.get_move_statistics()["tree"]["number of nodes"] == 1
+    assert initial_node.get_move_statistics()["tree"]["number_of_nodes"] == 1
 
 def test_correct_num_of_children_on_start(initial_node):
     assert len(initial_node.children) == NUM_OF_LEGAL_START_MOVES
@@ -111,15 +111,15 @@ def test_move_distribution_adds_up_to_one(rollout_node):
     assert np.isclose(rollout_node.get_move_distribution().sum(), 1)
 
 def test_move_stats_add_to_one(rollout_node):
-    stats = rollout_node.get_move_statistics()["move distribution"]
+    stats = rollout_node.get_move_statistics()["move_distribution"]
     accum = 0
-    keys = [i for i in stats.keys() if "rating" in i]
+    keys = [i for i in stats.keys() if "probability" in i]
     for i in keys:
         accum += stats[i]
     assert np.isclose(accum, 1)
 
 def test_move_stats_small_rest_in_low_heat(rollout_node):
-    rest = rollout_node.get_move_statistics(0.001)["move distribution"]["rest rating"]
+    rest = rollout_node.get_move_statistics(0.001)["move_distribution"]["rest_probability"]
     assert rest < 0.1
 
 def test_move_distribution_prioritizes_correct_move(rollout_node):
@@ -131,10 +131,10 @@ def test_stats_correct_type(rollout_node):
     assert isinstance(rollout_node.get_move_statistics(), dict)
 
 def test_stats_num_of_nodes(rollout_node):
-    assert rollout_node.get_move_statistics()["tree"]["number of nodes"] == 11
+    assert rollout_node.get_move_statistics()["tree"]["number_of_nodes"] == 11
 
 def test_stats_tree_overflow(rollout_node):
-    assert rollout_node.get_move_statistics()["tree"]["tree overflow"] is False
+    assert rollout_node.get_move_statistics()["tree"]["tree_overflow"] is False
 
 def test_actual_game_position_is_still_set_after_rollout(rollout_node):
     assert rollout_node.statemachine.actual_game.board.fen() == FIRST_STATE

@@ -23,4 +23,8 @@ linting:
 unittest:
   stage: Test
   script:
-    - python3 Tests/test*.py
+  - pwd
+  - ls -l
+  - export PYTHONPATH="$PYTHONPATH:."
+  - python -c "import sys;print(sys.path)"
+  - python3 Tests/test*.py
