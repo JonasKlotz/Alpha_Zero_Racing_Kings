@@ -111,3 +111,4 @@ MOVE_DTYPE = np.uint8
 POS_DTYPE = np.uint8
 EDGE_DTYPE = np.float16
 IDX_DTYPE = np.uint16
+POLICY_DTYPE = np.float16

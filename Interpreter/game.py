@@ -393,7 +393,7 @@ class Game:
         :param policy: policy as from game.get_policy
         :return: tensor regarding the policy
         """
-        tensor = np.zeros((8, 8, 64)).astype(DATATYPE)
+        tensor = np.zeros((8, 8, 64)).astype(POLICY_DTYPE)
         for uci, prob in policy:
             index = move_to_tensor_indices(uci)
             tensor[index[0], index[1], index[2]] = prob
