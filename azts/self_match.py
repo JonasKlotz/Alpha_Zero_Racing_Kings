@@ -6,6 +6,7 @@ in a match against each other
 '''
 import time
 import os
+import sys
 
 from Interpreter import game
 from Player import config
@@ -102,6 +103,11 @@ class SelfMatch():
             other_player = self.players[1 - select]
             # handle all moves
             move = active_player.make_move()
+            if move == "exit":
+                for i in self.players:
+                    i.stop()
+                sys.exit()
+
             other_player.receive_move(move)
             self.game.make_move(move)
             # collect data
@@ -112,18 +118,32 @@ class SelfMatch():
             moves += select
             self._show_game()
             if moves % self.report_cycle == 0 and ~select:
-                time1 = self._report(time1, moves)
+                time1 = self._report(time1, moves) 
 
+        return self._clean_up_end_game(moves)
+
+
+    def _clean_up_end_game(self, moves):
+        '''
+        collect results, shut down players and
+        return state
+        :param int moves: number of moves played,
+        just to display that to the logger
+        '''
         result = self.game.board.result()
         state = self.game.get_game_state()
         log.info(f"game ended after {moves} "
               + f"moves with {result} ({TO_STRING[state]}).")
         score = self.training_payoffs[state]
 
+        for i in self.players:
+            i.stop()
+
         for i in self.data_collection:
             i[2] = score
 
         return state
+
 
     def _show_game(self):
         if self.show_game:

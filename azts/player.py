@@ -131,6 +131,10 @@ class Player():
                 self.tree.get_policy_tensor(),
                 None]
 
+    def stop(self):
+        if self.statemachine.actual_game.engine:
+           self.statemachine.actual_game.engine.quit()
+
 
 class CLIPlayer(Player):
     '''
@@ -171,7 +175,8 @@ class CLIPlayer(Player):
         poll the player for a move
         '''
         move = self._parse_user_input()
-        self.receive_move(move)
+        if move != "exit":
+            self.receive_move(move)
         return move
 
     def _parse_user_input(self):
@@ -202,7 +207,7 @@ class CLIPlayer(Player):
             print(f"> {user_input} is not a legal move")
             user_input = input("> ")
 
-        if user_input in legal_moves:
+        if user_input in legal_moves + ["exit"]:
             return user_input
 
         consequences[user_input](legal_moves)
