@@ -70,7 +70,9 @@ class StateMachine():
         to the actual state that the
         game is at this point of play
         """
-        self.rollout_game = copy.deepcopy(self.actual_game)
+        self.rollout_game = game.Game()
+        current_state = self.actual_game.board.fen()
+        self.rollout_game.board.set_fen(current_state)
 
     def get_legal_moves_from(self, position):
         '''

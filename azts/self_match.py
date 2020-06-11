@@ -5,6 +5,7 @@ Self match puts two ai players
 in a match against each other
 '''
 import time
+import os
 
 from Interpreter import game
 from Player import config
@@ -88,7 +89,8 @@ class SelfMatch():
         '''
         moves = 1
         time1 = time.time()
-        log.info(f"\nWHITE: {self.players[0].name}\n"
+        log.info(f"\n\nin process {os.getpid()}:\n" \
+              + f"WHITE: {self.players[0].name}\n"
               + f"BLACK: {self.players[1].name}\n")
         while True:
             # check break condition:
@@ -132,8 +134,9 @@ class SelfMatch():
         time_now = time.time()
         elapsed = time_now - time_before
         avg_per_move = elapsed / self.report_cycle
-        log.info(f"total moves: {moves}; {self.report_cycle} moves in "
-              + f"{str(elapsed)[0:5]}s, average of "
+        log.info(f"process {os.getpid()}: total moves: {moves}; " \
+                + f"{self.report_cycle} moves in " \
+                + f"{str(elapsed)[0:5]}s, average of " \
                 + f"{str(avg_per_move)[0:4]}s per move.")
         return time_now
 
