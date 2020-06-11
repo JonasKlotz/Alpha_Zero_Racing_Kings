@@ -151,12 +151,12 @@ class AZero:
 
             mlflow.log_param("epochs", 15)
             mlflow.log_metric("loss", 5)
-            mlflow.keras.log_model(artifact_path="model",
-                                   keras_model=self.model,
-                                   keras_module=keras,
+            #mlflow.keras.log_model(artifact_path="model",
+            #                       keras_model=self.model,
+            #                       keras_module=keras,
                                    registered_model_name=self.config.model_name)
             # idk wo die config gerade ist. im prinzip loggt man die so
-            # mlflow.log_artifact(artifact_path="config", local_path="path/to/config")
+            mlflow.log_artifact(artifact_path="text", local_path="~/AlphaZero/text.txt")
 
 
     def summary(self):
