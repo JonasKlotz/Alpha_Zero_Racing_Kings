@@ -62,7 +62,7 @@ class StockfishPlayer(Player):
         '''
 
         self.pol = self.statemachine.actual_game.get_policy(self.PATH_TO_ENGINE, self.limit)
-        self.pol = self.statemachine.actual_game.normalize_policy_zero_one(pol)
+        self.pol = self.statemachine.actual_game.normalize_policy_zero_one(self.pol)
         move = self.pol[0][0]
         self.receive_move(move)
         return move
