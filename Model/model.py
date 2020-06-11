@@ -154,7 +154,7 @@ class AZero:
             #mlflow.keras.log_model(artifact_path="model",
             #                       keras_model=self.model,
             #                       keras_module=keras,
-                                   registered_model_name=self.config.model_name)
+            #                       registered_model_name=self.config.model_name)
             # idk wo die config gerade ist. im prinzip loggt man die so
             mlflow.log_artifact(artifact_path="text", local_path="~/AlphaZero/text.txt")
 
