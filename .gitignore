@@ -7,6 +7,7 @@
 
 # python byte code directory
 **/__pycache__/
+**/*.pyc
 
 # VSCode config files
 .vscode
@@ -20,3 +21,16 @@ venv/*
 
 # Data Folder
 _Data
+
+# Pickle Files
+*.pkl
+
+# pytest coverage reports
+*.coverage
+*coverage-report*
+
+# logs
+logs
+
+# ml runs
+mlruns/*

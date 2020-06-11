@@ -1,121 +1,93 @@
+# pylint: disable=E0401
+# pylint: disable=E0602
 """
-This module simulates games of RacingsKings.
+This module simulates many games of RacingsKings.
 """
 
 import os.path
 import time
 import pickle
-import azts
-from Interpreter import game
-import state_machine as sm
-import screen
-import config
 
-WHITE = 1
-BLACK = -1
-REPORT_CYCLE = 25
+from Player import config
 
+from azts import player
+from azts import self_match
+from azts import mock_model
+from azts import utility
+from azts.config import GAMEDIR, \
+    RUNS_PER_MOVE, SHOW_GAME
 
-class Player():
-    def __init__(self, color, runs_per_move=100):
-        self.state_machine = sm.StateMachine()
-        self.model = azts.MockModel()
-        self.tree = azts.Azts(self.state_machine, \
-                              self.model, \
-                              color, \
-                              None, \
-                              runs_per_move)
-
-    def make_move(self):
-        return self.tree.make_move()
-
-    def receive_move(self, move):
-        return self.tree.receive_move(move)
-
-    def dump_data(self):
-        return [self.tree.get_position(), \
-                self.tree.get_policy_tensor(), \
-                None]
-
-
-class SelfMatch():
-    def __init__(self):
-        self.p1 = Player(WHITE, config.RUNS_PER_MOVE)
-        self.p2 = Player(BLACK)
-        self.game = game.Game()
-        self.screen = screen.Screen()
-        self.data_collection = []
-
-    def simulate(self):
-        moves = 0
-        time1 = time.time()
-        while not self.game.is_ended():
-
-            if moves % REPORT_CYCLE == 0:
-                time2 = time.time()
-                elapsed = time2 - time1
-                avg_per_move = elapsed / REPORT_CYCLE
-                print(f"played {moves} moves in {str(elapsed)[0:5]} " \
-                      + f"seconds, average of {str(avg_per_move)[0:4]} " \
-                      + f"second per move.")
-                time1 = time.time()
-
-            moves += 1
-            white_move = self.p1.make_move()
-            self.game.make_move(white_move)
-            self.data_collection.append(self.p1.dump_data())
-
-            if config.SHOW_GAME:
-                img = self.game.render_game()
-                self.screen.show_img(img)
-
-            if self.game.is_ended():
-                break
-
-            self.p2.receive_move(white_move)
-            black_move = self.p2.make_move()
-            self.game.make_move(black_move)
-            self.data_collection.append(self.p2.dump_data())
-
-            if config.SHOW_GAME:
-                img = self.game.render_game()
-                self.screen.show_img(img)
-
-            self.p1.receive_move(black_move)
-
-        result = self.game.board.result()
-        print(f"game ended after {moves} " \
-              + f"moves with {result}.")
-        translate = {"*": 0, "1-0": 1, "0-1": -1, "1/2-1/2": 0}
-        result = translate[result]
-        for i in self.data_collection:
-            i[2] = result
-
+from lib.logger import get_logger
+log = get_logger("SelfMatch")
 
 class SelfPlay():
-    def __init__(self):
-        self.match = SelfMatch()
+    '''
+    selfplay is initialized with the number of
+    rollouts that the matching ai player are
+    using per move.
+    the number of game simulations is determined
+    by the parameter in function start() which
+    actually starts the series of matches.
+    After each match, the match data is written
+    to a separate file which facilitates
+    parallelisation of creating data for many
+    matches.
+    '''
 
-    def start(self, iterations=100):
+    def __init__(self,
+                 player_one,
+                 player_two,
+                 runs_per_move=RUNS_PER_MOVE,
+                 game_id="UNNAMED_MATCH",
+                 show_game=SHOW_GAME):
+
+        self.players = [player_one, player_two]
+        self.runs_per_move = runs_per_move
+        self.game_id = game_id
+        self.show_game = show_game
+
+    def start(self, iterations=10):
+        '''
+        start a series of matches. match data
+        for each match is written to a separate
+        file in the games folder as defined in
+        config.
+        :param int iterations: number of matches
+        to be simulated
+        '''
         for i in range(iterations):
-            self.match.simulate()
-            data = [tuple(j) for j in self.match.data_collection]
+            switch = i % 2
+            log.info(f"\nMATCH {i+1} OF {iterations}:")
+            match = self_match.SelfMatch(
+                player_one=self.players[switch],
+                player_two=self.players[1 - switch],
+                runs_per_move=self.runs_per_move,
+                show_game=self.show_game)
+            match.simulate()
+            data = [tuple(j) for j in match.data_collection]
 
-            filenumber = i
+            filepath = utility.get_unused_filepath(
+                f"game_{self.game_id}",
+                GAMEDIR,
+                i)
 
-            filenumberstring = str(filenumber).zfill(4)
-            filename = f"game_{filenumberstring}.pkl"
-            while os.path.isfile(filename):
-                filenumber += 1
-                filenumberstring = str(filenumber).zfill(4)
-                filename = f"game_{filenumberstring}.pkl"
+            pickle.dump(data, open(filepath, "wb"))
 
-            pickle.dump(data, open(config.GAMEDIR + "/" + filename, "wb"))
-
-            del self.match
-            self.match = SelfMatch()
+            del match
+            for i in self.players:
+                i.reset()
 
 
 if __name__ == "__main__":
-    play = SelfPlay()
-    play.start(50)
+
+    player_defs = ("StockingFish", "MockingBird")
+    game_id = utility.get_unused_match_handle(*player_defs)
+    players = utility.load_players(*player_defs)
+
+    play = SelfPlay(player_one=players[0],
+                    player_two=players[1],
+                    game_id=game_id,
+                    show_game=True)
+    play.start(3)
+# pylint: enable=E0401
+# pylint: enable=E0602
