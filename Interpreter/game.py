@@ -330,7 +330,7 @@ class Game:
             # self.show_game()
             raise RuntimeError("coudlt calculate evaluation score")  # TODO: LOGG
 
-    def normalize_policy(policy, x=-1):
+    def normalize_policy(self, policy, x=-1):
         """
         :param policy: policy as from game.get_policy
         :param x: value how many values of the policy you want to keep
@@ -341,6 +341,27 @@ class Game:
             policy = policy[:x]
         s = abs(sum(row[1] for row in policy))
         for i in range(len(policy)):
+            policy[i][1] /= s
+
+        return policy
+
+    def normalize_policy_zero_one(self, policy, x=-1):
+        """
+        :param policy: policy as from game.get_policy
+        :param x: value how many values of the policy you want to keep
+        :return: sorted normalized cut policy between [0,1]
+        """
+        policy.sort(key=lambda x: x[1], reverse=True)  # sort policy
+        n = len(policy)
+        maximum = policy[0][1]
+        minimum = policy[-1][1]
+
+        if x > 0:
+            policy = policy[:x]
+        for i in range(n):
+            policy[i][1] += abs(minimum)
+        s = abs(sum(row[1] for row in policy))
+        for i in range(n):
             policy[i][1] /= s
 
         return policy

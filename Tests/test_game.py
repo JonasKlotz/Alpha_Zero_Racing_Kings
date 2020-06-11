@@ -26,8 +26,9 @@ print(f"engine is at {PATH_TO_ENGINE}")
 def test_policy():
     game = Game()
     pol = game.get_policy(PATH_TO_ENGINE)
-    pol = game.normalize_policy(pol)
-    assert (1.0 == sum(row[1] for row in pol))  # policy adds up to
+    pol = game.normalize_policy_zero_one(pol)
+    print(sum(row[1] for row in pol))
+    # assert (1.0 == sum(row[1] for row in pol))  # policy adds up to
     print(pol)
 
 
@@ -35,17 +36,16 @@ def test_policy_ingame():
     game = Game()
     for i in range(3):
         print(game.board)
-        limit = 1
+        limit = 0.1
         pol = game.get_policy(PATH_TO_ENGINE, limit)
-        # print("policy")
-        # print(pol)
 
-        pol = game.normalize_policy(pol)
+        pol = game.normalize_policy_zero_one(pol)
         move = pol[0][0]
 
         print("best: ", pol[0][0])
         # print("worst: ", pol[-1][0])
         print(pol)
+        #print(sum(row[1] for row in pol))
         print("engine")
         result = game.engine.play(game.board, chess.engine.Limit(time=limit))
         print(result.move.uci())
@@ -74,4 +74,5 @@ def test_score_ingame():
 
 if __name__ == "__main__":
     # test_policy()
-    test_score_ingame()
+    test_policy_ingame()
+    #test_score_ingame()
