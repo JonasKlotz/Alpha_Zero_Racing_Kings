@@ -1,8 +1,12 @@
 import os
 
-from mlflow import log_metric, log_param, log_artifacts
+from mlflow import log_metric, log_param, log_artifacts,set_tracking_uri,set_experiment
 
 if __name__ == "__main__":
+    
+    set_tracking_uri("http://frontend02:5050")
+    set_experiment("my-experiment")
+
     print("Running mlflow_tracking.py")
 
     log_param("param1", 17)
