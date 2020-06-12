@@ -361,6 +361,7 @@ class Game:
         for i in range(n):
             policy[i][1] += abs(minimum)
         s = abs(sum(row[1] for row in policy))
+        s = max(s, 0.01)
         for i in range(n):
             policy[i][1] /= s
 
@@ -387,12 +388,12 @@ class Game:
     #     g.board = tensor_to_fen(position)
     #     return policy_to_tensor(normalize_policy(g.get_policy()))
 
-    def policy_to_tensor(policy):
+    def policy_to_tensor(self, policy):
         """
         :param policy: policy as from game.get_policy
         :return: tensor regarding the policy
         """
-        tensor = np.zeros((8, 8, 64)).astype(DATATYPE)
+        tensor = np.zeros((8, 8, 64)).astype(POLICY_DTYPE)
         for uci, prob in policy:
             index = move_to_tensor_indices(uci)
             tensor[index[0], index[1], index[2]] = prob

@@ -72,8 +72,10 @@ class StockfishPlayer(Player):
         update own state machine and
         print feedback to player
         '''
-        if self.color is not self.statemachine.get_player_color():
-            print(f"> Other player played {move}")
+
+        # if self.color is not self.statemachine.get_player_color():
+        #     print(f"> Other player played {move}")
+
         self.statemachine.actual_fen_move(move)
 
     # TODO: implement other getters and setters
