@@ -3,7 +3,11 @@ import os
 from mlflow import log_metric, log_param, log_artifacts,set_tracking_uri,set_experiment
 
 if __name__ == "__main__":
-    
+    ARTIFACT_URI = "sftp://mlflow_user@frontend02:5051"
+    EXPERIMENT_NAME = "test-ssh-tunnel"
+    create_experiment(EXPERIMENT_NAME, artifact_location=ARTIFACT_URI)
+    set_experiment(EXPERIMENT_NAME)
+   
     set_tracking_uri("http://frontend02:5050")
     set_experiment("my-experiment")
 
