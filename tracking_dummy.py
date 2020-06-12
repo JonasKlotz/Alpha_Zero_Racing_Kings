@@ -1,6 +1,6 @@
 import os
 
-from mlflow import log_metric, log_param, log_artifacts,set_tracking_uri,set_experiment
+from mlflow import log_metric, log_param, log_artifacts,set_tracking_uri,set_experiment, create_experiment
 
 if __name__ == "__main__":
     ARTIFACT_URI = "sftp://mlflow_user@frontend02:5051"
