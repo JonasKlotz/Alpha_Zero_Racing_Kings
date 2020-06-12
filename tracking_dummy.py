@@ -9,7 +9,7 @@ if __name__ == "__main__":
     set_experiment(EXPERIMENT_NAME)
    
     set_tracking_uri("http://frontend02:5050")
-    set_experiment("my-experiment")
+    #set_experiment("my-experiment")
 
     print("Running mlflow_tracking.py")
 
