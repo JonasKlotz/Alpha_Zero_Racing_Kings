@@ -47,6 +47,7 @@ class Player():
                                        exploration=exploration,
                                        payoffs=rollout_payoffs,
                                        heat=heat)
+        self.statemachine = None
 
     def set_color(self, color):
         '''
@@ -132,8 +133,9 @@ class Player():
                 None]
 
     def stop(self):
-        if self.statemachine.actual_game.engine:
-           self.statemachine.actual_game.engine.quit()
+        if self.statemachine:
+            if self.statemachine.actual_game.engine:
+               self.statemachine.actual_game.engine.quit()
 
 
 class CLIPlayer(Player):
