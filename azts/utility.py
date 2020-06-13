@@ -197,6 +197,7 @@ def load_player_with_model(model, config):
     '''
     new_player = stockfish_player.StockfishPlayer(name=config.name, \
             model=model, \
+            time_limit=config.stockfish.time_limit, \
             **(config.player.as_dictionary())) \
             if config.stockfish.enable \
             else player.Player(name=config.name, \

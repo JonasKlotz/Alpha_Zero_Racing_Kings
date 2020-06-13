@@ -31,7 +31,7 @@ class StockfishPlayer(Player):
     limit = 0.1
     pol = None
 
-    def __init__(self, name="THEMIGHTYFISH", color=WHITE, **kwargs):
+    def __init__(self, name="THEMIGHTYFISH", color=WHITE, time_limit=0.1, **kwargs):
         '''
         CLIPlayer is indeed keeping state,
         because there is no azts_tree
@@ -41,6 +41,7 @@ class StockfishPlayer(Player):
         self.name = name
         self.color = color
         self.statemachine = state_machine.StateMachine()
+        self.limit = time_limit
 
     def set_color(self, color):
         self.color = color

@@ -276,12 +276,15 @@ class Game:
 
         policy = []
 
+        legal_moves = self.get_move_list()
+        move_time = time_limit / max(1, len(legal_moves))
+
         for move in self.get_move_list():
             self.board.push(move)
 
             try:
                 info = self.engine.analyse(self.board, chess.engine.Limit(
-                    time=time_limit, depth=depth_limit))
+                    time=move_time, depth=depth_limit))
                 t = [move.uci(), - info["score"].relative.score(mate_score=100000)]
                 policy.append(t)
             except:
