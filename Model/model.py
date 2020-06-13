@@ -9,22 +9,22 @@ import keras
 import mlflow
 import mlflow.keras
 import numpy as np
+import argparse
+
+from keras.optimizers import Adam
+from keras.callbacks import ModelCheckpoint, LearningRateScheduler
+# from keras.callbacks import ReduceLROnPlateau
+from keras.utils.vis_utils import plot_model
 
 # add root folder to python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
-from keras.optimizers import Adam
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-# from keras.callbacks import ReduceLROnPlateau
-from keras.regularizers import l2
-from keras.utils.vis_utils import plot_model
-import argparse
-
+# relative imports
 from lib.timing import timing
 
-from Azts.config import DATASETDIR
+# from azts.config import DATASETDIR
 from Player.config import Config
+from Model.resnet import resnet_model
 
 from lib.logger import get_logger
 log = get_logger("Model")
@@ -80,12 +80,13 @@ class AZero:
         """
 
         for i in range(max_iterations):
-            dataset_file = get_latest_dataset_file()
+            dataset_file = self.get_latest_dataset_file()
             if dataset_file is None:
-                log.info("No dataset found in %s. Waiting..", DATASETDIR)
+                log.info("No dataset found in %s. Waiting..",
+                         self.config.dataset_dir)
                 while dataset_file is None:
                     time.sleep(1)
-                    dataset_file = get_latest_dataset_file()
+                    dataset_file = self.get_latest_dataset_file()
             self.setup_callbacks(auto_run=True)  # new file, new callback
             with open(dataset_file, 'rb') as f:
                 train_data = pickle.load(f)
@@ -118,7 +119,7 @@ class AZero:
         callbacks = [checkpoint, epoch]
 
         if auto_run:
-            auto_fetch_dataset = AutoFetchDataset(get_latest_dataset_file())
+            auto_fetch_dataset = AutoFetchDataset(self)
             callbacks.append(auto_fetch_dataset)
 
         self.callbacks = callbacks
@@ -126,7 +127,7 @@ class AZero:
     def train(self, train_data, batch_size=64, epochs=10, initial_epoch=None):
         """ Enters the training loop """
 
-        x_train, y_train = prepare_dataset(train_data)
+        x_train, y_train = self.prepare_dataset(train_data)
 
         if initial_epoch is None:
             initial_epoch = self.initial_epoch
@@ -145,7 +146,6 @@ class AZero:
                                         initial_epoch=initial_epoch,
                                         verbose=2)
             self.initial_epoch = train_logs.history['epoch'][-1] + 1
-            print(self.initial_epoch)
 
             # mlflow logging
 
@@ -158,7 +158,6 @@ class AZero:
                                    registered_model_name=self.config.model_name)
             # idk wo die config gerade ist. im prinzip loggt man die so
             # mlflow.log_artifact(artifact_path="config", local_path="path/to/config")
-
 
     def summary(self):
         """ Prints a summary of the model architecture """
@@ -263,160 +262,35 @@ class AZero:
     def build_model(self):
         """ Builds the ResNet model via config parameters """
 
-        def residual_layer(input,
-                           num_filters,
-                           kernel_size=3,
-                           stride=1,
-                           activation='relu',
-                           batch_normalization=True):
-            """ A residual layer
-            Args:
-                input (tensor): input tensor
-                num_filters (int): number of convolutional filters
-                kernel_size (int): size of the convolutional kernels
-                stride (int): step size of the filters
-                activation (string): activation function
-                batch_normalization (bool): apply batch normalization
-            Returns:
-                x (tensor): output tensor of residual layer
-            """
-            _x = input
-            _x = Conv2D(num_filters,
-                        kernel_size=kernel_size,
-                        strides=stride,
-                        padding='same',
-                        kernel_initializer='he_normal',
-                        kernel_regularizer=l2(1e-4))(_x)
-            if batch_normalization:
-                _x = BatchNormalization()(_x)
-            if activation is not None:
-                _x = Activation(activation)(_x)
-            return _x
-
-        def body_model(self, input):
-            # read config
-            num_res_blocks = self.config.model.resnet_depth
-            num_layers = self.config.model.residual_block.layers
-            num_filters = self.config.model.residual_block.num_filters
-            filter_size = self.config.model.residual_block.filter_size
-            filter_stride = self.config.model.residual_block.filter_stride
-            activation = self.config.model.residual_block.activation
-            batch_normalization = self.config.model.residual_block.batch_normalization
-
-            def res_layer(input, activation=activation):
-                return residual_layer(input=input,
-                                      num_filters=num_filters,
-                                      kernel_size=filter_size,
-                                      stride=filter_stride,
-                                      activation=activation,
-                                      batch_normalization=batch_normalization)
-
-            # build model
-            _x = input
-            _x = res_layer(_x)
-            for _ in range(num_res_blocks):
-                # residual block
-                y = _x
-                for layer in range(num_layers):
-                    if layer == num_layers - 1:
-                        _x = res_layer(_x, activation=None)
-                    else:
-                        _x = res_layer(_x)
-                # skip connection
-                _x = keras.layers.add([_x, y])
-                _x = Activation(activation)(_x)
-            return _x
-
-        def policy_head_model(self, input):
-            # read config
-            opt = self.config.model.policy_head
-            res_num_filters = opt.residual_layer.num_filters
-            res_filter_size = opt.residual_layer.filter_size
-            res_filter_stride = opt.residual_layer.filter_stride
-            res_batch_normalization = opt.residual_layer.batch_normalization
-            res_activation = self.config.model.residual_block.activation
-            dense_num_filters = opt.dense_layer.num_filters
-            dense_activation = opt.dense_layer.activation
-
-            # build model
-            _x = input
-            _x = residual_layer(input=_x,
-                                num_filters=res_num_filters,
-                                kernel_size=res_filter_size,
-                                stride=res_filter_stride,
-                                activation=res_activation,
-                                batch_normalization=res_batch_normalization)
-            _x = Dense(dense_num_filters,
-                       activation=dense_activation,
-                       kernel_initializer='he_normal',
-                       name="policy_head")(_x)
-            return _x
-
-        def value_head_model(self, input):
-            # read config
-            opt = self.config.model.value_head
-            res_num_filters = opt.residual_layer.num_filters
-            res_filter_size = opt.residual_layer.filter_size
-            res_filter_stride = opt.residual_layer.filter_stride
-            res_batch_normalization = opt.residual_layer.batch_normalization
-            res_activation = self.config.model.residual_block.activation
-            dense_num_filters = opt.dense_layer.num_filters
-            dense_activation = opt.dense_layer.activation
-
-            # build model
-            _x = input
-            _x = residual_layer(input=_x,
-                                num_filters=res_num_filters,
-                                kernel_size=res_filter_size,
-                                stride=res_filter_stride,
-                                activation=res_activation,
-                                batch_normalization=res_batch_normalization)
-            _x = Flatten()(_x)
-            _x = Dense(dense_num_filters,
-                       activation='relu',
-                       kernel_initializer='he_normal')(_x)
-            _x = Dense(1,
-                       activation=dense_activation,
-                       kernel_initializer='he_normal',
-                       name="value_head")(_x)
-            return _x
-
-        # define input tensor
         input_shape = self.config.model.input_shape
         input = keras.layers.Input(shape=input_shape)
 
-        # build model
-        body = body_model(self, input)
-        policy_head = policy_head_model(self, body)
-        value_head = value_head_model(self, body)
-
+        policy_head, value_head = resnet_model(input, self.config)
         self.model = keras.models.Model(inputs=[input],
                                         outputs=[policy_head, value_head],
                                         name=self.config.model_name)
 
+    def get_latest_dataset_file(self):
+        """ Returns newest dataset file in game dir """
+        _dir = self.config.dataset_dir
+        files = os.listdir(_dir)
+        if len(files) == 0:
+            return None
 
-def get_latest_dataset_file():
-    """ Returns newest dataset file in game dir """
-    _dir = DATASETDIR
-    files = os.listdir(_dir)
-    if len(files) == 0:
-        return None
+        def key_map(file):
+            return os.path.getmtime(os.path.join(_dir, file))
+        newest_file = max(files, key=key_map)
+        return os.path.join(_dir, newest_file)
 
-    def key_map(file):
-        return os.path.getmtime(os.path.join(_dir, file))
-    newest_file = max(files, key=key_map)
-    return os.path.join(_dir, newest_file)
-
-
-def prepare_dataset(train_data):
-    """ Transforms dataset to format that keras.model expects """
-    x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
-    x_train = np.stack(x_train.flatten(), axis=0)
-    y_train_p = np.stack(y_train_p.flatten(), axis=0)
-    y_train_v = np.stack(y_train_v.flatten(), axis=0)
-    y_train = {"policy_head": y_train_p,
-               "value_head": y_train_v}
-    return x_train, y_train
+    def prepare_dataset(self, train_data):
+        """ Transforms dataset to format that keras.model expects """
+        x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
+        x_train = np.stack(x_train.flatten(), axis=0)
+        y_train_p = np.stack(y_train_p.flatten(), axis=0)
+        y_train_v = np.stack(y_train_v.flatten(), axis=0)
+        y_train = {"policy_head": y_train_p,
+                   "value_head": y_train_v}
+        return x_train, y_train
 
 
 class CountEpochs(keras.callbacks.Callback):
@@ -430,14 +304,15 @@ class AutoFetchDataset(keras.callbacks.Callback):
     """ keras Callback Class, used to abort training
     if new datasets are available """
 
-    def __init__(self, dataset_file):
+    def __init__(self, azero):
         # pylint: disable=bad-super-call
         super(keras.callbacks.Callback, self).__init__()
         # pylint: enable=bad-super-call
-        self.current_dataset_file = dataset_file
+        self.current_dataset_file = azero.get_latest_dataset_file()
+        self.azero = azero
 
     def on_train_batch_end(self, batch, logs=None):
-        new_dataset_file = get_latest_dataset_file()
+        new_dataset_file = self.azero.get_latest_dataset_file()
         if not self.current_dataset_file == new_dataset_file:   # XXX use mtime instead?
             log.info("New dataset found: %s", new_dataset_file)
             log.info("Aborting training.")
@@ -445,15 +320,19 @@ class AutoFetchDataset(keras.callbacks.Callback):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Maximum of Iterations of Training.")
+    parser = argparse.ArgumentParser(
+        description="Train a model")
+    parser.add_argument(
+        "player", type=str, default="Player/default_config.yaml", help="Path to config file")
     parser.add_argument("-i", "--max_iterations",
                         type=int, default=3)
     parser.add_argument("-ep", "--max_epochs", type=int, default=10000)
     args = parser.parse_args()
 
-    config = Config()
+    config = Config(args.player)
 
     model = AZero(config)
-    model.auto_run_training(max_epochs=args.max_epochs, max_iterations=args.max_iterations)
-
+    # model.summary()
+    model.auto_run_training(max_epochs=args.max_epochs,
+                            max_iterations=args.max_iterations)
 
