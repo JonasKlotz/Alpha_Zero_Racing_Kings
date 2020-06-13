@@ -13,6 +13,7 @@ from Player import config
 from azts import mock_model
 from azts import player
 from azts import screen
+from azts import utility
 from azts.config import ROLLOUT_PAYOFFS, \
         EXPLORATION, HEAT, BLACK, WHITE, \
         RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
@@ -170,11 +171,7 @@ if __name__ == "__main__":
     players = {}
     for i, j in zip(["player_one", "player_two"],
                     ["default_config.yaml", "StockingFish.yaml"]):
-        path = "Player/" + j
-        configuration = config.Config(path)
-        players[i] = player.Player(model=model,
-                                   name=configuration.name,
-                                   **(configuration.player.as_dictionary()))
+        players[i] = utility.load_player(j)
 
     match = SelfMatch(**players)
     match.simulate()
