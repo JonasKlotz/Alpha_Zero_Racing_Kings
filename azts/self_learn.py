@@ -10,7 +10,7 @@ from azts import utility
 from lib.logger import get_logger
 log = get_logger("self_learn")
 
-def parallel_matches_with_preloaded_model(yamlpath, \
+def parallel_matches_with_preloaded_model(yamlpaths, \
         model, \
         handle, \
         rollouts_per_move, \
@@ -38,7 +38,7 @@ def parallel_matches_with_preloaded_model(yamlpath, \
         # process
         modelcopy = copy.deepcopy(model)
         players = [utility.load_player_with_model(model=modelcopy, \
-                config=utility.load_player_conf(yamlpath)) for _ \
+                config=utility.load_player_conf(yamlpaths[i])) for i \
                 in range(2)]
 
         # self play, so both sides are played by
@@ -48,7 +48,7 @@ def parallel_matches_with_preloaded_model(yamlpath, \
             player_two=players[1],
             runs_per_move=rollouts_per_move,
             game_id=handle,
-            show_game=False)
+            show_game=True)
         selfplays.append(selfplay)
 
     for i in selfplays:
@@ -94,10 +94,16 @@ if __name__ == "__main__":
             + "\"fork\" and \"forkserver\". See " \
             + "https://docs.python.org/3/library/multiprocessing.html " \
             + "for details. Defaults to \"spawn\".")
-    parser.add_argument("--player", type=str, \
-            default="Player/default_config.yaml", \
-            help="Player configuration file. Is by default " \
-            + "set to \"Player/default_config.yaml\".") 
+    parser.add_argument("--player_one", type=str,
+            default="Player/default_config.yaml",
+            help="Player one configuration file. Is by default "
+                 + "set to \"Player/default_config.yaml\"." \
+                 + "This player\'s model will be used.")
+    parser.add_argument("--player_two", type=str,
+            default=None,
+            help="Player two configuration file. Is by default "
+                 + "set to be the same as player_one. This " \
+                 + "Player serves solely as the opponent.")
     parser.add_argument("-i", "--iterations", type=int, \
             default=5, \
             help="number of iterations to train a model on " \
@@ -112,15 +118,18 @@ if __name__ == "__main__":
             + "Default: 5.")
 
     args = parser.parse_args()
+    if args.player_two is None:
+        args.player_two = args.player_one
 
     # first load model from mlflow server
-    model = utility.load_model(utility.load_player_conf(args.player))
+    model = utility.load_model(utility.load_player_conf(args.player_one))
 
     for _ in range(args.selflearnruns):
-        handle = utility.get_unused_match_handle(args.player, args.player)
+        handle = utility.get_unused_match_handle(args.player_one, args.player_two)
         log.info(f"starting matches with handle {handle}")
 
-        parallel_matches_with_preloaded_model(yamlpath=args.player, \
+        parallel_matches_with_preloaded_model( \
+                yamlpaths=[args.player_one, args.player_two], \
                 model=model, \
                 handle=handle, \
                 rollouts_per_move=args.rollouts_per_move, \
