@@ -103,8 +103,11 @@ class AztsTree():
 
         if self.color == self.statemachine.get_player_color():
             self._tree_search(self.runs_per_move)
-            move = self.root.get_move(self.heat)
+            move, new_root = self.root.get_move(self.heat)
+            if new_root is None:
+                raise Exception("next node is none after make move")
             self.statemachine.actual_fen_move(move)
+            self.root = new_root
         else:
             raise Exception("Other players turn")
 
@@ -145,13 +148,15 @@ class AztsTree():
 
         if self.color != self.statemachine.get_player_color():
             self.statemachine.actual_fen_move(move)
+            new_root = self.root.select_node_with_move(move)
+            self.root = new_root
 
-            # TODO: check for reusability of current
-            # tree. This should always be the case
-            # if the opponents move leads to a follow-up
-            # position
-            del self.root
-            self._init_tree()
+            if new_root is None:
+                # possible that this move was never simulated
+                # this means no node for it exists yet
+                del self.root
+                self._init_tree() 
+
         else:
             raise Exception("My turn")
 

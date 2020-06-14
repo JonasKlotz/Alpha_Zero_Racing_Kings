@@ -73,6 +73,11 @@ class AztsNode():
         self.payoffs = payoffs
         self.exploration = exploration
 
+        position = statemachine.get_position() 
+        self.position_shape = position.shape
+        self.position = compress_indices(position)
+        self.move_shape = statemachine.move_shape
+
         if statemachine.game_over():
             # game over: this is a leaf node
             # which represents a decisive state
@@ -82,18 +87,13 @@ class AztsNode():
             state = statemachine.get_state()
             self.evaluation = self.payoffs[self.color][state]
             self.children = []
+            self.edges = None
+
 
         else: 
             # game still running
-            self.endposition = False
+            self.endposition = False 
 
-            position = statemachine.get_position() 
-
-            # TODO: do we actually need to store the position?
-            self.position_shape = position.shape
-            self.position = compress_indices(position)
-
-            self.move_shape = statemachine.move_shape
             self.legal_move_indices = statemachine.get_legal_moves()
 
             num_of_legal_moves = len(self.legal_move_indices[0])
@@ -111,6 +111,7 @@ class AztsNode():
 
             # only store prior values of legal moves
             self.edges[:, PPRIOR] = policy[self.legal_move_indices]
+
 
     def __str__(self):
         metrics, tree_string = self._print_tree(0)
@@ -257,11 +258,14 @@ class AztsNode():
         of rollouts in one move tensor
         :rtype: np.array
         """
-        num_of_rollouts = self.edges[:, NCOUNT].sum()
-        num_of_rollouts = max(1, num_of_rollouts)
-        policy_weights = self.edges[:, NCOUNT] / num_of_rollouts
         policy_tensor = np.zeros(self.move_shape, EDGE_DTYPE)
-        policy_tensor[self.legal_move_indices] = policy_weights
+        if self.edges is not None: 
+            num_of_rollouts = self.edges[:, NCOUNT].sum()
+            num_of_rollouts = max(1, num_of_rollouts)
+            policy_weights = self.edges[:, NCOUNT] / num_of_rollouts
+            policy_tensor = np.zeros(self.move_shape, EDGE_DTYPE)
+            policy_tensor[self.legal_move_indices] = policy_weights
+
         return policy_tensor
 
     def get_move_distribution(self, heat=1):
@@ -289,8 +293,9 @@ class AztsNode():
     def get_move(self, heat=1):
         """
         :return: best move according to current state of
-        tree search in fen notation
-        :rtype: str
+        tree search in fen notation and node representing
+        that move
+        :rtype: str, AztsNode
         """
         distribution = self.get_move_distribution(heat)
 
@@ -305,12 +310,14 @@ class AztsNode():
             if draw < category:
                 # select this move.
                 move = self._legal_to_total_index(i)
-                return self.statemachine.move_index_to_fen(move)
+                return self.statemachine.move_index_to_fen(move), \
+                        self.children[i]
 
         # something went wrong: return best move 
         i = np.argmax(self.edges[:, NCOUNT])
         i = self._legal_to_total_index(i)
-        return self.statemachine.move_index_to_fen(i)
+        return self.statemachine.move_index_to_fen(i), \
+                self.children[i]
 
     def rollout(self, level=0):
         """
@@ -395,6 +402,16 @@ class AztsNode():
         :rtype: tuple
         """
         return tuple(np.array(self.legal_move_indices).T[index])
+
+    def select_node_with_move(self, move):
+        move_idx = self.statemachine.uci_to_move_idx(move)
+        # compare which legal move index entries are all
+        # equal to the move index of received move
+        i = np.where(np.all(np.array(self.legal_move_indices).T \
+                == move_idx, axis=1) == True)[0][0]
+        if i is None:
+            raise Exception(f"Received move {move} is not in children")
+        return self.children[i]
 
     def _position_as_tensor(self):
         """

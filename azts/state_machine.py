@@ -64,6 +64,13 @@ class StateMachine():
         '''
         return tn.tensor_indices_to_move(move_idx)
 
+    def uci_to_move_idx(self, uci):
+        '''
+        translate uci move to indices of move
+        in tensor notation
+        '''
+        return tn.move_to_tensor_indices(uci)
+
     def reset_to_actual_game(self):
         """
         after each rollout, set game
