@@ -1,27 +1,16 @@
 import os
 
-from mlflow import log_metric, log_param, log_artifacts,set_tracking_uri,set_experiment, create_experiment
+from mlflow import log_metric, log_param, log_artifact, start_run, set_tracking_uri,set_experiment, create_experiment
 
 if __name__ == "__main__":
-    ARTIFACT_URI = "sftp://mlflow_user@frontend02:5051"
-    EXPERIMENT_NAME = "test-ssh-tunnel"
-    create_experiment(EXPERIMENT_NAME, artifact_location=ARTIFACT_URI)
-    set_experiment(EXPERIMENT_NAME)
-   
-    set_tracking_uri("http://frontend02:5050")
-    #set_experiment("my-experiment")
-
     print("Running mlflow_tracking.py")
+    with start_run():
+        log_param("param1", 0)
+        log_metric("metric", 1)
 
-    log_param("param1", 17)
+        if not os.path.exists("outputs"):
+            os.makedirs("outputs")
+        with open("outputs/test.txt", "w") as f:
+            f.write("hello world!")
 
-    log_metric("foo", 0)
-    log_metric("foo", 1)
-    log_metric("foo", 2)
-
-    if not os.path.exists("outputs"):
-        os.makedirs("outputs")
-    with open("outputs/test.txt", "w") as f:
-        f.write("hello world!")
-
-    log_artifacts("outputs")
+        log_artifact("newtest.txt", "newtest.txt")
