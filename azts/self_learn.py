@@ -48,7 +48,7 @@ def parallel_matches_with_preloaded_model(yamlpaths, \
             player_two=players[1],
             runs_per_move=rollouts_per_move,
             game_id=handle,
-            show_game=True)
+            show_game=False)
         selfplays.append(selfplay)
 
     for i in selfplays:
