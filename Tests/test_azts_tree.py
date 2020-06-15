@@ -60,13 +60,7 @@ def suspension_draw(black_tree):
 def one_move_for_white(init_tree):
     one_move = "8/8/8/8/k7/r7/7K/r7 w - - 10 20"
     init_tree.set_to_fen_state(one_move)
-    return init_tree
-
-@pytest.fixture
-def one_black_two_white(black_tree):
-    one_two = "b6B/1r4r1/8/8/8/8/8/k6K b - - 10 20"
-    black_tree.set_to_fen_state(one_two)
-    return black_tree 
+    return init_tree 
 
 def test_tree_and_root_share_statemachine(\
         tree_white_start):
@@ -179,11 +173,6 @@ def test_num_of_children_after_move(one_move_for_white):
     stats = one_move_for_white.get_move_statistics() 
     assert stats["tree"]["number_of_nodes"] > 5
 
-def test_reuse_on_receive_move(one_black_two_white):
-    one_black_two_white.make_move()
-    root_candidates = one_black_two_white.root.children
-    one_black_two_white.receive_move("h1h2")
-    assert one_black_two_white.root in root_candidates 
 
 # pylint: enable=E0401
 # pylint: enable=E0602
