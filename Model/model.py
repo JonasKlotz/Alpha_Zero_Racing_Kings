@@ -149,8 +149,9 @@ class AZero:
 
             # mlflow logging
 
-            mlflow.log_param("epochs", 15)
-            mlflow.log_metric("loss", 5)
+            mlflow.log_param("epochs", epochs)
+            # TODO: wo kriegen wir den echten loss her?
+            #mlflow.log_metric("loss", 5)
             mlflow.keras.log_model(artifact_path="model",
                                    keras_model=self.model,
                                    keras_module=keras,
