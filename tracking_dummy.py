@@ -7,10 +7,4 @@ if __name__ == "__main__":
     with start_run():
         log_param("param1", 0)
         log_metric("metric", 1)
-
-        if not os.path.exists("outputs"):
-            os.makedirs("outputs")
-        with open("outputs/test.txt", "w") as f:
-            f.write("hello world!")
-
         log_artifact("newtest.txt", "newtest.txt")
