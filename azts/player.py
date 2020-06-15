@@ -13,7 +13,7 @@ from azts import azts_tree
 from azts import state_machine
 from azts import mock_model
 
-from azts.config import RUNS_PER_MOVE, WHITE
+from azts.config import ROLLOUTS_PER_MOVE, WHITE
 
 class Player():
     '''
@@ -31,7 +31,7 @@ class Player():
             name="UNNAMED PLAYER", \
             color=WHITE, \
             model=None, \
-            runs_per_move=RUNS_PER_MOVE, \
+            rollouts_per_move=ROLLOUTS_PER_MOVE, \
             exploration=None, \
             rollout_payoffs=None, \
             heat=None, \
@@ -43,7 +43,7 @@ class Player():
         self.name = name
         self.tree = azts_tree.AztsTree(model=model,
                                        color=color,
-                                       runs_per_move=runs_per_move,
+                                       rollouts_per_move=rollouts_per_move,
                                        exploration=exploration,
                                        payoffs=rollout_payoffs,
                                        heat=heat)
@@ -55,11 +55,11 @@ class Player():
         '''
         self.tree.set_color(color)
 
-    def set_runs_per_move(self, runs_per_move):
+    def set_rollouts_per_move(self, rollouts_per_move):
         '''
-        sets runs per move
+        sets rollouts per move
         '''
-        self.tree.runs_per_move = runs_per_move
+        self.tree.rollouts_per_move = rollouts_per_move
 
     def reset(self):
         '''
@@ -161,7 +161,7 @@ class CLIPlayer(Player):
     def set_color(self, color):
         self.color = color
 
-    def set_runs_per_move(self, runs_per_move):
+    def set_rollouts_per_move(self, rollouts_per_move):
         pass
 
     def reset(self):

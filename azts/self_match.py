@@ -16,7 +16,7 @@ from azts import screen
 from azts import utility
 from azts.config import ROLLOUT_PAYOFFS, \
         EXPLORATION, HEAT, BLACK, WHITE, \
-        RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
+        ROLLOUTS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
         SHOW_GAME
 
 from lib.logger import get_logger
@@ -42,7 +42,7 @@ class SelfMatch():
     def __init__(self,
                  player_one,
                  player_two,
-                 runs_per_move=RUNS_PER_MOVE,
+                 rollouts_per_move=ROLLOUTS_PER_MOVE,
                  show_game=SHOW_GAME,
                  report_cycle=REPORT_CYCLE,
                  track_player=WHITE):
@@ -51,7 +51,7 @@ class SelfMatch():
 
         for i, j in zip(self.players, [WHITE, BLACK]):
             i.set_color(j)
-            i.set_runs_per_move(runs_per_move) 
+            i.set_rollouts_per_move(rollouts_per_move) 
 
         self.game = game.Game()
         self.screen = screen.Screen()
@@ -164,7 +164,7 @@ class SelfMatch():
 
 if __name__ == "__main__":
     SHOW_GAME = True
-    RUNS_PER_MOVE = 10
+    ROLLOUTS_PER_MOVE = 10
 
     model = mock_model.MockModel()
 

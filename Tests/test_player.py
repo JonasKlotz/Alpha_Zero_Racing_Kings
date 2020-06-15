@@ -15,7 +15,7 @@ def new_player():
     config = utility.load_player_conf("Player/default_config.yaml")
     new_p = player.Player(color=BLACK, \
             model=model, \
-            runs_per_move=10, \
+            rollouts_per_move=10, \
             **(config.player.as_dictionary()))
     return new_p
 

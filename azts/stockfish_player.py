@@ -8,7 +8,7 @@ from azts.config import ROOTDIR
 import platform
 from azts import state_machine
 
-from azts.config import RUNS_PER_MOVE, WHITE, BLACK
+from azts.config import ROLLOUTS_PER_MOVE, WHITE, BLACK
 from azts.player import Player
 
 
@@ -46,7 +46,7 @@ class StockfishPlayer(Player):
     def set_color(self, color):
         self.color = color
 
-    def set_runs_per_move(self, runs_per_move):
+    def set_rollouts_per_move(self, rollouts_per_move):
         pass
 
     def reset(self):

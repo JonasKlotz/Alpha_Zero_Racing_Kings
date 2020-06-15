@@ -17,10 +17,10 @@ def new_match():
     model = mock_model.MockModel()
     conf = utility.load_player_conf("Player/default_config")
     player_one = player.Player(model=model, \
-            runs_per_move=10, \
+            rollouts_per_move=10, \
             **(conf.player.as_dictionary()))
     player_two = player.Player(model=model, \
-            runs_per_move=10, \
+            rollouts_per_move=10, \
             **(conf.player.as_dictionary()))
     match = self_match.SelfMatch(player_one, player_two)
     return match

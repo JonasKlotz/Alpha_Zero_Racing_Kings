@@ -13,56 +13,49 @@ from azts.config import WHITE, BLACK, \
         WHITE_WINS, BLACK_WINS
 
 @pytest.fixture
-def tree_white_start():
+def init_tree():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
     tree = azts_tree.AztsTree(model=model, \
             color=WHITE, \
-            runs_per_move=10)
+            rollouts_per_move=10)
     return tree
 
 @pytest.fixture
-def tree_white_other_turn():
-    statemachine = state_machine.StateMachine()
-    model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(model=model, \
-            color=WHITE, \
-            runs_per_move=10)
-    tree.make_move()
-    return tree
-
-@pytest.fixture
-def tree_stale_mate():
+def black_tree():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
     tree = azts_tree.AztsTree(model=model, \
             color=BLACK, \
-            runs_per_move=10)
+            rollouts_per_move=10)
+    return tree 
+
+@pytest.fixture
+def tree_white_start(init_tree):
+    return init_tree
+
+@pytest.fixture
+def tree_white_other_turn(init_tree):
+    init_tree.make_move()
+    return init_tree
+
+@pytest.fixture
+def tree_stale_mate(black_tree):
     stale_mate = "8/8/8/8/8/8/R7/5K1k b - - 10 20"
-    tree.set_to_fen_state(stale_mate)
-    return tree
+    black_tree.set_to_fen_state(stale_mate)
+    return black_tree
 
 @pytest.fixture
-def tree_won():
-    statemachine = state_machine.StateMachine()
-    model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(model=model, \
-            color=BLACK, \
-            runs_per_move=10)
+def tree_won(black_tree):
     win_position = "7k/8/8/8/8/8/R7/5K2 w - - 10 20"
-    tree.set_to_fen_state(win_position)
-    return tree
+    black_tree.set_to_fen_state(win_position)
+    return black_tree
 
 @pytest.fixture
-def suspension_draw():
-    statemachine = state_machine.StateMachine()
-    model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(model=model, \
-            color=BLACK, \
-            runs_per_move=10)
+def suspension_draw(black_tree):
     suspended_draw = "7K/k7/7R/8/8/8/8/1R6 b - - 10 20"
-    tree.set_to_fen_state(suspended_draw)
-    return tree
+    black_tree.set_to_fen_state(suspended_draw)
+    return black_tree
 
 def test_tree_and_root_share_statemachine(\
         tree_white_start):

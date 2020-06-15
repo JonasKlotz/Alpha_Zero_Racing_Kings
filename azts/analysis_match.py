@@ -125,7 +125,7 @@ if __name__ == "__main__":
     parser.add_argument("--player_two",
             type=str, default="AltruisticOlm", \
             help="Other player in the analysis match.") 
-    parser.add_argument("-r", "--runs_per_move",
+    parser.add_argument("-r", "--rollouts_per_move",
             type=int, default=100, \
             help="Simulation runs for each move.")
     parser.add_argument("-t", "--tracked_player_color", \
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         loaded_player = utility.load_player(j)
         start_args[i] = loaded_player
 
-    start_args["runs_per_move"] = args.runs_per_move
+    start_args["rollouts_per_move"] = args.rollouts_per_move
     start_args["show_game"] = bool(args.show_game)
     start_args["report_cycle"] = args.report_cycle
     start_args["track_player"] = args.tracked_player_color
