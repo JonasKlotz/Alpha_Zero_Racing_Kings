@@ -63,10 +63,10 @@ class AnalysisMatch(match.Match):
                 moves += select
                 self._show_game()
                 if moves % self.report_cycle == 0 and \
-                        active_player.tree.color == self.track_player:
+                        active_player.color == self.track_player:
                     stats = active_player.get_stats()
                     self._unpack_metrics(stats, moves)
-                    color = 1 if active_player.tree.color == WHITE else -1
+                    color = 1 if active_player.color == WHITE else -1
                     mlflow.log_metric("player_color", color, moves)
                     time1 = self._report(time1, moves)
 
@@ -87,8 +87,11 @@ class AnalysisMatch(match.Match):
             mlflow.log_artifact(moves_file)
             os.remove(moves_file)
 
+        for i in self.players:
+            i.stop()
+
         for i in self.data_collection:
-            i[2] = score
+            i[2] = score 
 
         return state
 

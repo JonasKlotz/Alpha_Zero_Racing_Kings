@@ -46,11 +46,13 @@ class Player():
                                        payoffs=rollout_payoffs,
                                        heat=heat)
         self.statemachine = None
+        self.color = color
 
     def set_color(self, color):
         '''
         sets color =)
         '''
+        self.color = color
         self.tree.set_color(color)
 
     def set_rollouts_per_move(self, rollouts_per_move):
