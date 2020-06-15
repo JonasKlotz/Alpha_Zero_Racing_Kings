@@ -12,7 +12,7 @@ import numpy as np
 from Interpreter import game
 from Interface import TensorNotation as tn
 
-from azts.config import WHITE, BLACK, \
+from Azts.config import WHITE, BLACK, \
         RUNNING, BLACK_WINS, \
         WHITE_WINS, DRAW
 

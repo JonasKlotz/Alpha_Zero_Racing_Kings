@@ -8,7 +8,7 @@ import os.path
 import matplotlib.pyplot as plt
 from PIL import Image
 
-from azts.config import *
+from Azts.config import RESOURCESDIR
 
 
 class Screen():
@@ -34,7 +34,5 @@ class Screen():
         plt.pause(0.01)
 
 
-if __name__ == "__main__":
-    SCREEN = Screen()
 # pylint: enable=E0401
 # pylint: enable=E0602

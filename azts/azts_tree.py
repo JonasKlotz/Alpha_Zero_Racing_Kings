@@ -16,11 +16,10 @@ reconstruct the corresponding move
 """
 import time
 import numpy as np
-from azts import state_machine
-from azts import azts_node
-from azts import mock_model
-
-from azts.config import WHITE, ROLLOUTS_PER_MOVE, \
+from Azts import state_machine
+from Azts import azts_node
+from Azts import mock_model 
+from Azts.config import WHITE, ROLLOUTS_PER_MOVE, \
         EXPLORATION, ROLLOUT_PAYOFFS, HEAT
 
 

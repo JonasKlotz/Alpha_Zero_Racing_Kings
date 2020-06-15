@@ -1,10 +1,10 @@
 # pylint: disable=C0116
 import pytest
-from azts import player
-from azts import mock_model
-from azts import utility
 
-from azts.config import WHITE, BLACK, \
+from Azts import player
+from Azts import mock_model
+from Azts import utility 
+from Azts.config import WHITE, BLACK, \
         RUNNING, DRAW_BY_STALE_MATE, \
         BLACK_WINS
 

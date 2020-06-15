@@ -1,17 +1,17 @@
 import argparse
 import copy
 import multiprocessing
+from lib.logger import get_logger
 
 from Model.model import AZero
-from azts.create_dataset import assemble_dataset
-from azts import self_play
-from azts import utility
+from Azts import utility
+from Matches import contest
+from Matches.create_dataset import assemble_dataset
 
-from lib.logger import get_logger
 log = get_logger("self_learn")
 
-def parallel_matches_with_preloaded_models(yamlpaths, \
-        models, \
+def parallel_matches_with_preloaded_model(yamlpath, \
+        model, \
         handle, \
         rollouts_per_move, \
         num_of_parallel_processes, \
@@ -36,14 +36,17 @@ def parallel_matches_with_preloaded_models(yamlpaths, \
     for _ in range(num_of_parallel_processes):
         # create a model copy for each parallel
         # process
-        players = [utility.load_player_with_model(model=i, \
-                config = utility.load_player_conf(j)) for i, j in zip(models, yamlpaths)]
+        modelcopy = copy.deepcopy(model)
+        players = [utility.load_player_with_model(model=modelcopy, \
+                config=utility.load_player_conf(yamlpath)) for _ \
+                in range(2)]
 
-        # self play with different players
-        selfplay = self_play.SelfPlay(
+        # self play, so both sides are played by
+        # same player
+        selfplay = contest.Contest(
             player_one=players[0],
             player_two=players[1],
-            runs_per_move=rollouts_per_move,
+            rollouts_per_move=rollouts_per_move,
             game_id=handle,
             show_game=False)
         selfplays.append(selfplay)
@@ -91,18 +94,10 @@ if __name__ == "__main__":
             + "\"fork\" and \"forkserver\". See " \
             + "https://docs.python.org/3/library/multiprocessing.html " \
             + "for details. Defaults to \"spawn\".")
-    parser.add_argument("--trainee", type=str, \
+    parser.add_argument("--player", type=str, \
             default="Player/default_config.yaml", \
-            help="ai to be trained with gradient descent. " \
+            help="Player configuration file. Is by default " \
             + "set to \"Player/default_config.yaml\".") 
-    parser.add_argument("--player_one", type=str, \
-            default=None, \
-            help="Player one to watch and learn from. If not set, it " \
-            + "is set to --trainee.")
-    parser.add_argument("--player_two", type=str, \
-            default=None, \
-            help="Player two to watch and learn from. If not set, it " \
-            + "is set to --trainee.")
     parser.add_argument("-i", "--iterations", type=int, \
             default=5, \
             help="number of iterations to train a model on " \
@@ -118,20 +113,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    players = [args.trainee, args.player_one, args.player_two]
-    # if player is set to None, take trainee:
-    for i in range(len(players)):
-        players[i] = players[i] if players[i] else args.trainee
-
-    # load models
-    models = [utility.load_model(utility.load_player_conf(i)) for i in players]
+    # first load model from mlflow server
+    model = utility.load_model(utility.load_player_conf(args.player))
 
     for _ in range(args.selflearnruns):
-        handle = utility.get_unused_match_handle(players[1], players[2])
+        handle = utility.get_unused_match_handle(args.player, args.player)
         log.info(f"starting matches with handle {handle}")
 
-        parallel_matches_with_preloaded_models(yamlpaths=players[1:], \
-                models=models[1:], \
+        parallel_matches_with_preloaded_model(yamlpath=args.player, \
+                model=model, \
                 handle=handle, \
                 rollouts_per_move=args.rollouts_per_move, \
                 num_of_parallel_processes=args.num_of_parallel_processes, \
@@ -140,7 +130,7 @@ if __name__ == "__main__":
 
         assemble_dataset(handle=handle)
 
-        models[0].auto_run_training(max_iterations=args.iterations, \
+        model.auto_run_training(max_iterations=args.iterations, \
                 max_epochs=args.epochs)
 
 

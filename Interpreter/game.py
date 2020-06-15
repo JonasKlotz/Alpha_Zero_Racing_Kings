@@ -19,7 +19,7 @@ from cairosvg import svg2png
 from PIL import Image
 
 from Interface.TensorNotation import DATATYPE, move_to_tensor_indices
-from azts.config import *
+from Azts.config import *
 
 class Game:
     # pylint: disable=too-many-instance-attributes

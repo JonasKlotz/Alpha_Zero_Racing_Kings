@@ -4,11 +4,10 @@ import random
 
 from Player import config
 from Model.model import AZero
-from azts.config import GAMEDIR, PLAYERDIR
-from azts import player
-from azts import stockfish_player
-from azts import mock_model
-from azts import stockfish_model
+from Azts.config import GAMEDIR, PLAYERDIR
+from Azts import player
+from Azts import stockfish_player
+from Azts import mock_model
 
 GAME = "game"
 STATS = "stats"

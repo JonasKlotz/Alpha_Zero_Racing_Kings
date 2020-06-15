@@ -6,13 +6,12 @@ More local configuration parameters can be found in azts.py
 import numpy as np
 import sys
 import os.path
-import os
-
+import os 
 from lib.logger import get_logger
+
+from Azts import mock_model
+
 log = get_logger("azts.config")
-
-from azts import mock_model
-
 
 def find_rootdir():
     rootdir = os.path.split(

@@ -8,10 +8,9 @@ algorithm: N, W, Q, P.
 """
 import numpy as np
 
-from azts import state_machine
-from azts import mock_model
-
-from azts.config import WHITE, POS_DTYPE,\
+from Azts import state_machine
+from Azts import mock_model 
+from Azts.config import WHITE, POS_DTYPE,\
         EDGE_DTYPE, IDX_DTYPE, \
         EXPLORATION, ROLLOUT_PAYOFFS
 # pylint: disable=W0621

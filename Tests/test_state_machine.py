@@ -4,8 +4,8 @@
 # pylint: disable=W0621
 import pytest
 
-from azts import state_machine
-from azts.config import WHITE, BLACK, \
+from Azts import state_machine
+from Azts.config import WHITE, BLACK, \
         RUNNING, DRAW, DRAW_BY_TWO_WINS, \
         BLACK_WINS
 

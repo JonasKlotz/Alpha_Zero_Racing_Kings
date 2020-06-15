@@ -3,14 +3,14 @@
 # pylint: disable=C0111
 # pylint: disable=W0621
 import pytest
-from azts import self_match
-from azts import mock_model
-from azts import player
-from azts import utility
 
-from azts.config import DRAW_BY_STALE_MATE, \
+from Azts import mock_model
+from Azts import player
+from Azts import utility 
+from Azts.config import DRAW_BY_STALE_MATE, \
         DRAW_BY_REP, DRAW_BY_TWO_WINS, \
         BLACK_WINS, WHITE_WINS
+from Matches import match
 
 @pytest.fixture
 def new_match():
@@ -22,8 +22,8 @@ def new_match():
     player_two = player.Player(model=model, \
             rollouts_per_move=10, \
             **(conf.player.as_dictionary()))
-    match = self_match.SelfMatch(player_one, player_two)
-    return match
+    new_match = match.Match(player_one, player_two)
+    return new_match
 
 @pytest.fixture
 def stalemate(new_match):

@@ -1,18 +1,21 @@
+'''
+this instantiates an analysis match which
+tracks metrics on the mlflow server
+'''
 import time
 import argparse
 import mlflow
 import pickle
-import os
-
-from azts import self_match
-from azts import utility 
-from azts.config import TO_STRING, WHITE
-
+import os 
 from lib.logger import get_logger
+
+from Azts import utility 
+from Azts.config import TO_STRING, WHITE 
+from Matches import match 
+
 log = get_logger("AnalysisMatch")
 
-
-class AnalysisMatch(self_match.SelfMatch):
+class AnalysisMatch(match.Match):
 
     def simulate(self):
         '''
@@ -153,5 +156,5 @@ if __name__ == "__main__":
     start_args["report_cycle"] = args.report_cycle
     start_args["track_player"] = args.tracked_player_color
 
-    match = AnalysisMatch(**start_args)
-    match.simulate()
+    analysis_match = AnalysisMatch(**start_args)
+    analysis_match.simulate()

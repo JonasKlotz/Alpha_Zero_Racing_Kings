@@ -7,13 +7,11 @@ API.
 import sys
 import os
 
-from Player import config
-
-from azts import azts_tree
-from azts import state_machine
-from azts import mock_model
-
-from azts.config import ROLLOUTS_PER_MOVE, WHITE
+from Player import config 
+from Azts import azts_tree
+from Azts import state_machine
+from Azts import mock_model 
+from Azts.config import ROLLOUTS_PER_MOVE, WHITE
 
 class Player():
     '''

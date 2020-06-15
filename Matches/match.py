@@ -1,40 +1,40 @@
 # pylint: disable=E0401
 # pylint: disable=E0602
 '''
-Self match puts two ai players
+match puts two ai players
 in a match against each other
 '''
 import time
 import os
 import sys
+from lib.logger import get_logger
 
 from Interpreter import game
 from Player import config
-from azts import mock_model
-from azts import player
-from azts import screen
-from azts import utility
-from azts.config import ROLLOUT_PAYOFFS, \
+from Azts import mock_model
+from Azts import player
+from Azts import screen
+from Azts import utility
+from Azts.config import ROLLOUT_PAYOFFS, \
         EXPLORATION, HEAT, BLACK, WHITE, \
         ROLLOUTS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
         SHOW_GAME
 
-from lib.logger import get_logger
-log = get_logger("SelfMatch")
+log = get_logger("Match")
 
 REPORT_CYCLE = 10
 
 
-class SelfMatch():
+class Match():
     '''
-    Self match puts two ai players in
+    Match puts two ai players in
     a match against each other and
     collects the respective move distribution
     of the players for each position. At the
     end of the match, the data collection
     is annotated with the outcome of the
     game.
-    Initialise SelfMatch with the number
+    Initialise Match with the number
     of rollouts that each player does per
     move
     '''
@@ -173,7 +173,7 @@ if __name__ == "__main__":
                     ["default_config.yaml", "StockingFish.yaml"]):
         players[i] = utility.load_player(j)
 
-    match = SelfMatch(**players)
+    match = Match(**players)
     match.simulate()
 
 # pylint: enable=E0401

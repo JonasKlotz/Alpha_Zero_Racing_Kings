@@ -1,15 +1,13 @@
 import sys
 import os
+import chess
+import platform
 
 from Interface.TensorNotation import fen_to_tensor
-from Player import config
-import chess
-from azts.config import ROOTDIR
-import platform
-from azts import state_machine
-
-from azts.config import ROLLOUTS_PER_MOVE, WHITE, BLACK
-from azts.player import Player
+from Player import config 
+from Azts import state_machine
+from Azts.config import ROOTDIR, ROLLOUTS_PER_MOVE, WHITE, BLACK
+from Azts.player import Player
 
 
 class StockfishPlayer(Player):

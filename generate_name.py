@@ -2,16 +2,20 @@
 inspirations to give a name
 to your new ai player
 '''
-import numpy as np
+import os
+import numpy as np 
 
+from Azts.config import RESOURCESDIR
 
 adjectives = []
 animals = []
 
-with open("animals.txt") as animal_file:
+with open(os.path.join(RESOURCESDIR, \
+        "animals.txt")) as animal_file:
     animals = animal_file.readlines()
 
-with open("adjectives.txt") as adj_file:
+with open(os.path.join(RESOURCESDIR, \
+        "adjectives.txt")) as adj_file:
     adjectives = adj_file.readlines()
 
 for i in range(20):
