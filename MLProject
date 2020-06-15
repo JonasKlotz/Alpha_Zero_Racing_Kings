@@ -1,22 +1,6 @@
 name: mini_alpha_zero
 
 entry_points:
-  train:
-    parameters:
-        max_iterations: {type: float, default: 3}
-        max_epochs: {type: float, default: 10000}
-    command: "python3 Model/model.py -i {max_iterations} -ep {max_epochs}"
-
-  create_dataset:
-    parameters:
-        num_of_parallel_processes: {type: float, default: 2}
-        num_of_games_per_process: {type: float, default: 10}
-        fork_method: {type: string, default: "spawn"}
-        player_one: {type: string, default: "Player/default_config.yaml"}
-        player_two: {type: string, default: "Player/default_config.yaml"}
-    command: "python3 Matches/create_dataset.py -p {num_of_parallel_processes} -g {num_of_games_per_process} 
-             --fork_method {fork_method} --player_one {player_one} --player_two {player_two}"
-
   watch_and_learn:
     parameters:
         num_of_parallel_processes: {type: float, default: 2}
@@ -59,4 +43,19 @@ entry_points:
              --rollouts_per_move {rollouts_per_move} --report_cycle {report_cycle} 
              --show_game {show_game}"
 
+  create_dataset:
+    parameters:
+        num_of_parallel_processes: {type: float, default: 2}
+        num_of_games_per_process: {type: float, default: 10}
+        fork_method: {type: string, default: "spawn"}
+        player_one: {type: string, default: "Player/default_config.yaml"}
+        player_two: {type: string, default: "Player/default_config.yaml"}
+    command: "python3 Matches/create_dataset.py -p {num_of_parallel_processes} -g {num_of_games_per_process} 
+             --fork_method {fork_method} --player_one {player_one} --player_two {player_two}"
+
+  train:
+    parameters:
+        max_iterations: {type: float, default: 3}
+        max_epochs: {type: float, default: 10000}
+    command: "python3 Model/model.py -i {max_iterations} -ep {max_epochs}"
 

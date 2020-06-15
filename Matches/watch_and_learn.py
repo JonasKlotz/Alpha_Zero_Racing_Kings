@@ -119,12 +119,21 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     players = [args.trainee, args.player_one, args.player_two]
-    # if player is set to None, take trainee:
-    for i in range(len(players)):
-        players[i] = players[i] if players[i] else args.trainee
+    models = []
 
-    # load models
-    models = [utility.load_model(utility.load_player_conf(i)) for i in players]
+    # only load models for players which have been set:
+    for i in players:
+        new_model = utility.load_model(utility.load_player_conf(i)) \
+                if i else None
+        models.append(new_model) 
+
+    # set reference to trainee-model for each model which is None:
+    for i, _ in enumerate(models):
+        models[i] = models[i] if models[i] else models[0] 
+
+    # if player is set to None, take trainee:
+    for i, _ in enumerate(players):
+        players[i] = players[i] if players[i] else args.trainee
 
     for _ in range(args.selflearnruns):
         handle = utility.get_unused_match_handle(players[1], players[2])
