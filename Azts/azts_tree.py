@@ -16,11 +16,10 @@ reconstruct the corresponding move
 """
 import time
 import numpy as np
-from azts import state_machine
-from azts import azts_node
-from azts import mock_model
-
-from azts.config import WHITE, RUNS_PER_MOVE, \
+from Azts import state_machine
+from Azts import azts_node
+from Azts import mock_model 
+from Azts.config import WHITE, ROLLOUTS_PER_MOVE, \
         EXPLORATION, ROLLOUT_PAYOFFS, HEAT
 
 
@@ -34,7 +33,7 @@ class AztsTree():
     def __init__(self, \
                  model, \
                  color=WHITE, \
-                 runs_per_move=RUNS_PER_MOVE, \
+                 rollouts_per_move=ROLLOUTS_PER_MOVE, \
                  exploration=EXPLORATION, \
                  payoffs=ROLLOUT_PAYOFFS, \
                  heat=HEAT):
@@ -43,7 +42,7 @@ class AztsTree():
 
         self.statemachine = state_machine.StateMachine()
         self.model = model
-        self.runs_per_move = runs_per_move
+        self.rollouts_per_move = rollouts_per_move
         self.heat = heat
 
         # for initialising azts nodes:
@@ -102,9 +101,12 @@ class AztsTree():
             raise Exception("Game over")
 
         if self.color == self.statemachine.get_player_color():
-            self._tree_search(self.runs_per_move)
-            move = self.root.get_move(self.heat)
+            self._tree_search(self.rollouts_per_move)
+            move, new_root = self.root.get_move(self.heat)
+            if new_root is None:
+                raise Exception("next node is none after make move")
             self.statemachine.actual_fen_move(move)
+            self.root = new_root
         else:
             raise Exception("Other players turn")
 
@@ -145,13 +147,15 @@ class AztsTree():
 
         if self.color != self.statemachine.get_player_color():
             self.statemachine.actual_fen_move(move)
+            new_root = self.root.select_node_with_move(move)
+            self.root = new_root
 
-            # TODO: check for reusability of current
-            # tree. This should always be the case
-            # if the opponents move leads to a follow-up
-            # position
-            del self.root
-            self._init_tree()
+            if new_root is None:
+                # possible that this move was never simulated
+                # this means no node for it exists yet
+                del self.root
+                self._init_tree() 
+
         else:
             raise Exception("My turn")
 
@@ -192,12 +196,12 @@ class AztsTree():
         self.statemachine = state_machine.StateMachine()
         self._init_tree()
 
-    def _tree_search(self, runs=10):
+    def _tree_search(self, rollouts=10):
         '''
-        :param int runs: number of rollouts to
+        :param int rollouts: number of rollouts to
         be performed on current game state
         '''
-        for _ in range(runs):
+        for _ in range(rollouts):
             self.root.rollout()
 
     def _set_root_to(self, position):
@@ -217,7 +221,7 @@ def set_up(color=WHITE):
     tree = AztsTree(statemachine=statemachine, \
                 model=model, \
                 color=color, \
-                runs_per_move=200)
+                rollouts_per_move=200)
 
     np.set_printoptions(suppress=True, precision=3)
 
@@ -233,7 +237,7 @@ if __name__ == "__main__":
     time2 = time.time()
 
     print(tree)
-    print(f"doing {tree.runs_per_move} rollouts " \
+    print(f"doing {tree.rollouts_per_move} rollouts " \
           + f"took {str(time2 - time1)[0:5]} seconds.\n")
     print(f"First move is {first_move}.")
     print("This might differ from the highest\n" \

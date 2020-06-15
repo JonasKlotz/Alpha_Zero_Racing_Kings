@@ -1,10 +1,9 @@
 import argparse
 
-from Player import config
-
-from azts import player
-from azts import utility
-from azts import self_match
+from Player import config 
+from Azts import player
+from Azts import utility
+from Matches import match
 
 parser = argparse.ArgumentParser(description="Start command line" \
         "game against ai player.") 
@@ -31,20 +30,20 @@ def cli_play(ai_name, human_name, human_color):
     ai_player = utility.load_player(ai_name) 
     hi_player = player.CLIPlayer(name=human_name) 
 
-    match = None
+    cli_match = None
 
     if human_color == "white": 
-        match = self_match.SelfMatch(player_one=hi_player, \
+        cli_match = match.Match(player_one=hi_player, \
                 player_two=ai_player, \
                 runs_per_move=args.runs_per_move, \
                 show_game=True) 
     else:
-        match = self_match.SelfMatch(player_one=ai_player, \
+        cli_match = match.Match(player_one=ai_player, \
                 player_two=hi_player, \
                 runs_per_move=args.runs_per_move, \
                 show_game=True) 
 
-    match.simulate()
+    cli_match.simulate()
 
 
 if __name__ == "__main__":

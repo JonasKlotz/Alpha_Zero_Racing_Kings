@@ -1,37 +1,40 @@
 # pylint: disable=E0401
 # pylint: disable=E0602
 '''
-Self match puts two ai players
+match puts two ai players
 in a match against each other
 '''
 import time
+import os
+import sys
+from lib.logger import get_logger
 
 from Interpreter import game
 from Player import config
-from azts import mock_model
-from azts import player
-from azts import screen
-from azts.config import ROLLOUT_PAYOFFS, \
+from Azts import mock_model
+from Azts import player
+from Azts import screen
+from Azts import utility
+from Azts.config import ROLLOUT_PAYOFFS, \
         EXPLORATION, HEAT, BLACK, WHITE, \
-        RUNS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
+        ROLLOUTS_PER_MOVE, TO_STRING, TRAINING_PAYOFFS, \
         SHOW_GAME
 
-from lib.logger import get_logger
-log = get_logger("SelfMatch")
+log = get_logger("Match")
 
 REPORT_CYCLE = 10
 
 
-class SelfMatch():
+class Match():
     '''
-    Self match puts two ai players in
+    Match puts two ai players in
     a match against each other and
     collects the respective move distribution
     of the players for each position. At the
     end of the match, the data collection
     is annotated with the outcome of the
     game.
-    Initialise SelfMatch with the number
+    Initialise Match with the number
     of rollouts that each player does per
     move
     '''
@@ -39,7 +42,7 @@ class SelfMatch():
     def __init__(self,
                  player_one,
                  player_two,
-                 runs_per_move=RUNS_PER_MOVE,
+                 rollouts_per_move=ROLLOUTS_PER_MOVE,
                  show_game=SHOW_GAME,
                  report_cycle=REPORT_CYCLE,
                  track_player=WHITE):
@@ -48,7 +51,7 @@ class SelfMatch():
 
         for i, j in zip(self.players, [WHITE, BLACK]):
             i.set_color(j)
-            i.set_runs_per_move(runs_per_move) 
+            i.set_rollouts_per_move(rollouts_per_move) 
 
         self.game = game.Game()
         self.screen = screen.Screen()
@@ -88,7 +91,8 @@ class SelfMatch():
         '''
         moves = 1
         time1 = time.time()
-        log.info(f"\nWHITE: {self.players[0].name}\n"
+        log.info(f"\n\nin process {os.getpid()}:\n" \
+              + f"WHITE: {self.players[0].name}\n"
               + f"BLACK: {self.players[1].name}\n")
         while True:
             # check break condition:
@@ -100,6 +104,11 @@ class SelfMatch():
             other_player = self.players[1 - select]
             # handle all moves
             move = active_player.make_move()
+            if move == "exit":
+                for i in self.players:
+                    i.stop()
+                sys.exit()
+
             other_player.receive_move(move)
             self.game.make_move(move)
             # collect data
@@ -110,18 +119,32 @@ class SelfMatch():
             moves += select
             self._show_game()
             if moves % self.report_cycle == 0 and ~select:
-                time1 = self._report(time1, moves)
+                time1 = self._report(time1, moves) 
 
+        return self._clean_up_end_game(moves)
+
+
+    def _clean_up_end_game(self, moves):
+        '''
+        collect results, shut down players and
+        return state
+        :param int moves: number of moves played,
+        just to display that to the logger
+        '''
         result = self.game.board.result()
         state = self.game.get_game_state()
         log.info(f"game ended after {moves} "
               + f"moves with {result} ({TO_STRING[state]}).")
         score = self.training_payoffs[state]
 
+        for i in self.players:
+            i.stop()
+
         for i in self.data_collection:
             i[2] = score
 
         return state
+
 
     def _show_game(self):
         if self.show_game:
@@ -132,28 +155,25 @@ class SelfMatch():
         time_now = time.time()
         elapsed = time_now - time_before
         avg_per_move = elapsed / self.report_cycle
-        log.info(f"total moves: {moves}; {self.report_cycle} moves in "
-              + f"{str(elapsed)[0:5]}s, average of "
+        log.info(f"process {os.getpid()}: total moves: {moves}; " \
+                + f"{self.report_cycle} moves in " \
+                + f"{str(elapsed)[0:5]}s, average of " \
                 + f"{str(avg_per_move)[0:4]}s per move.")
         return time_now
 
 
 if __name__ == "__main__":
     SHOW_GAME = True
-    RUNS_PER_MOVE = 10
+    ROLLOUTS_PER_MOVE = 10
 
     model = mock_model.MockModel()
 
     players = {}
     for i, j in zip(["player_one", "player_two"],
                     ["default_config.yaml", "StockingFish.yaml"]):
-        path = "Player/" + j
-        configuration = config.Config(path)
-        players[i] = player.Player(model=model,
-                                   name=configuration.name,
-                                   **(configuration.player.as_dictionary()))
+        players[i] = utility.load_player(j)
 
-    match = SelfMatch(**players)
+    match = Match(**players)
     match.simulate()
 
 # pylint: enable=E0401

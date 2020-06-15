@@ -4,65 +4,63 @@
 # pylint: disable=W0621
 import pytest
 
-from azts import azts_tree
-from azts import state_machine
-from azts import mock_model
-
-from azts.config import WHITE, BLACK, \
+from Azts import azts_tree
+from Azts import state_machine
+from Azts import mock_model 
+from Azts.config import WHITE, BLACK, \
         RUNNING, DRAW, DRAW_BY_STALE_MATE, \
         WHITE_WINS, BLACK_WINS
 
 @pytest.fixture
-def tree_white_start():
+def init_tree():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
     tree = azts_tree.AztsTree(model=model, \
             color=WHITE, \
-            runs_per_move=10)
+            rollouts_per_move=10)
     return tree
 
 @pytest.fixture
-def tree_white_other_turn():
-    statemachine = state_machine.StateMachine()
-    model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(model=model, \
-            color=WHITE, \
-            runs_per_move=10)
-    tree.make_move()
-    return tree
-
-@pytest.fixture
-def tree_stale_mate():
+def black_tree():
     statemachine = state_machine.StateMachine()
     model = mock_model.MockModel()
     tree = azts_tree.AztsTree(model=model, \
             color=BLACK, \
-            runs_per_move=10)
+            rollouts_per_move=10)
+    return tree 
+
+@pytest.fixture
+def tree_white_start(init_tree):
+    return init_tree
+
+@pytest.fixture
+def tree_white_other_turn(init_tree):
+    init_tree.make_move()
+    return init_tree
+
+@pytest.fixture
+def tree_stale_mate(black_tree):
     stale_mate = "8/8/8/8/8/8/R7/5K1k b - - 10 20"
-    tree.set_to_fen_state(stale_mate)
-    return tree
+    black_tree.set_to_fen_state(stale_mate)
+    return black_tree
 
 @pytest.fixture
-def tree_won():
-    statemachine = state_machine.StateMachine()
-    model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(model=model, \
-            color=BLACK, \
-            runs_per_move=10)
+def tree_won(black_tree):
     win_position = "7k/8/8/8/8/8/R7/5K2 w - - 10 20"
-    tree.set_to_fen_state(win_position)
-    return tree
+    black_tree.set_to_fen_state(win_position)
+    return black_tree
 
 @pytest.fixture
-def suspension_draw():
-    statemachine = state_machine.StateMachine()
-    model = mock_model.MockModel()
-    tree = azts_tree.AztsTree(model=model, \
-            color=BLACK, \
-            runs_per_move=10)
+def suspension_draw(black_tree):
     suspended_draw = "7K/k7/7R/8/8/8/8/1R6 b - - 10 20"
-    tree.set_to_fen_state(suspended_draw)
-    return tree
+    black_tree.set_to_fen_state(suspended_draw)
+    return black_tree
+
+@pytest.fixture
+def one_move_for_white(init_tree):
+    one_move = "8/8/8/8/k7/r7/7K/r7 w - - 10 20"
+    init_tree.set_to_fen_state(one_move)
+    return init_tree 
 
 def test_tree_and_root_share_statemachine(\
         tree_white_start):
@@ -164,7 +162,18 @@ def test_suspension_draw_game_state_running(suspension_draw):
     assert suspension_draw.game_state() == RUNNING
 
 def test_suspension_draw_number_of_node_children(suspension_draw):
-    assert len(suspension_draw.root.children) == 1
+    assert len(suspension_draw.root.children) == 1 
+
+def test_children_after_move(one_move_for_white):
+    one_move_for_white.make_move() 
+    assert any(one_move_for_white.root.children)
+
+def test_num_of_children_after_move(one_move_for_white):
+    one_move_for_white.make_move()
+    stats = one_move_for_white.get_move_statistics() 
+    assert stats["tree"]["number_of_nodes"] > 5
+
+
 # pylint: enable=E0401
 # pylint: enable=E0602
 # pylint: enable=C0111

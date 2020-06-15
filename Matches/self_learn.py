@@ -1,13 +1,13 @@
 import argparse
 import copy
 import multiprocessing
+from lib.logger import get_logger
 
 from Model.model import AZero
-from azts.create_dataset import assemble_dataset
-from azts import self_play
-from azts import utility
+from Azts import utility
+from Matches import contest
+from Matches.create_dataset import assemble_dataset
 
-from lib.logger import get_logger
 log = get_logger("self_learn")
 
 def parallel_matches_with_preloaded_model(yamlpath, \
@@ -43,10 +43,10 @@ def parallel_matches_with_preloaded_model(yamlpath, \
 
         # self play, so both sides are played by
         # same player
-        selfplay = self_play.SelfPlay(
+        selfplay = contest.Contest(
             player_one=players[0],
             player_two=players[1],
-            runs_per_move=rollouts_per_move,
+            rollouts_per_move=rollouts_per_move,
             game_id=handle,
             show_game=False)
         selfplays.append(selfplay)

@@ -1,18 +1,21 @@
+'''
+this instantiates an analysis match which
+tracks metrics on the mlflow server
+'''
 import time
 import argparse
 import mlflow
 import pickle
-import os
-
-from azts import self_match
-from azts import utility 
-from azts.config import TO_STRING, WHITE
-
+import os 
 from lib.logger import get_logger
+
+from Azts import utility 
+from Azts.config import TO_STRING, WHITE 
+from Matches import match 
+
 log = get_logger("AnalysisMatch")
 
-
-class AnalysisMatch(self_match.SelfMatch):
+class AnalysisMatch(match.Match):
 
     def simulate(self):
         '''
@@ -60,10 +63,10 @@ class AnalysisMatch(self_match.SelfMatch):
                 moves += select
                 self._show_game()
                 if moves % self.report_cycle == 0 and \
-                        active_player.tree.color == self.track_player:
+                        active_player.color == self.track_player:
                     stats = active_player.get_stats()
                     self._unpack_metrics(stats, moves)
-                    color = 1 if active_player.tree.color == WHITE else -1
+                    color = 1 if active_player.color == WHITE else -1
                     mlflow.log_metric("player_color", color, moves)
                     time1 = self._report(time1, moves)
 
@@ -84,8 +87,11 @@ class AnalysisMatch(self_match.SelfMatch):
             mlflow.log_artifact(moves_file)
             os.remove(moves_file)
 
+        for i in self.players:
+            i.stop()
+
         for i in self.data_collection:
-            i[2] = score
+            i[2] = score 
 
         return state
 
@@ -125,7 +131,7 @@ if __name__ == "__main__":
     parser.add_argument("--player_two",
             type=str, default="AltruisticOlm", \
             help="Other player in the analysis match.") 
-    parser.add_argument("-r", "--runs_per_move",
+    parser.add_argument("-r", "--rollouts_per_move",
             type=int, default=100, \
             help="Simulation runs for each move.")
     parser.add_argument("-t", "--tracked_player_color", \
@@ -148,10 +154,10 @@ if __name__ == "__main__":
         loaded_player = utility.load_player(j)
         start_args[i] = loaded_player
 
-    start_args["runs_per_move"] = args.runs_per_move
+    start_args["rollouts_per_move"] = args.rollouts_per_move
     start_args["show_game"] = bool(args.show_game)
     start_args["report_cycle"] = args.report_cycle
     start_args["track_player"] = args.tracked_player_color
 
-    match = AnalysisMatch(**start_args)
-    match.simulate()
+    analysis_match = AnalysisMatch(**start_args)
+    analysis_match.simulate()

@@ -5,9 +5,7 @@ import argparse
 import pickle
 
 from Interpreter import game
-from azts import screen
-
-
+from Azts import screen 
 
 
 class MatchReplay():

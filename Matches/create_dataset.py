@@ -4,19 +4,17 @@ import random
 import string
 import multiprocessing
 import os.path
-import pickle
-
+import pickle 
 import argparse
-
+from lib.logger import get_logger 
 
 from Player import config
-from azts import self_play
-from azts import mock_model
-from azts import player
-from azts import utility
-from azts.config import *
+from Azts import mock_model
+from Azts import player
+from Azts import utility
+from Azts.config import GAMEDIR, DATASETDIR
+from Matches import contest
 
-from lib.logger import get_logger
 log = get_logger("create_dataset")
 
 def create_dataset(yamlpaths,
@@ -113,7 +111,7 @@ def parallel_matches(yamlpaths,
 
     for i in range(num_of_parallel_processes):
         players = utility.load_players(*tuple(yamlpaths))
-        selfplay = self_play.SelfPlay(
+        selfplay = contest.Contest(
             player_one=players[0],
             player_two=players[1],
             runs_per_move=rollouts_per_move,

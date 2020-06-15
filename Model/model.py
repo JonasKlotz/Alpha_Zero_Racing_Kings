@@ -23,7 +23,7 @@ import argparse
 
 from lib.timing import timing
 
-from azts.config import DATASETDIR
+from Azts.config import DATASETDIR
 from Player.config import Config
 
 from lib.logger import get_logger
@@ -149,8 +149,9 @@ class AZero:
 
             # mlflow logging
 
-            mlflow.log_param("epochs", 15)
-            mlflow.log_metric("loss", 5)
+            mlflow.log_param("epochs", epochs)
+            # TODO: wo kriegen wir den echten loss her?
+            #mlflow.log_metric("loss", 5)
             mlflow.keras.log_model(artifact_path="model",
                                    keras_model=self.model,
                                    keras_module=keras,
@@ -456,37 +457,3 @@ if __name__ == "__main__":
     model.auto_run_training(max_epochs=args.max_epochs, max_iterations=args.max_iterations)
 
 
-# if __name__ == "__main__":
-
-#     from lib.timing import timing, runtime_summary, prettify_time
-#     from lib.logger import get_logger
-#     log = get_logger("self_play")
-
-#     MAX_RUNS = 4
-#     SP_LENGTH = 4
-
-#     from Model.model import AZero
-#     from Player.config import Config
-#     conf = Config("Player/config.yaml")
-#     model = AZero(conf)
-#     play = SelfPlay(model)
-
-#     half_dataset_done = False
-#     # Generate
-#     for i in range(MAX_RUNS):
-#         if half_dataset_done:  # expects new model to be ready soon
-#             log.info("Half-time done")
-#             start = time.perf_counter()
-#             if not model.new_model_available():
-#                 log.info("Waiting for newest model")
-#             while not model.new_model_available():
-#                 # NOTE: thread could just continue to create dataset (not const chunksize!)
-#                 time.sleep(1)
-#             log.info("Found new model")
-#             elapsed = time.perf_counter() - start
-#             log.info("Thread blocked for {}".format(prettify_time(elapsed)))
-#             model.restore_latest_model()
-#         log.info("Beginning Self-play iteration {}/{}, \
-#             game chunk-size: {}".format(i, MAX_RUNS, SP_LENGTH))
-#         play.start(SP_LENGTH)
-#         half_dataset_done = not half_dataset_done

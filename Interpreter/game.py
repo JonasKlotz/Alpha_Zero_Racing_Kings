@@ -19,7 +19,7 @@ from cairosvg import svg2png
 from PIL import Image
 
 from Interface.TensorNotation import DATATYPE, move_to_tensor_indices
-from azts.config import *
+from Azts.config import *
 
 class Game:
     # pylint: disable=too-many-instance-attributes
@@ -276,13 +276,16 @@ class Game:
 
         policy = []
 
+        legal_moves = self.get_move_list()
+        move_time = time_limit / max(1, len(legal_moves))
+
         for move in self.get_move_list():
             self.board.push(move)
 
             try:
                 info = self.engine.analyse(self.board, chess.engine.Limit(
-                    time=time_limit, depth=depth_limit))
-                t = [move.uci(), info["score"].white().score(mate_score=100000)]
+                    time=move_time, depth=depth_limit))
+                t = [move.uci(), - info["score"].relative.score(mate_score=100000)]
                 policy.append(t)
             except:
                 print("move is null", move.uci())
@@ -292,7 +295,7 @@ class Game:
 
         return policy
 
-    def get_score(self, path="Engine/stockfish-x86_64", time_limit=0.1, depth_limit=None):
+    def get_score(self, path="Engine/stockfish-x86_64"):
         """
         :return: returns winning probabilty in intervall between -1,1
         """
@@ -300,9 +303,8 @@ class Game:
             self.engine = chess.engine.SimpleEngine.popen_uci(path)
 
         try:
-            info = self.engine.analyse(self.board, chess.engine.Limit(
-                time=time_limit, depth=depth_limit))
-            centipawn = info["score"].white().score(mate_score=10000) / 100
+            info = self.engine.analyse(self.board, chess.engine.Limit(time=0.01))
+            centipawn = info["score"].white().score(mate_score=100000) / 100
             # calculate winning probability
             # https://www.chessprogramming.org/Pawn_Advantage,_Win_Percentage,_and_Elo
             winning_probability = 1 / (1 + pow(10, -centipawn / 4))
@@ -324,64 +326,82 @@ class Game:
         try:
             info = self.engine.analyse(self.board, chess.engine.Limit(
                 time=time_limit, depth=depth_limit))
-            centipawn = info["score"].white().score(mate_score=5000)  # / 100
+            centipawn = info["score"].relative.score(mate_score=100000)  # / 100
             return centipawn
         except:
             print(self.board)
             # self.show_game()
             raise RuntimeError("coudlt calculate evaluation score")  # TODO: LOGG
 
+    def normalize_policy(self, policy, x=-1):
+        """
+        :param policy: policy as from game.get_policy
+        :param x: value how many values of the policy you want to keep
+        :return: sorted normalized cut policy between [0,1]
+        """
+        policy.sort(key=lambda x: x[1], reverse=True)  # sort policy
+        if x > 0:
+            policy = policy[:x]
+        s = abs(sum(row[1] for row in policy))
+        for i in range(len(policy)):
+            policy[i][1] /= s
 
-def normalize_policy(policy, x=-1):
-    """
-    :param policy: policy as from game.get_policy
-    :param x: value how many values of the policy you want to keep
-    :return: sorted normalized cut policy between [0,1]
-    """
-    policy.sort(key=lambda x: x[1], reverse=True)  # sort policy
-    if x > 0:
-        policy = policy[:x]
-    s = sum(row[1] for row in policy)
-    for i in range(len(policy)):
-        policy[i][1] /= s
+        return policy
 
-    return policy
+    def normalize_policy_zero_one(self, policy, x=-1):
+        """
+        :param policy: policy as from game.get_policy
+        :param x: value how many values of the policy you want to keep
+        :return: sorted normalized cut policy between [0,1]
+        """
+        policy.sort(key=lambda x: x[1], reverse=True)  # sort policy
+        n = len(policy)
+        maximum = policy[0][1]
+        minimum = policy[-1][1]
 
+        if x > 0:
+            policy = policy[:x]
+        for i in range(n):
+            policy[i][1] += abs(minimum)
+        s = abs(sum(row[1] for row in policy))
+        s = max(s, 0.01)
+        for i in range(n):
+            policy[i][1] /= s
 
-# def evaluate_position(position, path="Engine/stockfish-x86_64"):
-#     """
-#     :param np.array: current game position
-#         in tensor notation
-#     :return: int with position evaluation score
-#     """
-#     g = Game()
-#     g.board = tensor_to_fen(position)
-#     return g.get_evaluation(path)
+        return policy
 
-# def get_policy_from_position(position):
-#     """
-#     Returns normalized policy for a given position in tensor notation
-#     :param position: np.array: current game position
-#         in tensor notation
-#     :return: normalized policy tensor
-#     """
-#     g = Game()
-#     g.board = tensor_to_fen(position)
-#     return policy_to_tensor(normalize_policy(g.get_policy()))
+    # def evaluate_position(position, path="Engine/stockfish-x86_64"):
+    #     """
+    #     :param np.array: current game position
+    #         in tensor notation
+    #     :return: int with position evaluation score
+    #     """
+    #     g = Game()
+    #     g.board = tensor_to_fen(position)
+    #     return g.get_evaluation(path)
 
+    # def get_policy_from_position(position):
+    #     """
+    #     Returns normalized policy for a given position in tensor notation
+    #     :param position: np.array: current game position
+    #         in tensor notation
+    #     :return: normalized policy tensor
+    #     """
+    #     g = Game()
+    #     g.board = tensor_to_fen(position)
+    #     return policy_to_tensor(normalize_policy(g.get_policy()))
 
-def policy_to_tensor(policy):
-    """
-    :param policy: policy as from game.get_policy
-    :return: tensor regarding the policy
-    """
-    tensor = np.zeros((8, 8, 64)).astype(DATATYPE)
-    for uci, prob in policy:
-        index = move_to_tensor_indices(uci)
-        tensor[index[0], index[1], index[2]] = prob
+    def policy_to_tensor(self, policy):
+        """
+        :param policy: policy as from game.get_policy
+        :return: tensor regarding the policy
+        """
+        tensor = np.zeros((8, 8, 64)).astype(POLICY_DTYPE)
+        for uci, prob in policy:
+            index = move_to_tensor_indices(uci)
+            tensor[index[0], index[1], index[2]] = prob
 
-    return tensor
-
+        return tensor
 
 if __name__ == "__main__":
     # game.make_move(policy[3][0])
@@ -389,9 +409,9 @@ if __name__ == "__main__":
     game = Game()
     i = 0
     while not game.is_ended():
-        # game.get_evaluation()
-        print(game.get_score(), i)
         game.play_random_move()
+        game.get_score()
+        print(game.get_score(), i)
         i += 1
 
     game.show_game()

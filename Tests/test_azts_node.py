@@ -6,11 +6,10 @@ import numpy as np
 import pytest
 from mockito import when, mock, unstub
 
-from azts import azts_node
-from azts import state_machine
-from azts import mock_model
-
-from azts.config import BLACK, ROLLOUT_PAYOFFS, WHITE, \
+from Azts import azts_node
+from Azts import state_machine
+from Azts import mock_model 
+from Azts.config import BLACK, ROLLOUT_PAYOFFS, WHITE, \
         BLACK_WINS, WHITE_WINS
 
 TEST_INDICES = (np.array([1, 4, 4, 2, 1]), \

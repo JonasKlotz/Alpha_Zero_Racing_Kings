@@ -6,13 +6,12 @@ More local configuration parameters can be found in azts.py
 import numpy as np
 import sys
 import os.path
-import os
-
+import os 
 from lib.logger import get_logger
+
+from Azts import mock_model
+
 log = get_logger("azts.config")
-
-from azts import mock_model
-
 
 def find_rootdir():
     rootdir = os.path.split(
@@ -57,7 +56,7 @@ EXPLORATION = 0.1
 HEAT = 1
 
 # Misc
-RUNS_PER_MOVE = 1  # Sets the number of azts runs
+ROLLOUTS_PER_MOVE = 1  # Sets the number of azts runs
 SHOW_GAME = True  # If True boards will be shown in self_play
 
 # Enum Types representing
@@ -111,3 +110,4 @@ MOVE_DTYPE = np.uint8
 POS_DTYPE = np.uint8
 EDGE_DTYPE = np.float16
 IDX_DTYPE = np.uint16
+POLICY_DTYPE = np.float16

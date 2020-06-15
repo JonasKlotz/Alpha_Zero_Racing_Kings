@@ -12,7 +12,7 @@ import numpy as np
 from Interpreter import game
 from Interface import TensorNotation as tn
 
-from azts.config import WHITE, BLACK, \
+from Azts.config import WHITE, BLACK, \
         RUNNING, BLACK_WINS, \
         WHITE_WINS, DRAW
 
@@ -64,13 +64,22 @@ class StateMachine():
         '''
         return tn.tensor_indices_to_move(move_idx)
 
+    def uci_to_move_idx(self, uci):
+        '''
+        translate uci move to indices of move
+        in tensor notation
+        '''
+        return tn.move_to_tensor_indices(uci)
+
     def reset_to_actual_game(self):
         """
         after each rollout, set game
         to the actual state that the
         game is at this point of play
         """
-        self.rollout_game = copy.deepcopy(self.actual_game)
+        self.rollout_game = game.Game()
+        current_state = self.actual_game.board.fen()
+        self.rollout_game.board.set_fen(current_state)
 
     def get_legal_moves_from(self, position):
         '''

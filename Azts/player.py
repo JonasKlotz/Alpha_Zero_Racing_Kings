@@ -7,13 +7,11 @@ API.
 import sys
 import os
 
-from Player import config
-
-from azts import azts_tree
-from azts import state_machine
-from azts import mock_model
-
-from azts.config import RUNS_PER_MOVE, WHITE
+from Player import config 
+from Azts import azts_tree
+from Azts import state_machine
+from Azts import mock_model 
+from Azts.config import ROLLOUTS_PER_MOVE, WHITE
 
 class Player():
     '''
@@ -31,7 +29,7 @@ class Player():
             name="UNNAMED PLAYER", \
             color=WHITE, \
             model=None, \
-            runs_per_move=RUNS_PER_MOVE, \
+            rollouts_per_move=ROLLOUTS_PER_MOVE, \
             exploration=None, \
             rollout_payoffs=None, \
             heat=None, \
@@ -43,22 +41,25 @@ class Player():
         self.name = name
         self.tree = azts_tree.AztsTree(model=model,
                                        color=color,
-                                       runs_per_move=runs_per_move,
+                                       rollouts_per_move=rollouts_per_move,
                                        exploration=exploration,
                                        payoffs=rollout_payoffs,
                                        heat=heat)
+        self.statemachine = None
+        self.color = color
 
     def set_color(self, color):
         '''
         sets color =)
         '''
+        self.color = color
         self.tree.set_color(color)
 
-    def set_runs_per_move(self, runs_per_move):
+    def set_rollouts_per_move(self, rollouts_per_move):
         '''
-        sets runs per move
+        sets rollouts per move
         '''
-        self.tree.runs_per_move = runs_per_move
+        self.tree.rollouts_per_move = rollouts_per_move
 
     def reset(self):
         '''
@@ -131,6 +132,11 @@ class Player():
                 self.tree.get_policy_tensor(),
                 None]
 
+    def stop(self):
+        if self.statemachine:
+            if self.statemachine.actual_game.engine:
+               self.statemachine.actual_game.engine.quit()
+
 
 class CLIPlayer(Player):
     '''
@@ -155,7 +161,7 @@ class CLIPlayer(Player):
     def set_color(self, color):
         self.color = color
 
-    def set_runs_per_move(self, runs_per_move):
+    def set_rollouts_per_move(self, rollouts_per_move):
         pass
 
     def reset(self):
@@ -171,7 +177,8 @@ class CLIPlayer(Player):
         poll the player for a move
         '''
         move = self._parse_user_input()
-        self.receive_move(move)
+        if move != "exit":
+            self.receive_move(move)
         return move
 
     def _parse_user_input(self):
@@ -202,7 +209,7 @@ class CLIPlayer(Player):
             print(f"> {user_input} is not a legal move")
             user_input = input("> ")
 
-        if user_input in legal_moves:
+        if user_input in legal_moves + ["exit"]:
             return user_input
 
         consequences[user_input](legal_moves)
