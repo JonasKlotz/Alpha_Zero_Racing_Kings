@@ -3,6 +3,10 @@ name: mini_alpha_zero
 entry_points:
   main:
     command: "python3 tracking_dummy.py"
+<<<<<<< HEAD
+=======
+
+>>>>>>> 39f7e6f192c0b5979c50e5049364fe4b38f1da00
   train:
     parameters:
         max_iter: {type: float, default: 3}
