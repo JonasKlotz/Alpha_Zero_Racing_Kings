@@ -29,5 +29,5 @@ module load nvidia/tensorrt/6.0.1.5
 cd
 source ~/env/bin/activate
 cd AlphaZero
-mpirun python3 test_run.py
+mpirun python3 Matches/create_dateset.py -p 1 -g 1
 deactivate
