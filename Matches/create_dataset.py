@@ -173,7 +173,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    create_dataset(yamlpaths=[args.player_one, args.player_two],
+    yamlpaths = [args.player_one, args.player_two]
+    handle = utility.get_unused_match_handle(*tuple(yamlpaths))
+    log.info(f"starting matches with handle {handle}")
+    parallel_matches(yamlpaths=[args.player_one, args.player_two],
+                   handle=handle,
                    rollouts_per_move=args.rollouts_per_move,
                    num_of_parallel_processes=args.num_of_parallel_processes,
                    num_of_games_per_process=args.num_of_games_per_process,
