@@ -104,10 +104,7 @@ class Match():
             other_player = self.players[1 - select]
             # handle all moves
             move = active_player.make_move()
-            if move == "exit":
-                for i in self.players:
-                    i.stop()
-                sys.exit()
+            move = self._handle_user_input(move, select)
 
             other_player.receive_move(move)
             self.game.make_move(move)
@@ -123,6 +120,17 @@ class Match():
 
         return self._clean_up_end_game(moves)
 
+
+    def _handle_user_input(self, move, select):
+        if move == "exit":
+            for i in self.players:
+                i.stop()
+            sys.exit()
+        if move == "tree":
+            print(self.players[1 - select].tree)
+            move = self.players[select].make_move()
+
+        return move
 
     def _clean_up_end_game(self, moves):
         '''
