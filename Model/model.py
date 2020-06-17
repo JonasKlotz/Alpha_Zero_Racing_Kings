@@ -310,7 +310,7 @@ class AutoFetchDatasetCallback(keras.callbacks.Callback):
         self.current_dataset_file = get_latest_dataset_file(dataset_dir)
 
     def on_train_batch_end(self, batch, logs=None):
-        new_dataset_file = get_latest_dataset_file(dataset_dir)
+        new_dataset_file = get_latest_dataset_file(self.dataset_dir)
         if not self.current_dataset_file == new_dataset_file:   # XXX use mtime instead?
             log.info("New dataset found: %s", new_dataset_file)
             log.info("Aborting training.")
