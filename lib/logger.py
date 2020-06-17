@@ -1,4 +1,4 @@
-""" Have a look at the logger.py's __main__ for detailed examples on usage;
+""" Have a look at the logger.py's __main__ for detailed examples on usage  
 Usage:
     from lib.logger import get_logger
     log = get_logger(__name__)
@@ -36,6 +36,13 @@ _LOG_LEVEL_STDOUT = logging.DEBUG    # level used for log prints to console
 _LOG_LEVEL_GLOBAL = logging.DEBUG
 _GLOBAL_LEVEL_ENFORCED = False
 
+
+# hacky argument parser
+for i, args in enumerate(sys.argv):
+    spl = args.split("--log_sub_dir=")
+    if len(spl) == 2:
+        LOG_DIR = os.path.join(LOG_DIR, spl[1])
+        sys.argv.pop(i)
 
 # setup variables
 __loggers = []
