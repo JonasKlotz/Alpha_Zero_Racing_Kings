@@ -22,7 +22,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Model.utility import *
 from lib.timing import timing
 
-from azts.config import DATASETDIR
+from Azts.config import DATASETDIR
 from Player.config import Config
 from Model.resnet import resnet_model
 
@@ -30,6 +30,8 @@ from lib.logger import get_logger
 log = get_logger("Model")
 
 mlflow.set_tracking_uri("http://35.223.113.101:8000")
+
+DEBUG = True
 
 
 class AZero:
@@ -60,28 +62,14 @@ class AZero:
         self.initial_epoch = 0
         self.checkpoint_file = None
 
-        if self.config.model.load_from_mlflow:
-            self.load_mlflow()
-        else:
-            self.build_model()
-            self.remember_model_architecture()
-            self.restore_latest_model()
-
+        self.load_model()
+        self.remember_model_architecture()
         self.compile_model()
         self.setup_callbacks()
 
-    def load_mlflow(self, version=None):
-        if version is None:
-            version = mlflow_get_latest_version(self.config.name)
-            if version is None:
-                log.info(
-                    "No model registered as %s found on mlflow server.", self.config.name)
-                self.build_model()
-                return
-        model_uri = self.config.model_uri_format.format(version=version)
-        log.info("Fetching model %s version %s from mlflow server.",
-                 self.config.name, version)
-        self.model = mlflow.keras.load_model(model_uri)
+        mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
+        mlflow.log_param(
+            "learning_rate", self.config.model.training.learning_rate)
 
     def auto_run_training(self, max_iterations=5, max_epochs=10):
         """ Automatically enters a training loop that fetches newest datasets
@@ -105,7 +93,16 @@ class AZero:
     # @timing
     def inference(self, input):
         policy, value = self.model.predict(input[None, :])
-        return policy.squeeze(), value.squeeze()
+        policy = policy.squeeze()
+        value = value.squeeze()
+        if DEBUG:
+            if invalid_tensor(input):
+                log.debug("INVALID TENSOR FOUND IN INPUT")
+            if invalid_tensor(policy):
+                log.debug("INVALID TENSOR FOUND IN POLICY OUTPUT")
+            if invalid_tensor(value):
+                log.debug("INVALID TENSOR FOUND IN VALUE OUTPUT")
+        return policy, value
 
     def setup_callbacks(self, auto_run=False):
         # checkpoint_file = os.path.join(self.config.checkpoint_dir,
@@ -123,9 +120,9 @@ class AZero:
         # callbacks = [checkpoint, lr_reducer]
 
         save_model = LogCallback(self.config.name,
-                                 save_model_every=2,
-                                 save_local=True,
-                                 save_mlflow=True,
+                                 save_model_every=self.config.model.logging.save_model_every,
+                                 save_local=self.config.model.logging.save_local,
+                                 save_mlflow=self.config.model.logging.save_mlflow,
                                  local_dir=self.config.checkpoint_dir)
         # epoch = CountEpochsCallback()
 
@@ -159,8 +156,6 @@ class AZero:
                                     verbose=2)
 
         self.initial_epoch = train_logs.history['epoch'][-1] + 1
-        # idk wo die config gerade ist. im prinzip loggt man die so
-        # mlflow.log_artifact(artifact_path="config", local_path="path/to/config")
 
     def summary(self):
         """ Prints a summary of the model architecture """
@@ -179,6 +174,9 @@ class AZero:
         """ Makes sure that the architecture and config file
         are stored once per model version
         """
+        # if config.model.logging.save_mlflow:
+        #     return  # XXX implement?
+
         # save model
         model_file = os.path.join(
             self.config.checkpoint_dir, "architecture.yaml")
@@ -202,7 +200,7 @@ class AZero:
             self.config.checkpoint_dir)
         return not new_checkpoint_file == self.checkpoint_file
 
-    def restore_latest_model(self):
+    def restore_local_model(self):
         """ Checks for latest model checkpoint and restores the weights """
         checkpoint_file, self.initial_epoch = newest_checkpoint_file(
             self.config.checkpoint_dir)
@@ -210,7 +208,7 @@ class AZero:
         if checkpoint_file is not None:
             self.restore_from_checkpoint(checkpoint_file)
         else:
-            log.info("No previous checkpoint found - initializing new network.")
+            log.info("No previous checkpoint found.")
 
     def restore_from_checkpoint(self, checkpoint_file):
         """ Restores weights from given checkpoint """
@@ -241,8 +239,32 @@ class AZero:
                            optimizer=optimizer,
                            metrics=['accuracy'])
 
+    def load_model(self):
+        if self.config.model.logging.save_mlflow:
+            self.load_from_mlflow(self.config.model.mlflow_model_version)
+        else:
+            self.load_local_model()
+
+    def load_local_model(self):
+        self.build_model()
+        self.restore_local_model()
+
+    def load_from_mlflow(self, version=0):
+        if version is 0:
+            version = mlflow_get_latest_version(self.config.name)
+            if version is 0:
+                log.info(
+                    "No model registered as %s found on mlflow server.", self.config.name)
+                self.build_model()
+                return
+        model_uri = self.config.model_uri_format.format(version=version)
+        log.info("Fetching model %s version %s from mlflow server.",
+                 self.config.name, version)
+        self.model = mlflow.keras.load_model(model_uri)
+
     def build_model(self):
         """ Builds the ResNet model via config parameters """
+        log.info("Initializing new network.")
 
         input_shape = self.config.model.input_shape
         input = keras.layers.Input(shape=input_shape)
@@ -322,12 +344,13 @@ if __name__ == "__main__":
         description="Train a model")
     parser.add_argument(
         "--player", type=str, default="Player/default_config.yaml", help="Path to config file")
-    parser.add_argument("-i", "--max_iterations",
-                        type=int, default=3)
+    parser.add_argument("-i", "--max_iterations", type=int, default=3)
     parser.add_argument("-ep", "--max_epochs", type=int, default=10000)
+    parser.add_argument("--mlflow_model_version", type=int, default=0)
     args = parser.parse_args()
 
     config = Config(args.player)
+    config.model.mlflow_model_version = args.mlflow_model_version
 
     model = AZero(config)
     # model.summary()

@@ -147,12 +147,8 @@ class Config(Options):
         self.__yaml_dict = yaml_dict
 
         # pylint: disable=no-member
-        # TODO: (self.name, self.depth, !!! self.config_revision !!!)
-        self.model_name = "%s%dv%d" % (self.name,
-                                       self.model.resnet_depth,
-                                       self.config_revision)
+        self.model_name = self.name  # will be unused
         self.model_uri_format = "models:/%s/{version}" % self.name
-        self.model_uri = self.model_uri_format.format(version=self.version)
 
         # assign directories as members and create if non-existant
         dirs = self.dirs.as_dictionary()

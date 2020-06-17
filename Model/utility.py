@@ -5,6 +5,10 @@ import numpy as np
 from mlflow.tracking import MlflowClient
 
 
+def invalid_tensor(t):
+    return np.isinfinite(t.numpy()).any()
+
+
 def get_latest_dataset_file(_dir):
     """ Returns newest dataset file in game dir """
     files = os.listdir(_dir)
@@ -33,7 +37,7 @@ def mlflow_get_latest_version(model_name):
         return ml_model.version
     model_list = MlflowClient().search_model_versions("name='%s'" % model_name)
     if len(model_list) == 0:
-        return None
+        return 0
     latest = max(model_list, key=key_map)
     return latest.version
 
