@@ -7,7 +7,12 @@ entry_points:
         max_iter: {type: float, default: 3}
         max_epochs: {type: float, default: 10000}
         mlflow_model_version: {type: int, default: 0}
-    command: "python3 Model/model.py -- --player={player} -i {max_iter} -ep {max_epochs} --mlflow_model_version={mlflow_model_version}"
+        debug: {type: bool, default: True}
+    command: "ipython Model/model.py -- 
+              --player={player} 
+              -i {max_iter} -ep {max_epochs} 
+              --mlflow_model_version={mlflow_model_version} 
+              --debub={debug}"
 
   create_dataset:
     parameters:

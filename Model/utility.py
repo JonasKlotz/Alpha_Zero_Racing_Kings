@@ -5,8 +5,16 @@ import numpy as np
 from mlflow.tracking import MlflowClient
 
 
-def invalid_tensor(t):
-    return np.isinfinite(t.numpy()).any()
+def get_members(obj):
+    return [(a, getattr(obj, a)) for a in dir(obj) and "__" not in a]
+
+
+def valid_tensor(t):
+    return np.isfinite(t.numpy()).any()
+
+
+def valid_ndarray(t):
+    return np.isfinite(t).any()
 
 
 def get_latest_dataset_file(_dir):
@@ -57,7 +65,7 @@ def newest_checkpoint_file(checkpoint_dir):
     for file_name in files:
         file = os.path.join(checkpoint_dir, file_name)
         if os.path.isfile(file):
-            reg = re.search("^0*(\d+).*?\.hdf5", file_name)
+            reg = re.search(r"^0*(\d+).*?\.hdf5", file_name)
             if reg is not None:
                 epoch = int(reg.group(1))
                 return file, epoch

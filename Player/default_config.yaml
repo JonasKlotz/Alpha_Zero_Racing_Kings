@@ -55,9 +55,10 @@ model:
     training:
         learning_rate: 1.e-3
     logging:
-        debug: True
         save_model_every: 5
         log_metrics_every: 1
+        log_mlflow: False
+        load_from_mlflow: True
         save_local: True
         save_mlflow: True
     #residual block specifications
