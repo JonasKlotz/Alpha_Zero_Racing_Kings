@@ -1,7 +1,20 @@
 name: mini_alpha_zero
 
 entry_points:
-  watch_and_learn:
+  train:
+    parameters:
+        player: {type: string, default: "default_config"}
+        max_iter: {type: float, default: 3}
+        max_epochs: {type: float, default: 10000}
+        mlflow_model_version: {type: int, default: 0}
+        debug: {type: bool, default: True}
+    command: "ipython Model/model.py -- 
+              --player={player} 
+              -i {max_iter} -ep {max_epochs} 
+              --mlflow_model_version={mlflow_model_version} 
+              --debub={debug}"
+
+  create_dataset:
     parameters:
         num_of_parallel_processes: {type: float, default: 2}
         num_of_games_per_process: {type: float, default: 10}

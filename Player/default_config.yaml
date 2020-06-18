@@ -2,12 +2,6 @@
 
 #name of the model
 name: 'AlphaZero'
-#the config revision should be updated whenever the old config looses compatibility,
-#i.e. a change is made in the architecture of the model; new parameters
-config_revision: 1
-#version is changed whenever the parameters are reconfigured
-#the model then gets a new unique name and a new folder for checkpoints, etc.
-version: 0
 
 #directories
 dirs:
@@ -54,13 +48,19 @@ stockfish:
 
 #model parameters
 model:
-    load_from_mlflow: False
     #input feature dimensions
     input_shape: [8,8,11]
     #total number of residual blocks
     resnet_depth: 9
     training:
         learning_rate: 1.e-3
+    logging:
+        save_model_every: 5
+        log_metrics_every: 1
+        log_mlflow: False
+        load_from_mlflow: True
+        save_local: True
+        save_mlflow: True
     #residual block specifications
     residual_block:
         #number of layers in residual block

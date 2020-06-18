@@ -5,12 +5,16 @@ and type checking
 import os
 import sys
 import yaml
+import mlflow
 
 ROOTDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOTDIR)
 
 from lib.logger import get_logger
 log = get_logger("Config")
+
+mlflow.set_tracking_uri("http://35.223.113.101:8000")
+
 
 CONFIGDIR = "Player"
 
@@ -133,7 +137,6 @@ class Config(Options):
             log.info("No config provided; using default config.")
             yaml_dict = default_options
         else:
-            print(config_file)
             config_file = search_config_file(config_file)
             log.info("Loading Config from %s.", config_file)
             yaml_dict = yaml.safe_load(stream=open(config_file, 'r'))
@@ -144,18 +147,14 @@ class Config(Options):
         self.__yaml_dict = yaml_dict
 
         # pylint: disable=no-member
-        #TODO: (self.name, self.depth, !!! self.config_revision !!!)
-        self.model_name = "%s%dv%d" % (self.name,
-                                       self.model.resnet_depth,
-                                       self.config_revision)
-        self.model_uri_format = "models:/%s/{version}" % self.model_name
-        self.model_uri = self.model_uri_format.format(version=self.version)
+        self.model_name = self.name  # will be unused
+        self.model_uri_format = "models:/%s/{version}" % self.name
 
         # assign directories as members and create if non-existant
         dirs = self.dirs.as_dictionary()
         base = dirs.pop("base")
         for attr, _dir in dirs.items():
-            dir_abs = os.path.join(ROOTDIR, base, self.model_name, _dir)
+            dir_abs = os.path.join(ROOTDIR, base, self.name, _dir)
             setattr(self, attr, dir_abs)
             if not os.path.exists(dir_abs):
                 log.info("Creating directory %s.", dir_abs)
