@@ -293,7 +293,7 @@ class LogCallback(keras.callbacks.Callback):
 
         logs["epoch"] = epoch
 
-        log_every = self.config.model.logging.log_every
+        log_every = self.config.model.logging.log_metrics_every
         log_mlflow = self.config.model.logging.log_mlflow
         save_model_every = self.config.model.logging.save_model_every
         save_local = self.config.model.logging.save_local
