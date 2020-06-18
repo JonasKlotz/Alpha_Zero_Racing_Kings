@@ -4,13 +4,16 @@ import os
 import sys
 import pickle
 import time
-import keras
 import numpy as np
 import argparse
 
 import mlflow
 import mlflow.keras
 from mlflow.tracking import MlflowClient
+
+# import tensorflow as tf
+# import tensorflow.keras as keras
+import keras
 
 from keras.optimizers import Adam
 # from keras.callbacks import ModelCheckpoint, LearningRateScheduler
@@ -67,9 +70,10 @@ class AZero:
         self.compile_model()
         self.setup_callbacks()
 
-        mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
-        mlflow.log_param(
-            "learning_rate", self.config.model.training.learning_rate)
+        if self.config.model.logging.log_mlflow:
+            mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
+            mlflow.log_param(
+                "learning_rate", self.config.model.training.learning_rate)
 
     def auto_run_training(self, max_iterations=5, max_epochs=10):
         """ Automatically enters a training loop that fetches newest datasets
@@ -96,12 +100,12 @@ class AZero:
         policy = policy.squeeze()
         value = value.squeeze()
         if DEBUG:
-            if invalid_tensor(input):
-                log.debug("INVALID TENSOR FOUND IN INPUT")
-            if invalid_tensor(policy):
-                log.debug("INVALID TENSOR FOUND IN POLICY OUTPUT")
-            if invalid_tensor(value):
-                log.debug("INVALID TENSOR FOUND IN VALUE OUTPUT")
+            if not valid_tensor(input):
+                log.critical("INVALID TENSOR FOUND IN INPUT")
+            if not valid_tensor(policy):
+                log.critical("INVALID TENSOR FOUND IN POLICY OUTPUT")
+            if not valid_tensor(value):
+                log.critical("INVALID TENSOR FOUND IN VALUE OUTPUT")
         return policy, value
 
     def setup_callbacks(self, auto_run=False):
@@ -119,12 +123,7 @@ class AZero:
         #                                min_lr=0.5e-6)
         # callbacks = [checkpoint, lr_reducer]
 
-        save_model = LogCallback(self.config.name,
-                                 save_model_every=self.config.model.logging.save_model_every,
-                                 save_local=self.config.model.logging.save_local,
-                                 save_mlflow=self.config.model.logging.save_mlflow,
-                                 local_dir=self.config.checkpoint_dir)
-        # epoch = CountEpochsCallback()
+        save_model = LogCallback(self.config)
 
         callbacks = [save_model]
 
@@ -139,6 +138,13 @@ class AZero:
         """ Enters the training loop """
 
         x_train, y_train = prepare_dataset(train_data)
+
+        if DEBUG:
+            assert valid_ndarray(x_train), "INVALID ndarray FOUND IN x_train"
+            assert valid_ndarray(
+                y_train["policy_head"]), "INVALID ndarray FOUND IN policy of y_train"
+            assert valid_ndarray(
+                y_train["value_head"]), "INVALID ndarray FOUND IN value of y_train"
 
         if initial_epoch is None:
             initial_epoch = self.initial_epoch
@@ -209,6 +215,7 @@ class AZero:
             self.restore_from_checkpoint(checkpoint_file)
         else:
             log.info("No previous checkpoint found.")
+            log.info("Initializing new network.")
 
     def restore_from_checkpoint(self, checkpoint_file):
         """ Restores weights from given checkpoint """
@@ -231,7 +238,8 @@ class AZero:
 
     def compile_model(self):
         """ Compiles the model """
-        losses = {"policy_head": "categorical_crossentropy",
+        categorical = keras.losses.CategoricalCrossentropy(from_logits=True)
+        losses = {"policy_head": categorical,
                   "value_head": "mean_squared_error"}
         learning_rate = self.config.model.training.learning_rate
         optimizer = Adam(learning_rate=learning_rate)
@@ -240,7 +248,7 @@ class AZero:
                            metrics=['accuracy'])
 
     def load_model(self):
-        if self.config.model.logging.save_mlflow:
+        if self.config.model.logging.load_from_mlflow:
             self.load_from_mlflow(self.config.model.mlflow_model_version)
         else:
             self.load_local_model()
@@ -250,11 +258,12 @@ class AZero:
         self.restore_local_model()
 
     def load_from_mlflow(self, version=0):
-        if version is 0:
+        if version is 0:    # search for newest model on server
             version = mlflow_get_latest_version(self.config.name)
-            if version is 0:
+            if version is 0:    # no model version registered
                 log.info(
                     "No model registered as %s found on mlflow server.", self.config.name)
+                log.info("Initializing new network.")
                 self.build_model()
                 return
         model_uri = self.config.model_uri_format.format(version=version)
@@ -264,7 +273,6 @@ class AZero:
 
     def build_model(self):
         """ Builds the ResNet model via config parameters """
-        log.info("Initializing new network.")
 
         input_shape = self.config.model.input_shape
         input = keras.layers.Input(shape=input_shape)
@@ -275,50 +283,62 @@ class AZero:
                                         name=self.config.model_name)
 
 
-class CountEpochsCallback(keras.callbacks.Callback):
-    """ keras Callback Class, used to count epochs """
-
-    def on_epoch_end(self, epoch, logs=None):
-        logs["epoch"] = epoch
-
-
 class LogCallback(keras.callbacks.Callback):
-    """ keras Callback Class, used to abort training
-    if new datasets are available """
+    """ keras Callback Class, used to log metrics """
 
-    def __init__(self, model_name, log_every=1, save_model_every=1, save_local=True, save_mlflow=True, local_dir="_Data/models"):
+    def __init__(self, config):
         # pylint: disable=bad-super-call
         super(keras.callbacks.Callback, self).__init__()
-        self.save_local_fmt = "{epoch:02d}-{loss:.2f}.hdf5"
-        self.log_every = log_every
-        self.save_model_every = save_model_every
-        self.save_local = save_local
-        self.save_mlflow = save_mlflow
-        self.local_dir = local_dir
-        self.model_name = model_name
+        self.config = config
+        self.metrics = ["loss", "policy_head_accuracy", "policy_head_loss",
+                        "value_head_accuracy", "value_head_loss", "epoch"]
 
     def on_epoch_end(self, epoch, logs=None):
 
         logs["epoch"] = epoch
 
-        if epoch % self.log_every == 0:
-            metrics = ["loss", "policy_head_accuracy", "policy_head_loss",
-                       "value_head_accuracy", "value_head_loss", "epoch"]
-            for m in metrics:
-                mlflow.log_metric(m, logs[m], step=epoch)
+        log_every = self.config.model.logging.log_metrics_every
+        log_mlflow = self.config.model.logging.log_mlflow
+        save_model_every = self.config.model.logging.save_model_every
+        save_local = self.config.model.logging.save_local
+        save_mlflow = self.config.model.logging.save_mlflow
+        local_dir = self.config.checkpoint_dir
+        model_name = self.config.name
 
-        if epoch % self.save_model_every == 0:
-            if self.save_local:
-                file = os.path.join(self.local_dir, self.save_local_fmt.format(
+        save_local_fmt = "{epoch:02d}-{loss:.2f}.hdf5"
+
+        if log_mlflow and epoch % log_every == 0:
+            for metric in self.metrics:
+                mlflow.log_metric(metric, logs[metric], step=epoch)
+
+        if epoch % save_model_every == 0:
+            if save_local:
+                file = os.path.join(local_dir, save_local_fmt.format(
                     epoch=epoch, loss=logs["loss"]))
                 log.info("Saving model to %s...", file)
                 self.model.save_weights(file)
-            if self.save_mlflow:
-                log.info("Saving model to mlflow as %s...", self.model_name)
+            if save_mlflow:
+                log.info("Saving model to mlflow as %s...", model_name)
                 mlflow.keras.log_model(artifact_path="model",
                                        keras_model=self.model,
                                        keras_module=keras,
-                                       registered_model_name=self.model_name)
+                                       registered_model_name=model_name)
+
+    def on_train_batch_end(self, batch, logs=None):
+        if DEBUG:
+            log.debug(logs)
+            valid = True
+            for l, layer in enumerate(self.model.layers):
+                weights = layer.get_weights()
+                if l == 0:
+                    continue
+                for i, w in enumerate(weights):
+                    if not valid_ndarray(w):
+                        log.critical(
+                            "Invalid entry (%i) found in layer %s (%i)", i, layer.name, l)
+                        valid = False
+
+            assert valid, "Invalid layer"
 
 
 class AutoFetchDatasetCallback(keras.callbacks.Callback):
@@ -333,7 +353,7 @@ class AutoFetchDatasetCallback(keras.callbacks.Callback):
 
     def on_train_batch_end(self, batch, logs=None):
         new_dataset_file = get_latest_dataset_file(self.dataset_dir)
-        if not self.current_dataset_file == new_dataset_file:   # XXX use mtime instead?
+        if not self.current_dataset_file == new_dataset_file:
             log.info("New dataset found: %s", new_dataset_file)
             log.info("Aborting training.")
             self.model.stop_training = True
@@ -347,12 +367,16 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--max_iterations", type=int, default=3)
     parser.add_argument("-ep", "--max_epochs", type=int, default=10000)
     parser.add_argument("--mlflow_model_version", type=int, default=0)
+    parser.add_argument("--debug", type=bool, default=False)
     args = parser.parse_args()
+
+    DEBUG = args.debug
 
     config = Config(args.player)
     config.model.mlflow_model_version = args.mlflow_model_version
 
     model = AZero(config)
     # model.summary()
+    # model.plot_model()
     model.auto_run_training(max_epochs=args.max_epochs,
                             max_iterations=args.max_iterations)

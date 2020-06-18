@@ -1,5 +1,4 @@
-import keras.layers
-from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
+from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten, Add
 from keras.regularizers import l2
 
 
@@ -67,7 +66,7 @@ def resnet_model(input, config):
                 else:
                     _x = res_layer(_x)
             # skip connection
-            _x = keras.layers.add([_x, y])
+            _x = Add()([_x, y])
             _x = Activation(activation)(_x)
         return _x
 
