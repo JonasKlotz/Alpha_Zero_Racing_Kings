@@ -2,32 +2,36 @@
 """
 import os
 import sys
-import re
 import pickle
 import time
 import keras
-import mlflow
-import mlflow.keras
 import numpy as np
-
-# add root folder to python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten
-from keras.optimizers import Adam
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-# from keras.callbacks import ReduceLROnPlateau
-from keras.regularizers import l2
-from keras.utils.vis_utils import plot_model
 import argparse
 
+import mlflow
+import mlflow.keras
+from mlflow.tracking import MlflowClient
+
+from keras.optimizers import Adam
+# from keras.callbacks import ModelCheckpoint, LearningRateScheduler
+# from keras.callbacks import ReduceLROnPlateau
+from keras.utils.vis_utils import plot_model
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from Model.utility import *
 from lib.timing import timing
 
 from Azts.config import DATASETDIR
 from Player.config import Config
+from Model.resnet import resnet_model
 
 from lib.logger import get_logger
 log = get_logger("Model")
+
+mlflow.set_tracking_uri("http://35.223.113.101:8000")
+
+DEBUG = True
 
 
 class AZero:
@@ -53,39 +57,32 @@ class AZero:
         """
 
         self.config = config
+        self.config.dataset_dir = DATASETDIR    # XXX Tell Seba to use dataset_dir
 
         self.initial_epoch = 0
         self.checkpoint_file = None
 
-        if self.config.model.load_from_mlflow:
-            self.load_mlflow()  # XXX are all parameters set?
-        else:
-            self.build_model()
-            self.remember_model_architecture()
-            self.restore_latest_model()
-
+        self.load_model()
+        self.remember_model_architecture()
         self.compile_model()
         self.setup_callbacks()
 
-    def load_mlflow(self, version=None):
-        if version is None:
-            model_uri = self.config.model_uri
-        else:
-            model_uri = self.config.model_uri_format.format(version)
-        log.info("Loading model from mlflow server.")
-        self.model = mlflow.keras.load_model(model_uri)
+        mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
+        mlflow.log_param(
+            "learning_rate", self.config.model.training.learning_rate)
 
     def auto_run_training(self, max_iterations=5, max_epochs=10):
         """ Automatically enters a training loop that fetches newest datasets
         """
-
         for i in range(max_iterations):
-            dataset_file = get_latest_dataset_file()
+            dataset_file = get_latest_dataset_file(self.config.dataset_dir)
             if dataset_file is None:
-                log.info("No dataset found in %s. Waiting..", DATASETDIR)
+                log.info("No dataset found in %s. Waiting..",
+                         self.config.dataset_dir)
                 while dataset_file is None:
                     time.sleep(1)
-                    dataset_file = get_latest_dataset_file()
+                    dataset_file = get_latest_dataset_file(
+                        self.config.dataset_dir)
             self.setup_callbacks(auto_run=True)  # new file, new callback
             with open(dataset_file, 'rb') as f:
                 train_data = pickle.load(f)
@@ -96,16 +93,25 @@ class AZero:
     # @timing
     def inference(self, input):
         policy, value = self.model.predict(input[None, :])
-        return policy.squeeze(), value.squeeze()
+        policy = policy.squeeze()
+        value = value.squeeze()
+        if DEBUG:
+            if invalid_tensor(input):
+                log.debug("INVALID TENSOR FOUND IN INPUT")
+            if invalid_tensor(policy):
+                log.debug("INVALID TENSOR FOUND IN POLICY OUTPUT")
+            if invalid_tensor(value):
+                log.debug("INVALID TENSOR FOUND IN VALUE OUTPUT")
+        return policy, value
 
     def setup_callbacks(self, auto_run=False):
-        checkpoint_file = os.path.join(self.config.checkpoint_dir,
-                                       "{epoch:02d}-{loss:.2f}.hdf5")
-        checkpoint = ModelCheckpoint(filepath=checkpoint_file,
-                                     # monitor='val_acc',
-                                     save_weights_only=True,
-                                     verbose=1,
-                                     save_best_only=False)
+        # checkpoint_file = os.path.join(self.config.checkpoint_dir,
+        #                                "{epoch:02d}-{loss:.2f}.hdf5")
+        # checkpoint = ModelCheckpoint(filepath=checkpoint_file,
+        #                              # monitor='val_acc',
+        #                              save_weights_only=True,
+        #                              verbose=1,
+        #                              save_best_only=False)
 
         # lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
         #                                cooldown=0,
@@ -113,12 +119,18 @@ class AZero:
         #                                min_lr=0.5e-6)
         # callbacks = [checkpoint, lr_reducer]
 
-        epoch = CountEpochs()
+        save_model = LogCallback(self.config.name,
+                                 save_model_every=self.config.model.logging.save_model_every,
+                                 save_local=self.config.model.logging.save_local,
+                                 save_mlflow=self.config.model.logging.save_mlflow,
+                                 local_dir=self.config.checkpoint_dir)
+        # epoch = CountEpochsCallback()
 
-        callbacks = [checkpoint, epoch]
+        callbacks = [save_model]
 
         if auto_run:
-            auto_fetch_dataset = AutoFetchDataset(get_latest_dataset_file())
+            auto_fetch_dataset = AutoFetchDatasetCallback(
+                self.config.dataset_dir)
             callbacks.append(auto_fetch_dataset)
 
         self.callbacks = callbacks
@@ -135,30 +147,15 @@ class AZero:
             epochs = 10000
 
         # begin training
-        mlflow.set_tracking_uri = "http://35.223.113.101:8000"
-        with mlflow.start_run():
-            train_logs = self.model.fit(x_train, y_train,
-                                        batch_size=batch_size,
-                                        epochs=initial_epoch + epochs,
-                                        shuffle=True,
-                                        callbacks=self.callbacks,
-                                        initial_epoch=initial_epoch,
-                                        verbose=2)
-            self.initial_epoch = train_logs.history['epoch'][-1] + 1
-            print(self.initial_epoch)
+        train_logs = self.model.fit(x_train, y_train,
+                                    batch_size=batch_size,
+                                    epochs=initial_epoch + epochs,
+                                    shuffle=True,
+                                    callbacks=self.callbacks,
+                                    initial_epoch=initial_epoch,
+                                    verbose=2)
 
-            # mlflow logging
-
-            mlflow.log_param("epochs", epochs)
-            # TODO: wo kriegen wir den echten loss her?
-            #mlflow.log_metric("loss", 5)
-            mlflow.keras.log_model(artifact_path="model",
-                                   keras_model=self.model,
-                                   keras_module=keras,
-                                   registered_model_name=self.config.model_name)
-            # idk wo die config gerade ist. im prinzip loggt man die so
-            # mlflow.log_artifact(artifact_path="config", local_path="path/to/config")
-
+        self.initial_epoch = train_logs.history['epoch'][-1] + 1
 
     def summary(self):
         """ Prints a summary of the model architecture """
@@ -177,6 +174,9 @@ class AZero:
         """ Makes sure that the architecture and config file
         are stored once per model version
         """
+        # if config.model.logging.save_mlflow:
+        #     return  # XXX implement?
+
         # save model
         model_file = os.path.join(
             self.config.checkpoint_dir, "architecture.yaml")
@@ -196,40 +196,19 @@ class AZero:
     def new_model_available(self):
         """ checks whether a new checkpoint file is available 
         not very robust; only checks for file name """
-        new_checkpoint_file, _ = self.newest_checkpoint_file()
+        new_checkpoint_file, _ = newest_checkpoint_file(
+            self.config.checkpoint_dir)
         return not new_checkpoint_file == self.checkpoint_file
 
-    def newest_checkpoint_file(self):
-        """ searches checkpoint dir for newest checkpoint,
-        goes by file mtime..
-        Returns:
-            file (str): filepath
-            epoch (int): checkpoint's epoch
-        """
-        chkpt_dir = self.config.checkpoint_dir
-
-        def chkpt_sort(file):   # XXX go for newest epoch?
-            return os.path.getmtime(os.path.join(chkpt_dir, file))
-
-        files = reversed(sorted(os.listdir(chkpt_dir), key=chkpt_sort))
-
-        for file_name in files:
-            file = os.path.join(chkpt_dir, file_name)
-            if os.path.isfile(file):
-                reg = re.search("^0*(\d+).*?\.hdf5", file_name)
-                if reg is not None:
-                    epoch = int(reg.group(1))
-                    return file, epoch
-        return None, 0
-
-    def restore_latest_model(self):
+    def restore_local_model(self):
         """ Checks for latest model checkpoint and restores the weights """
-        checkpoint_file, self.initial_epoch = self.newest_checkpoint_file()
+        checkpoint_file, self.initial_epoch = newest_checkpoint_file(
+            self.config.checkpoint_dir)
 
         if checkpoint_file is not None:
             self.restore_from_checkpoint(checkpoint_file)
         else:
-            log.info("No previous checkpoint found - initializing new network.")
+            log.info("No previous checkpoint found.")
 
     def restore_from_checkpoint(self, checkpoint_file):
         """ Restores weights from given checkpoint """
@@ -260,184 +239,100 @@ class AZero:
                            optimizer=optimizer,
                            metrics=['accuracy'])
 
+    def load_model(self):
+        if self.config.model.logging.save_mlflow:
+            self.load_from_mlflow(self.config.model.mlflow_model_version)
+        else:
+            self.load_local_model()
+
+    def load_local_model(self):
+        self.build_model()
+        self.restore_local_model()
+
+    def load_from_mlflow(self, version=0):
+        if version is 0:
+            version = mlflow_get_latest_version(self.config.name)
+            if version is 0:
+                log.info(
+                    "No model registered as %s found on mlflow server.", self.config.name)
+                self.build_model()
+                return
+        model_uri = self.config.model_uri_format.format(version=version)
+        log.info("Fetching model %s version %s from mlflow server.",
+                 self.config.name, version)
+        self.model = mlflow.keras.load_model(model_uri)
+
     def build_model(self):
         """ Builds the ResNet model via config parameters """
+        log.info("Initializing new network.")
 
-        def residual_layer(input,
-                           num_filters,
-                           kernel_size=3,
-                           stride=1,
-                           activation='relu',
-                           batch_normalization=True):
-            """ A residual layer
-            Args:
-                input (tensor): input tensor
-                num_filters (int): number of convolutional filters
-                kernel_size (int): size of the convolutional kernels
-                stride (int): step size of the filters
-                activation (string): activation function
-                batch_normalization (bool): apply batch normalization
-            Returns:
-                x (tensor): output tensor of residual layer
-            """
-            _x = input
-            _x = Conv2D(num_filters,
-                        kernel_size=kernel_size,
-                        strides=stride,
-                        padding='same',
-                        kernel_initializer='he_normal',
-                        kernel_regularizer=l2(1e-4))(_x)
-            if batch_normalization:
-                _x = BatchNormalization()(_x)
-            if activation is not None:
-                _x = Activation(activation)(_x)
-            return _x
-
-        def body_model(self, input):
-            # read config
-            num_res_blocks = self.config.model.resnet_depth
-            num_layers = self.config.model.residual_block.layers
-            num_filters = self.config.model.residual_block.num_filters
-            filter_size = self.config.model.residual_block.filter_size
-            filter_stride = self.config.model.residual_block.filter_stride
-            activation = self.config.model.residual_block.activation
-            batch_normalization = self.config.model.residual_block.batch_normalization
-
-            def res_layer(input, activation=activation):
-                return residual_layer(input=input,
-                                      num_filters=num_filters,
-                                      kernel_size=filter_size,
-                                      stride=filter_stride,
-                                      activation=activation,
-                                      batch_normalization=batch_normalization)
-
-            # build model
-            _x = input
-            _x = res_layer(_x)
-            for _ in range(num_res_blocks):
-                # residual block
-                y = _x
-                for layer in range(num_layers):
-                    if layer == num_layers - 1:
-                        _x = res_layer(_x, activation=None)
-                    else:
-                        _x = res_layer(_x)
-                # skip connection
-                _x = keras.layers.add([_x, y])
-                _x = Activation(activation)(_x)
-            return _x
-
-        def policy_head_model(self, input):
-            # read config
-            opt = self.config.model.policy_head
-            res_num_filters = opt.residual_layer.num_filters
-            res_filter_size = opt.residual_layer.filter_size
-            res_filter_stride = opt.residual_layer.filter_stride
-            res_batch_normalization = opt.residual_layer.batch_normalization
-            res_activation = self.config.model.residual_block.activation
-            dense_num_filters = opt.dense_layer.num_filters
-            dense_activation = opt.dense_layer.activation
-
-            # build model
-            _x = input
-            _x = residual_layer(input=_x,
-                                num_filters=res_num_filters,
-                                kernel_size=res_filter_size,
-                                stride=res_filter_stride,
-                                activation=res_activation,
-                                batch_normalization=res_batch_normalization)
-            _x = Dense(dense_num_filters,
-                       activation=dense_activation,
-                       kernel_initializer='he_normal',
-                       name="policy_head")(_x)
-            return _x
-
-        def value_head_model(self, input):
-            # read config
-            opt = self.config.model.value_head
-            res_num_filters = opt.residual_layer.num_filters
-            res_filter_size = opt.residual_layer.filter_size
-            res_filter_stride = opt.residual_layer.filter_stride
-            res_batch_normalization = opt.residual_layer.batch_normalization
-            res_activation = self.config.model.residual_block.activation
-            dense_num_filters = opt.dense_layer.num_filters
-            dense_activation = opt.dense_layer.activation
-
-            # build model
-            _x = input
-            _x = residual_layer(input=_x,
-                                num_filters=res_num_filters,
-                                kernel_size=res_filter_size,
-                                stride=res_filter_stride,
-                                activation=res_activation,
-                                batch_normalization=res_batch_normalization)
-            _x = Flatten()(_x)
-            _x = Dense(dense_num_filters,
-                       activation='relu',
-                       kernel_initializer='he_normal')(_x)
-            _x = Dense(1,
-                       activation=dense_activation,
-                       kernel_initializer='he_normal',
-                       name="value_head")(_x)
-            return _x
-
-        # define input tensor
         input_shape = self.config.model.input_shape
         input = keras.layers.Input(shape=input_shape)
 
-        # build model
-        body = body_model(self, input)
-        policy_head = policy_head_model(self, body)
-        value_head = value_head_model(self, body)
-
+        policy_head, value_head = resnet_model(input, self.config)
         self.model = keras.models.Model(inputs=[input],
                                         outputs=[policy_head, value_head],
                                         name=self.config.model_name)
 
 
-def get_latest_dataset_file():
-    """ Returns newest dataset file in game dir """
-    _dir = DATASETDIR
-    files = os.listdir(_dir)
-    if len(files) == 0:
-        return None
-
-    def key_map(file):
-        return os.path.getmtime(os.path.join(_dir, file))
-    newest_file = max(files, key=key_map)
-    return os.path.join(_dir, newest_file)
-
-
-def prepare_dataset(train_data):
-    """ Transforms dataset to format that keras.model expects """
-    x_train, y_train_p, y_train_v = np.hsplit(np.array(train_data), [1, 2])
-    x_train = np.stack(x_train.flatten(), axis=0)
-    y_train_p = np.stack(y_train_p.flatten(), axis=0)
-    y_train_v = np.stack(y_train_v.flatten(), axis=0)
-    y_train = {"policy_head": y_train_p,
-               "value_head": y_train_v}
-    return x_train, y_train
-
-
-class CountEpochs(keras.callbacks.Callback):
+class CountEpochsCallback(keras.callbacks.Callback):
     """ keras Callback Class, used to count epochs """
 
     def on_epoch_end(self, epoch, logs=None):
         logs["epoch"] = epoch
 
 
-class AutoFetchDataset(keras.callbacks.Callback):
+class LogCallback(keras.callbacks.Callback):
     """ keras Callback Class, used to abort training
     if new datasets are available """
 
-    def __init__(self, dataset_file):
+    def __init__(self, model_name, log_every=1, save_model_every=1, save_local=True, save_mlflow=True, local_dir="_Data/models"):
         # pylint: disable=bad-super-call
         super(keras.callbacks.Callback, self).__init__()
-        # pylint: enable=bad-super-call
-        self.current_dataset_file = dataset_file
+        self.save_local_fmt = "{epoch:02d}-{loss:.2f}.hdf5"
+        self.log_every = log_every
+        self.save_model_every = save_model_every
+        self.save_local = save_local
+        self.save_mlflow = save_mlflow
+        self.local_dir = local_dir
+        self.model_name = model_name
+
+    def on_epoch_end(self, epoch, logs=None):
+
+        logs["epoch"] = epoch
+
+        if epoch % self.log_every == 0:
+            metrics = ["loss", "policy_head_accuracy", "policy_head_loss",
+                       "value_head_accuracy", "value_head_loss", "epoch"]
+            for m in metrics:
+                mlflow.log_metric(m, logs[m], step=epoch)
+
+        if epoch % self.save_model_every == 0:
+            if self.save_local:
+                file = os.path.join(self.local_dir, self.save_local_fmt.format(
+                    epoch=epoch, loss=logs["loss"]))
+                log.info("Saving model to %s...", file)
+                self.model.save_weights(file)
+            if self.save_mlflow:
+                log.info("Saving model to mlflow as %s...", self.model_name)
+                mlflow.keras.log_model(artifact_path="model",
+                                       keras_model=self.model,
+                                       keras_module=keras,
+                                       registered_model_name=self.model_name)
+
+
+class AutoFetchDatasetCallback(keras.callbacks.Callback):
+    """ keras Callback Class, used to abort training
+    if new datasets are available """
+
+    def __init__(self, dataset_dir):
+        # pylint: disable=bad-super-call
+        super(keras.callbacks.Callback, self).__init__()
+        self.dataset_dir = dataset_dir
+        self.current_dataset_file = get_latest_dataset_file(dataset_dir)
 
     def on_train_batch_end(self, batch, logs=None):
-        new_dataset_file = get_latest_dataset_file()
+        new_dataset_file = get_latest_dataset_file(self.dataset_dir)
         if not self.current_dataset_file == new_dataset_file:   # XXX use mtime instead?
             log.info("New dataset found: %s", new_dataset_file)
             log.info("Aborting training.")
@@ -445,15 +340,19 @@ class AutoFetchDataset(keras.callbacks.Callback):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Maximum of Iterations of Training.")
-    parser.add_argument("-i", "--max_iterations",
-                        type=int, default=3)
+    parser = argparse.ArgumentParser(
+        description="Train a model")
+    parser.add_argument(
+        "--player", type=str, default="Player/default_config.yaml", help="Path to config file")
+    parser.add_argument("-i", "--max_iterations", type=int, default=3)
     parser.add_argument("-ep", "--max_epochs", type=int, default=10000)
+    parser.add_argument("--mlflow_model_version", type=int, default=0)
     args = parser.parse_args()
 
-    config = Config()
+    config = Config(args.player)
+    config.model.mlflow_model_version = args.mlflow_model_version
 
     model = AZero(config)
-    model.auto_run_training(max_epochs=args.max_epochs, max_iterations=args.max_iterations)
-
-
+    # model.summary()
+    model.auto_run_training(max_epochs=args.max_epochs,
+                            max_iterations=args.max_iterations)

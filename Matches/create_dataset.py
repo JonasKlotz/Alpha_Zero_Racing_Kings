@@ -4,9 +4,9 @@ import random
 import string
 import multiprocessing
 import os.path
-import pickle 
+import pickle
 import argparse
-from lib.logger import get_logger 
+from lib.logger import get_logger
 
 from Player import config
 from Azts import mock_model
@@ -17,6 +17,8 @@ from Matches import contest
 
 log = get_logger("create_dataset")
 
+
+@timing
 def create_dataset(yamlpaths,
                    rollouts_per_move,
                    num_of_parallel_processes,
@@ -39,6 +41,7 @@ def create_dataset(yamlpaths,
                      fork_method=fork_method)
     assemble_dataset(handle)
     return 0
+
 
 def assemble_dataset(handle):
     '''
@@ -75,11 +78,11 @@ def assemble_dataset(handle):
 
     test_load = pickle.load(open(dataset_path, "rb"))
     log.info(f"verified integrity of file.\n"
-          + f"dataset is of type {type(test_load)},\n"
-            + f"has {len(test_load)} entries of type {type(test_load[0])}\n"
-            + f"with {len(test_load[0])} entries of type\n"
-            + f"{type(test_load[0][0])}, {type(test_load[0][1])}, "
-            + f"{type(test_load[0][2])}.")
+             + f"dataset is of type {type(test_load)},\n"
+             + f"has {len(test_load)} entries of type {type(test_load[0])}\n"
+             + f"with {len(test_load[0])} entries of type\n"
+             + f"{type(test_load[0][0])}, {type(test_load[0][1])}, "
+             + f"{type(test_load[0][2])}.")
 
     return
 
@@ -129,47 +132,47 @@ def parallel_matches(yamlpaths,
     # written to disk
     return
 
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Multiprocessing generation of self-play "
-            + "games. Each process generates games independently "
-            + f"and each game is stored in {GAMEDIR}. Games are "
-            + "collected after all processes are finished and "
-            + "assembled into a single dataset, which is "
-            + f"stored in {DATASETDIR}. The dataset is "
-            + "being verified by loading it and providing "
-            + "a print message with details before the "
-            + "script terminates.")
+                                     + "games. Each process generates games independently "
+                                     + f"and each game is stored in {GAMEDIR}. Games are "
+                                     + "collected after all processes are finished and "
+                                     + "assembled into a single dataset, which is "
+                                     + f"stored in {DATASETDIR}. The dataset is "
+                                     + "being verified by loading it and providing "
+                                     + "a print message with details before the "
+                                     + "script terminates.")
     parser.add_argument("-p", "--num_of_parallel_processes",
-            type=int, default=2,
-            help="choose number of processes which generate "
-            + "games. The number of your CPU cores is a good "
-            + "starting point. Defaults to 2")
+                        type=int, default=2,
+                        help="choose number of processes which generate "
+                        + "games. The number of your CPU cores is a good "
+                        + "starting point. Defaults to 2")
     parser.add_argument("-g", "--num_of_games_per_process",
-            type=int, default=10,
-            help="number of games to be created by each "
-            + "process. Defaults to 10")
+                        type=int, default=10,
+                        help="number of games to be created by each "
+                        + "process. Defaults to 10")
     parser.add_argument("-r", "--rollouts_per_move",
-            type=int, default=100, help="number of "
-            + "rollouts that the engine performs while "
-            + "determinating a single move. Defaults to 100.")
+                        type=int, default=100, help="number of "
+                        + "rollouts that the engine performs while "
+                        + "determinating a single move. Defaults to 100.")
     parser.add_argument("--fork_method", type=str,
-            default="spawn", help="depending on operating "
-            + "system, different fork methods are valid for "
-            + "multithreading. \"spawn\" has apparently the "
-            + "widest compatibility. Other options are "
-            + "\"fork\" and \"forkserver\". See "
-            + "https://docs.python.org/3/library/multiprocessing.html "
-            + "for details. Defaults to \"spawn\".")
+                        default="spawn", help="depending on operating "
+                        + "system, different fork methods are valid for "
+                        + "multithreading. \"spawn\" has apparently the "
+                        + "widest compatibility. Other options are "
+                        + "\"fork\" and \"forkserver\". See "
+                        + "https://docs.python.org/3/library/multiprocessing.html "
+                        + "for details. Defaults to \"spawn\".")
     parser.add_argument("--player_one", type=str,
-            default="Player/default_config.yaml",
-            help="Player one configuration file. Is by default "
-            + "set to \"Player/default_config.yaml\".")
+                        default="Player/default_config.yaml",
+                        help="Player one configuration file. Is by default "
+                        + "set to \"Player/default_config.yaml\".")
     parser.add_argument("--player_two", type=str,
-            default="Player/default_config.yaml",
-            help="Player two configuration file. Is by default "
-            + "set to \"Player/default_config.yaml\".")
-
+                        default="Player/default_config.yaml",
+                        help="Player two configuration file. Is by default "
+                        + "set to \"Player/default_config.yaml\".")
 
     args = parser.parse_args()
 
@@ -178,6 +181,8 @@ if __name__ == "__main__":
                    num_of_parallel_processes=args.num_of_parallel_processes,
                    num_of_games_per_process=args.num_of_games_per_process,
                    fork_method=args.fork_method)
+
+    runtime_summary()
 
 # pylint: enable=E0401
 # pylint: enable=E0602
