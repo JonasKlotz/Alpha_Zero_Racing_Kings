@@ -4,13 +4,16 @@ import os
 import sys
 import pickle
 import time
-import keras
 import numpy as np
 import argparse
 
 import mlflow
 import mlflow.keras
 from mlflow.tracking import MlflowClient
+
+# import tensorflow as tf
+# import tensorflow.keras as keras
+import keras
 
 from keras.optimizers import Adam
 # from keras.callbacks import ModelCheckpoint, LearningRateScheduler
@@ -235,7 +238,8 @@ class AZero:
 
     def compile_model(self):
         """ Compiles the model """
-        losses = {"policy_head": "categorical_crossentropy",
+        categorical = keras.losses.CategoricalCrossentropy(from_logits=True)
+        losses = {"policy_head": categorical,
                   "value_head": "mean_squared_error"}
         learning_rate = self.config.model.training.learning_rate
         optimizer = Adam(learning_rate=learning_rate)
@@ -254,9 +258,9 @@ class AZero:
         self.restore_local_model()
 
     def load_from_mlflow(self, version=0):
-        if version is 0:
+        if version is 0:    # search for newest model on server
             version = mlflow_get_latest_version(self.config.name)
-            if version is 0:
+            if version is 0:    # no model version registered
                 log.info(
                     "No model registered as %s found on mlflow server.", self.config.name)
                 log.info("Initializing new network.")
@@ -373,5 +377,6 @@ if __name__ == "__main__":
 
     model = AZero(config)
     # model.summary()
+    # model.plot_model()
     model.auto_run_training(max_epochs=args.max_epochs,
                             max_iterations=args.max_iterations)

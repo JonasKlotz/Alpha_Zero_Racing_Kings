@@ -20,6 +20,7 @@ def valid_ndarray(t):
 def get_latest_dataset_file(_dir):
     """ Returns newest dataset file in game dir """
     files = os.listdir(_dir)
+    files = [f for f in files if ".pkl" in f]
     if len(files) == 0:
         return None
 
