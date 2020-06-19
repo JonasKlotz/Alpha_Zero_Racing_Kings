@@ -21,9 +21,9 @@ entry_points:
         epochs: {type: float, default: 5}
         selflearnruns: {type: float, default: 5}
         fork_method: {type: string, default: "spawn"}
-        trainee: {type: string, default: "Player/AltruisticOlm.yaml"}
-        player_one: {type: string, default: "Player/AltruisticOlm.yaml"}
-        player_two: {type: string, default: "Player/AltruisticOlm.yaml"}
+        trainee: {type: string, default: "Player/MightyMonkey.yaml"}
+        player_one: {type: string, default: "Player/StockingFish.yaml"}
+        player_two: {type: string, default: "Player/StockingFish.yaml"}
     command: "python3 Matches/watch_and_learn.py -p {num_of_parallel_processes} -g {num_of_games_per_process} 
              -r {rollouts_per_move} -i {iterations} -e {epochs} -s {selflearnruns}
              --trainee {trainee} --player_one {player_one} --player_two {player_two}
