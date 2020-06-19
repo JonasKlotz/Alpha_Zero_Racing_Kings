@@ -35,12 +35,12 @@ def cli_play(ai_name, human_name, human_color):
     if human_color == "white": 
         cli_match = match.Match(player_one=hi_player, \
                 player_two=ai_player, \
-                runs_per_move=args.runs_per_move, \
+                rollouts_per_move=args.runs_per_move, \
                 show_game=True) 
     else:
         cli_match = match.Match(player_one=ai_player, \
                 player_two=hi_player, \
-                runs_per_move=args.runs_per_move, \
+                rollouts_per_move=args.runs_per_move, \
                 show_game=True) 
 
     cli_match.simulate()

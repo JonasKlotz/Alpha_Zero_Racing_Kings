@@ -451,7 +451,7 @@ if __name__ == "__main__":
     parser.add_argument("-ep", "--max_epochs", type=int, default=10000)
     args = parser.parse_args()
 
-    config = Config()
+    config = Config("Player/LaughingQuokka.yaml")
 
     model = AZero(config)
     model.auto_run_training(max_epochs=args.max_epochs, max_iterations=args.max_iterations)

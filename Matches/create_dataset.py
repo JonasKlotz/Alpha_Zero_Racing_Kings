@@ -54,7 +54,6 @@ def assemble_dataset(handle):
     '''
     dataset = []
     counter = 0
-
     for filename in os.listdir(GAMEDIR):
         if f"game_{handle}" in filename and filename.endswith(".pkl"):
             filepath = os.path.join(GAMEDIR, filename)
@@ -130,6 +129,9 @@ def parallel_matches(yamlpaths,
     return
 
 if __name__ == "__main__":
+    assemble_dataset("StockingFish9v1-StockingFish9v1_orharqlh")
+
+if __name__ == "x__main__":
 
     parser = argparse.ArgumentParser(description="Multiprocessing generation of self-play "
             + "games. Each process generates games independently "
