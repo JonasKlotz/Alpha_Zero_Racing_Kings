@@ -38,7 +38,7 @@ stockfish:
     #use stockfish instead of model; this
     #overwrites loading of a neural network
     #model regardless of configuration
-    enable: True
+    enable: False
     #given time limit for move evaluation
     time_limit: 0.1
     #maximum tree search depth
