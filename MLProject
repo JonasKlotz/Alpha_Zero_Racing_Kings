@@ -14,7 +14,7 @@ entry_points:
 
   watch_and_learn:
     parameters:
-        num_of_parallel_processes: {type: float, default: 2}
+        num_of_parallel_processes: {type: float, default: 1}
         num_of_games_per_process: {type: float, default: 10}
         rollouts_per_move: {type: float, default: 100}
         iterations: {type: float, default: 1}
