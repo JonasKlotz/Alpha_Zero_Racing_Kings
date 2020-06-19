@@ -311,7 +311,7 @@ class LogCallback(keras.callbacks.Callback):
             for metric in self.metrics:
                 mlflow.log_metric(metric, logs[metric], step=epoch)
 
-        if epoch % save_model_every == 0:
+        if (epoch + 1) % save_model_every == 0:
             if save_local:
                 file = os.path.join(local_dir, save_local_fmt.format(
                     epoch=epoch, loss=logs["loss"]))

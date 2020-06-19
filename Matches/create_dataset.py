@@ -18,7 +18,7 @@ from Matches import contest
 log = get_logger("create_dataset")
 
 
-@timing
+# @timing
 def create_dataset(yamlpaths,
                    rollouts_per_move,
                    num_of_parallel_processes,

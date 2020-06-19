@@ -10,7 +10,8 @@ def get_members(obj):
 
 
 def valid_tensor(t):
-    return np.isfinite(t.numpy()).any()
+    # return np.isfinite(t.numpy()).any()
+    return np.isfinite(t).any()
 
 
 def valid_ndarray(t):
