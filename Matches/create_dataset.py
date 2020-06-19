@@ -156,22 +156,24 @@ if __name__ == "__main__":
                         + "process. Defaults to 10")
     parser.add_argument("-r", "--rollouts_per_move",
                         type=int, default=100, help="number of "
-                        + "rollouts that the engine performs while "
-                        + "determinating a single move. Defaults to 100.")
+                                                    + "rollouts that the engine performs while "
+                                                    + "determinating a single move. Defaults to 100.")
     parser.add_argument("--fork_method", type=str,
                         default="spawn", help="depending on operating "
-                        + "system, different fork methods are valid for "
-                        + "multithreading. \"spawn\" has apparently the "
-                        + "widest compatibility. Other options are "
-                        + "\"fork\" and \"forkserver\". See "
-                        + "https://docs.python.org/3/library/multiprocessing.html "
-                        + "for details. Defaults to \"spawn\".")
+                                              + "system, different fork methods are valid for "
+                                              + "multithreading. \"spawn\" has apparently the "
+                                              + "widest compatibility. Other options are "
+                                              + "\"fork\" and \"forkserver\". See "
+                                              + "https://docs.python.org/3/library/multiprocessing.html "
+                                              + "for details. Defaults to \"spawn\".")
+    parser.add_argument("--player_one", type=str,
+                        default="Player/default_config.yaml",
                         help="Player one configuration file. Is by default "
-                        + "set to \"Player/default_config.yaml\".")
+                             + "set to \"Player/default_config.yaml\".")
     parser.add_argument("--player_two", type=str,
                         default="Player/default_config.yaml",
                         help="Player two configuration file. Is by default "
-                        + "set to \"Player/default_config.yaml\".")
+                             + "set to \"Player/default_config.yaml\".")
 
     args = parser.parse_args()
 
