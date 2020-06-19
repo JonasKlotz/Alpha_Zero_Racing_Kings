@@ -122,9 +122,18 @@ if __name__ == "__main__":
     models = []
 
     # only load models for players which have been set:
-    for i in players:
-        new_model = utility.load_model(utility.load_player_conf(i)) \
-                if i else None
+    for i, j in enumerate(players):
+        new_model = None
+        if i == 0:
+            # trainee is always loaded
+            new_model = utility.load_model(utility.load_player_conf(j))
+        elif players[i] != players[0]:
+            # players are only loaded if they differ from trainee
+            # and are defined
+            new_model = utility.load_model(utility.load_player_conf(j)) \
+                    if j else None
+        else:
+            new_model = None
         models.append(new_model) 
 
     # set reference to trainee-model for each model which is None:

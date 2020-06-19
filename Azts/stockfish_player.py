@@ -40,6 +40,7 @@ class StockfishPlayer(Player):
         self.color = color
         self.statemachine = state_machine.StateMachine()
         self.limit = time_limit
+        self.tree = None
 
     def set_color(self, color):
         self.color = color

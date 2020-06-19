@@ -1,7 +1,5 @@
-### YAML DEFAULT Config-File
-
 #name of the model
-name: 'AlphaZero'
+name: 'PreppyPenguin'
 
 #directories
 dirs:
@@ -19,14 +17,14 @@ player:
             white_wins: 1
             black_wins: -1
             draw: 0
-            draw_by_rep: 0
+            draw_by_rep: -1
             draw_by_stale_mate: 0
             draw_by_two_wins: 0
         black: 
             white_wins: -1
             black_wins: 1
             draw: 0
-            draw_by_rep: 0
+            draw_by_rep: -1
             draw_by_stale_mate: 0
             draw_by_two_wins: 0
 
@@ -59,8 +57,7 @@ model:
         save_model_every: 5
         log_metrics_every: 1
         log_mlflow: False
-        load_from_mlflow: True
-        mlflow_model_version: 0
+        load_from_mlflow: False
         save_local: True
         save_mlflow: True
     #residual block specifications
