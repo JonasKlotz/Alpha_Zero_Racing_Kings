@@ -274,8 +274,9 @@ class Game:
 
         if not self.engine:
             try:
-                log.info(f"Engine Opened at {path}")
                 self.engine = chess.engine.SimpleEngine.popen_uci(path)
+                log.info(f"Engine Opened at {path}")
+
             except:
                 log.error((f"cannot open engine at:  {path}"))
         policy = []
