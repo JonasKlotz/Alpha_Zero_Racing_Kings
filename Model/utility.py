@@ -6,7 +6,7 @@ from mlflow.tracking import MlflowClient
 
 
 def get_members(obj):
-    return [(a, getattr(obj, a)) for a in dir(obj) and "__" not in a]
+    return [(a, getattr(obj, a)) for a in dir(obj) if "__" not in a]
 
 
 def valid_tensor(t):
