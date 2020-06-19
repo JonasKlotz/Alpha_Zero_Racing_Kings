@@ -70,7 +70,7 @@ class Contest():
                 f"game_{self.game_id}",
                 GAMEDIR,
                 i)
-
+            print(filepath)
             pickle.dump(data, open(filepath, "wb"))
 
             del contest_match
