@@ -1,0 +1,31 @@
+13:52:06 INFO @ Log : Date: 19.06.2020
+Player/StockingFish.yaml
+13:54:14 INFO @ Config : Loading Config from Player/StockingFish.yaml.
+13:54:14 WARNING @ Config : Ignoring unknown parameter config_version
+13:54:14 WARNING @ Config : Ignoring unknown parameter model_revision
+13:54:14 WARNING @ Config : Ignoring unknown parameter data_dir
+Player/StockingFish.yaml
+13:54:14 INFO @ Config : Loading Config from Player/StockingFish.yaml.
+13:54:14 WARNING @ Config : Ignoring unknown parameter config_version
+13:54:14 WARNING @ Config : Ignoring unknown parameter model_revision
+13:54:14 WARNING @ Config : Ignoring unknown parameter data_dir
+13:54:14 INFO @ create_dataset : starting matches with handle StockingFish9v1-StockingFish9v1_fusqukxb
+Player/StockingFish.yaml
+13:54:14 INFO @ Config : Loading Config from Player/StockingFish.yaml.
+13:54:14 WARNING @ Config : Ignoring unknown parameter config_version
+13:54:14 WARNING @ Config : Ignoring unknown parameter model_revision
+13:54:14 WARNING @ Config : Ignoring unknown parameter data_dir
+Player/StockingFish.yaml
+13:54:14 INFO @ Config : Loading Config from Player/StockingFish.yaml.
+13:54:14 WARNING @ Config : Ignoring unknown parameter config_version
+13:54:14 WARNING @ Config : Ignoring unknown parameter model_revision
+13:54:14 WARNING @ Config : Ignoring unknown parameter data_dir
+13:54:15 INFO @ Log : Date: 19.06.2020
+13:54:28 INFO @ Contest : 
+MATCH 1 OF 1:
+13:54:29 INFO @ Match : 
+
+in process 61455:
+WHITE: StockingFish
+BLACK: StockingFish
+

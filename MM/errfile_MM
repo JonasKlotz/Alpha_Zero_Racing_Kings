@@ -1,0 +1,52 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+Using TensorFlow backend.
+Using TensorFlow backend.
+<UciProtocol (pid=61904)>: stderr >> /home/users/t/t.moussa/AlphaZero/Interpreter/Engine/stockfish-x86_64: /lib64/libstdc++.so.6: version `GLIBCXX_3.4.22' not found (required by /home/users/t/t.moussa/AlphaZero/Interpreter/Engine/stockfish-x86_64)
+<UciProtocol (pid=61904)>: stderr >> /home/users/t/t.moussa/AlphaZero/Interpreter/Engine/stockfish-x86_64: /lib64/libstdc++.so.6: version `GLIBCXX_3.4.21' not found (required by /home/users/t/t.moussa/AlphaZero/Interpreter/Engine/stockfish-x86_64)
+Process Process-1:
+Traceback (most recent call last):
+  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/users/t/t.moussa/AlphaZero/Matches/contest.py", line 66, in start
+    contest_match.simulate()
+  File "/home/users/t/t.moussa/AlphaZero/Matches/match.py", line 106, in simulate
+    move = active_player.make_move()
+  File "/home/users/t/t.moussa/AlphaZero/Azts/stockfish_player.py", line 63, in make_move
+    self.pol = self.statemachine.actual_game.get_policy(self.PATH_TO_ENGINE, self.limit)
+  File "/home/users/t/t.moussa/AlphaZero/Interpreter/game.py", line 275, in get_policy
+    self.engine = chess.engine.SimpleEngine.popen_uci(path)
+  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 2440, in popen_uci
+    return cls.popen(UciProtocol, command, timeout=timeout, debug=debug, setpgrp=setpgrp, **popen_args)
+  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 2432, in popen
+    return run_in_background(background, name=f"{cls.__name__} (command={command!r})", debug=debug)
+  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 217, in run_in_background
+    return future.result()
+  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/concurrent/futures/_base.py", line 435, in result
+    return self.__get_result()
+  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 211, in background
+    _run(coroutine(future))
+  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/asyncio/runners.py", line 43, in run
+    return loop.run_until_complete(main)
+  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/asyncio/base_events.py", line 583, in run_until_complete
+    return future.result()
+  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 2424, in background
+    await asyncio.wait_for(protocol.initialize(), timeout)
+  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/asyncio/tasks.py", line 442, in wait_for
+    return fut.result()
+  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 1101, in initialize
+    return await self.communicate(UciInitializeCommand)
+  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 768, in communicate
+    return await command.result
+chess.engine.EngineTerminatedError: engine process died unexpectedly (exit code: 1)
