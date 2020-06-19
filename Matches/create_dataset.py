@@ -77,13 +77,13 @@ def assemble_dataset(handle):
 
     del dataset
 
-    test_load = pickle.load(open(dataset_path, "rb"))
-    log.info(f"verified integrity of file.\n"
-             + f"dataset is of type {type(test_load)},\n"
-             + f"has {len(test_load)} entries of type {type(test_load[0])}\n"
-             + f"with {len(test_load[0])} entries of type\n"
-             + f"{type(test_load[0][0])}, {type(test_load[0][1])}, "
-             + f"{type(test_load[0][2])}.")
+    #test_load = pickle.load(open(dataset_path, "rb"))
+    #log.info(f"verified integrity of file.\n"
+            # + f"dataset is of type {type(test_load)},\n"
+             #+ f"has {len(test_load)} entries of type {type(test_load[0])}\n"
+             #+ f"with {len(test_load[0])} entries of type\n"
+             #+ f"{type(test_load[0][0])}, {type(test_load[0][1])}, "
+             #+ f"{type(test_load[0][2])}.")
 
     return
 

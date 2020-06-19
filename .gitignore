@@ -34,3 +34,4 @@ logs
 
 # ml runs
 mlruns/*
+/azts/
