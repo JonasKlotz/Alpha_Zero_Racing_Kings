@@ -54,7 +54,8 @@ class Match():
             i.set_rollouts_per_move(rollouts_per_move) 
 
         self.game = game.Game()
-        self.screen = screen.Screen()
+        if show_game:
+            self.screen = screen.Screen()
         self.data_collection = []
 
         self.training_payoffs = TRAINING_PAYOFFS
