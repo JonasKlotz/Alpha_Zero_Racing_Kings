@@ -271,7 +271,9 @@ class Game:
         :rtype: [[UCI String][Centipawnscore]]
         :return: Policy as list of lists
         """
+
         if not self.engine:
+            log.info(f"Engine Opened at {path}")
             self.engine = chess.engine.SimpleEngine.popen_uci(path)
 
         policy = []
