@@ -48,7 +48,6 @@ stockfish:
 
 #model parameters
 model:
-    mlflow_model_version: 0
     #input feature dimensions
     input_shape: [8,8,11]
     #total number of residual blocks
