@@ -111,7 +111,7 @@ class Match():
             self.game.make_move(move)
             # collect data
             self.data_collection.append(active_player.dump_data())
-            print(self.game.board)
+            # print(self.game.board)
             # statistics:
             # only increment after black move
             moves += select
