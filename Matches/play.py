@@ -14,7 +14,7 @@ parser.add_argument("-c", "--play_as", \
 parser.add_argument("-o", "--opponent", \
         type=str, default="MockingBird", \
         help="choose opponent to play against from available ai players.")
-parser.add_argument("-r", "--runs_per_move", \
+parser.add_argument("-r", "--rollouts_per_move", \
         type=int, default=100, \
         help="rollouts for the ai engine. for vanilla stockfish " \
         + "behaviour, load a stockfish engine with rollouts set to 1. " \
@@ -35,12 +35,12 @@ def cli_play(ai_name, human_name, human_color):
     if human_color == "white": 
         cli_match = match.Match(player_one=hi_player, \
                 player_two=ai_player, \
-                runs_per_move=args.runs_per_move, \
+                rollouts_per_move=args.rollouts_per_move, \
                 show_game=True) 
     else:
         cli_match = match.Match(player_one=ai_player, \
                 player_two=hi_player, \
-                runs_per_move=args.runs_per_move, \
+                rollouts_per_move=args.rollouts_per_move, \
                 show_game=True) 
 
     cli_match.simulate()

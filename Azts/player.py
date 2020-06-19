@@ -177,7 +177,7 @@ class CLIPlayer(Player):
         poll the player for a move
         '''
         move = self._parse_user_input()
-        if move != "exit":
+        if move not in ["exit", "tree"]:
             self.receive_move(move)
         return move
 
@@ -190,26 +190,27 @@ class CLIPlayer(Player):
         print(f"> current state is {position}.")
         print("> select move in UCI or \"h\" for help")
 
-        user_input = "unknown"
+        user_input = "unknown" 
+
+
         consequences = {"h": lambda x: print("> \"list\": list legal moves\n"
                                              + "> \"clear\": clear screen\n"
                                              + "> \"exit\": exit game"),
-                        "exit": lambda x: sys.exit(),
                         "list": lambda x: [print(i) for i in x],
                         "ls": lambda x: [print(i) for i in x],
                         "clear": lambda x: os.system('cls' if os.name == 'nt'
                                                      else 'clear')}
 
         legal_moves = self.statemachine.rollout_game.get_moves_observation()
-        choices = legal_moves + list(consequences.keys())
-
+        meta_options = ["exit", "tree"] 
+        choices = legal_moves + list(consequences.keys()) + meta_options
         user_input = input("> ")
 
         while user_input not in choices:
             print(f"> {user_input} is not a legal move")
             user_input = input("> ")
 
-        if user_input in legal_moves + ["exit"]:
+        if user_input in legal_moves + meta_options:
             return user_input
 
         consequences[user_input](legal_moves)

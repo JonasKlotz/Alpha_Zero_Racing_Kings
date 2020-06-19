@@ -101,6 +101,9 @@ class AztsNode():
             # expansion of node
             policy, self.evaluation = model.inference(position)
 
+            self.evaluation = self.evaluation if self.color == WHITE \
+                    else -self.evaluation
+
             # initialise tensor to hold
             # 4 values per edge
             entries_per_edge = 4
