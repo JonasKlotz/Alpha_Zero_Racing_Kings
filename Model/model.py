@@ -4,12 +4,10 @@ import os
 import sys
 import pickle
 import time
-import numpy as np
 import argparse
 
 import mlflow
-import mlflow.keras
-from mlflow.tracking import MlflowClient
+mlflow.set_tracking_uri("http://35.223.113.101:8000")
 
 # import tensorflow as tf
 # import tensorflow.keras as keras
@@ -31,8 +29,6 @@ from Model.resnet import resnet_model
 
 from lib.logger import get_logger
 log = get_logger("Model")
-
-mlflow.set_tracking_uri("http://35.223.113.101:8000")
 
 DEBUG = True
 
@@ -100,11 +96,11 @@ class AZero:
         policy = policy.squeeze()
         value = value.squeeze()
         if DEBUG:
-            if not valid_tensor(input):
+            if not valid_ndarray(input):
                 log.critical("INVALID TENSOR FOUND IN INPUT")
-            if not valid_tensor(policy):
+            if not valid_ndarray(policy):
                 log.critical("INVALID TENSOR FOUND IN POLICY OUTPUT")
-            if not valid_tensor(value):
+            if not valid_ndarray(value):
                 log.critical("INVALID TENSOR FOUND IN VALUE OUTPUT")
         return policy, value
 
@@ -249,7 +245,8 @@ class AZero:
 
     def load_model(self):
         if self.config.model.logging.load_from_mlflow:
-            self.load_from_mlflow(self.config.model.mlflow_model_version)
+            self.load_from_mlflow(
+                self.config.model.logging.mlflow_model_version)
         else:
             self.load_local_model()
 
@@ -366,14 +363,12 @@ if __name__ == "__main__":
         "--player", type=str, default="Player/default_config.yaml", help="Path to config file")
     parser.add_argument("-i", "--max_iterations", type=int, default=3)
     parser.add_argument("-ep", "--max_epochs", type=int, default=10000)
-    parser.add_argument("--mlflow_model_version", type=int, default=0)
     parser.add_argument("--debug", type=bool, default=False)
     args = parser.parse_args()
 
     DEBUG = args.debug
 
     config = Config(args.player)
-    config.model.mlflow_model_version = args.mlflow_model_version
 
     model = AZero(config)
     # model.summary()

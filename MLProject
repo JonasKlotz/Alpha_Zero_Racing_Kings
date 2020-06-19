@@ -6,12 +6,10 @@ entry_points:
         player: {type: string, default: "default_config"}
         max_iter: {type: float, default: 3}
         max_epochs: {type: float, default: 10000}
-        mlflow_model_version: {type: int, default: 0}
         debug: {type: bool, default: True}
     command: "ipython Model/model.py -- 
               --player={player} 
               -i {max_iter} -ep {max_epochs} 
-              --mlflow_model_version={mlflow_model_version} 
               --debub={debug}"
 
   create_dataset:
@@ -65,10 +63,3 @@ entry_points:
         player_two: {type: string, default: "Player/default_config.yaml"}
     command: "python3 Matches/create_dataset.py -p {num_of_parallel_processes} -g {num_of_games_per_process} 
              --fork_method {fork_method} --player_one {player_one} --player_two {player_two}"
-
-  train:
-    parameters:
-        max_iterations: {type: float, default: 3}
-        max_epochs: {type: float, default: 10000}
-    command: "python3 Model/model.py -i {max_iterations} -ep {max_epochs}"
-
