@@ -14,6 +14,7 @@ from Azts import player
 from Azts import utility
 from Azts.config import GAMEDIR, DATASETDIR
 from Matches import contest
+from lib.timing import runtime_summary
 
 log = get_logger("create_dataset")
 
@@ -165,8 +166,6 @@ if __name__ == "__main__":
                         + "\"fork\" and \"forkserver\". See "
                         + "https://docs.python.org/3/library/multiprocessing.html "
                         + "for details. Defaults to \"spawn\".")
-    parser.add_argument("--player_one", type=str,
-                        default="Player/default_config.yaml",
                         help="Player one configuration file. Is by default "
                         + "set to \"Player/default_config.yaml\".")
     parser.add_argument("--player_two", type=str,
