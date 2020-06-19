@@ -14,16 +14,16 @@ entry_points:
 
   watch_and_learn:
     parameters:
-        num_of_parallel_processes: {type: float, default: 1}
-        num_of_games_per_process: {type: float, default: 10}
+        num_of_parallel_processes: {type: float, default: 10}
+        num_of_games_per_process: {type: float, default: 100}
         rollouts_per_move: {type: float, default: 100}
         iterations: {type: float, default: 1}
         epochs: {type: float, default: 5}
         selflearnruns: {type: float, default: 5}
         fork_method: {type: string, default: "spawn"}
         trainee: {type: string, default: "Player/MightyMonkey.yaml"}
-        player_one: {type: string, default: "Player/StockingFish.yaml"}
-        player_two: {type: string, default: "Player/StockingFish.yaml"}
+        player_one: {type: string, default: "Player/MightyMonkey.yaml"}
+        player_two: {type: string, default: "Player/MightyMonkey.yaml"}
     command: "python3 Matches/watch_and_learn.py -p {num_of_parallel_processes} -g {num_of_games_per_process} 
              -r {rollouts_per_move} -i {iterations} -e {epochs} -s {selflearnruns}
              --trainee {trainee} --player_one {player_one} --player_two {player_two}
