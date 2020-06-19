@@ -6,7 +6,7 @@ entry_points:
         player: {type: string, default: "default_config"}
         max_iter: {type: float, default: 3}
         max_epochs: {type: float, default: 10000}
-        debug: {type: bool, default: True}
+        debug: {type: bool, default: False}
     command: "ipython Model/model.py -- 
               --player={player} 
               -i {max_iter} -ep {max_epochs} 
