@@ -7,46 +7,46 @@
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-Using TensorFlow backend.
-Using TensorFlow backend.
-<UciProtocol (pid=61904)>: stderr >> /home/users/t/t.moussa/AlphaZero/Interpreter/Engine/stockfish-x86_64: /lib64/libstdc++.so.6: version `GLIBCXX_3.4.22' not found (required by /home/users/t/t.moussa/AlphaZero/Interpreter/Engine/stockfish-x86_64)
-<UciProtocol (pid=61904)>: stderr >> /home/users/t/t.moussa/AlphaZero/Interpreter/Engine/stockfish-x86_64: /lib64/libstdc++.so.6: version `GLIBCXX_3.4.21' not found (required by /home/users/t/t.moussa/AlphaZero/Interpreter/Engine/stockfish-x86_64)
-Process Process-1:
-Traceback (most recent call last):
-  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
-    self.run()
-  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/multiprocessing/process.py", line 99, in run
-    self._target(*self._args, **self._kwargs)
-  File "/home/users/t/t.moussa/AlphaZero/Matches/contest.py", line 66, in start
-    contest_match.simulate()
-  File "/home/users/t/t.moussa/AlphaZero/Matches/match.py", line 106, in simulate
-    move = active_player.make_move()
-  File "/home/users/t/t.moussa/AlphaZero/Azts/stockfish_player.py", line 63, in make_move
-    self.pol = self.statemachine.actual_game.get_policy(self.PATH_TO_ENGINE, self.limit)
-  File "/home/users/t/t.moussa/AlphaZero/Interpreter/game.py", line 275, in get_policy
-    self.engine = chess.engine.SimpleEngine.popen_uci(path)
-  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 2440, in popen_uci
-    return cls.popen(UciProtocol, command, timeout=timeout, debug=debug, setpgrp=setpgrp, **popen_args)
-  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 2432, in popen
-    return run_in_background(background, name=f"{cls.__name__} (command={command!r})", debug=debug)
-  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 217, in run_in_background
-    return future.result()
-  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/concurrent/futures/_base.py", line 435, in result
-    return self.__get_result()
-  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
-    raise self._exception
-  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 211, in background
-    _run(coroutine(future))
-  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/asyncio/runners.py", line 43, in run
-    return loop.run_until_complete(main)
-  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/asyncio/base_events.py", line 583, in run_until_complete
-    return future.result()
-  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 2424, in background
-    await asyncio.wait_for(protocol.initialize(), timeout)
-  File "/beegfs/home/cluster/python/3.7.6/lib/python3.7/asyncio/tasks.py", line 442, in wait_for
-    return fut.result()
-  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 1101, in initialize
-    return await self.communicate(UciInitializeCommand)
-  File "/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/chess/engine.py", line 768, in communicate
-    return await command.result
-chess.engine.EngineTerminatedError: engine process died unexpectedly (exit code: 1)
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2020/06/20 16:32:05 INFO mlflow.projects: === Created directory /tmp/tmp1vn0qpa0 for downloading remote URIs passed to arguments of type 'path' ===
+2020/06/20 16:32:05 INFO mlflow.projects: === Running command 'ipython Model/model.py -- --player=MightyMonkey -i 3 -ep 100 --debug=False' in run with ID '7ab2274dbaec4736bf3f7820e3844af1' === 
+/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/IPython/core/history.py:226: UserWarning: IPython History requires SQLite, your history will not be saved
+  warn("IPython History requires SQLite, your history will not be saved")
+2020-06-20 16:32:24.523361: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcuda.so.1
+2020-06-20 16:32:24.552861: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1561] Found device 0 with properties: 
+pciBusID: 0000:82:00.0 name: Tesla P100-PCIE-16GB computeCapability: 6.0
+coreClock: 1.3285GHz coreCount: 56 deviceMemorySize: 15.90GiB deviceMemoryBandwidth: 681.88GiB/s
+2020-06-20 16:32:24.558270: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.1
+2020-06-20 16:32:24.629240: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+2020-06-20 16:32:24.664901: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcufft.so.10
+2020-06-20 16:32:24.691067: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcurand.so.10
+2020-06-20 16:32:24.765788: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusolver.so.10
+2020-06-20 16:32:24.801691: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusparse.so.10
+2020-06-20 16:32:24.898010: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
+2020-06-20 16:32:24.902258: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1703] Adding visible gpu devices: 0
+2020-06-20 16:32:24.903033: I tensorflow/core/platform/cpu_feature_guard.cc:143] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2020-06-20 16:32:24.935153: I tensorflow/core/platform/profile_utils/cpu_utils.cc:102] CPU Frequency: 2199925000 Hz
+2020-06-20 16:32:24.935655: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x5ecf4c0 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2020-06-20 16:32:24.935937: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+2020-06-20 16:32:25.054725: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x5f419c0 initialized for platform CUDA (this does not guarantee that XLA will be used). Devices:
+2020-06-20 16:32:25.054996: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Tesla P100-PCIE-16GB, Compute Capability 6.0
+2020-06-20 16:32:25.057464: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1561] Found device 0 with properties: 
+pciBusID: 0000:82:00.0 name: Tesla P100-PCIE-16GB computeCapability: 6.0
+coreClock: 1.3285GHz coreCount: 56 deviceMemorySize: 15.90GiB deviceMemoryBandwidth: 681.88GiB/s
+2020-06-20 16:32:25.057812: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.1
+2020-06-20 16:32:25.058060: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+2020-06-20 16:32:25.058276: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcufft.so.10
+2020-06-20 16:32:25.058505: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcurand.so.10
+2020-06-20 16:32:25.058747: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusolver.so.10
+2020-06-20 16:32:25.058942: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusparse.so.10
+2020-06-20 16:32:25.059144: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
+2020-06-20 16:32:25.061473: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1703] Adding visible gpu devices: 0
+2020-06-20 16:32:25.062963: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.1
+2020-06-20 16:32:25.065202: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1102] Device interconnect StreamExecutor with strength 1 edge matrix:
+2020-06-20 16:32:25.065429: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1108]      0 
+2020-06-20 16:32:25.065624: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1121] 0:   N 
+2020-06-20 16:32:25.070571: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1247] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 15056 MB memory) -> physical GPU (device: 0, name: Tesla P100-PCIE-16GB, pci bus id: 0000:82:00.0, compute capability: 6.0)
+2020-06-20 16:32:41.105788: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+2020-06-20 16:32:41.479064: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7

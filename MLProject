@@ -3,14 +3,14 @@ name: mini_alpha_zero
 entry_points:
   train:
     parameters:
-        player: {type: string, default: "default_config"}
+        player: {type: string, default: "MightyMonkey"}
         max_iter: {type: float, default: 3}
-        max_epochs: {type: float, default: 10000}
+        max_epochs: {type: float, default: 100}
         debug: {type: bool, default: False}
     command: "ipython Model/model.py -- 
               --player={player} 
               -i {max_iter} -ep {max_epochs} 
-              --debub={debug}"
+              --debug={debug}"
 
   watch_and_learn:
     parameters:

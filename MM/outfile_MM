@@ -1,31 +1,144 @@
-13:52:06 INFO @ Log : Date: 19.06.2020
-Player/StockingFish.yaml
-13:54:14 INFO @ Config : Loading Config from Player/StockingFish.yaml.
-13:54:14 WARNING @ Config : Ignoring unknown parameter config_version
-13:54:14 WARNING @ Config : Ignoring unknown parameter model_revision
-13:54:14 WARNING @ Config : Ignoring unknown parameter data_dir
-Player/StockingFish.yaml
-13:54:14 INFO @ Config : Loading Config from Player/StockingFish.yaml.
-13:54:14 WARNING @ Config : Ignoring unknown parameter config_version
-13:54:14 WARNING @ Config : Ignoring unknown parameter model_revision
-13:54:14 WARNING @ Config : Ignoring unknown parameter data_dir
-13:54:14 INFO @ create_dataset : starting matches with handle StockingFish9v1-StockingFish9v1_fusqukxb
-Player/StockingFish.yaml
-13:54:14 INFO @ Config : Loading Config from Player/StockingFish.yaml.
-13:54:14 WARNING @ Config : Ignoring unknown parameter config_version
-13:54:14 WARNING @ Config : Ignoring unknown parameter model_revision
-13:54:14 WARNING @ Config : Ignoring unknown parameter data_dir
-Player/StockingFish.yaml
-13:54:14 INFO @ Config : Loading Config from Player/StockingFish.yaml.
-13:54:14 WARNING @ Config : Ignoring unknown parameter config_version
-13:54:14 WARNING @ Config : Ignoring unknown parameter model_revision
-13:54:14 WARNING @ Config : Ignoring unknown parameter data_dir
-13:54:15 INFO @ Log : Date: 19.06.2020
-13:54:28 INFO @ Contest : 
-MATCH 1 OF 1:
-13:54:29 INFO @ Match : 
+[22;0t]0;IPython: t.moussa/AlphaZero16:08:16 INFO @ Log : Date: 20.06.2020
+16:08:16 INFO @ Config : Loading Config from /home/users/t/t.moussa/AlphaZero/Player/MightyMonkey.yaml.
+16:08:21 INFO @ Model : Restoring from checkpoint /home/users/t/t.moussa/AlphaZero/_Data/MigthyMonkey/model_checkpoints/04-1.01.hdf5
+16:08:23 INFO @ Model : Commencing training 0/3 on dataset /home/users/t/t.moussa/AlphaZero/datasets/dataset_StockingFish-StockingFish_hcekvyjn_0000.pkl.
+Epoch 5/104
+16:08:37 DEBUG @ Model : {'batch': 0, 'size': 64, 'loss': 0.67017496, 'policy_head_loss': 0.06291311, 'value_head_loss': 0.1470081, 'policy_head_accuracy': 0.9411621, 'value_head_accuracy': 0.84375}
+16:08:37 DEBUG @ Model : {'batch': 1, 'size': 64, 'loss': 0.7960081, 'policy_head_loss': 0.06393743, 'value_head_loss': 0.20957947, 'policy_head_accuracy': 0.9371338, 'value_head_accuracy': 0.8203125}
+16:08:37 DEBUG @ Model : {'batch': 2, 'size': 64, 'loss': 1.197396, 'policy_head_loss': 0.06358964, 'value_head_loss': 0.3652465, 'policy_head_accuracy': 0.9319661, 'value_head_accuracy': 0.7708333}
+16:08:37 DEBUG @ Model : {'batch': 3, 'size': 64, 'loss': 1.023304, 'policy_head_loss': 0.06342939, 'value_head_loss': 0.39973283, 'policy_head_accuracy': 0.92370605, 'value_head_accuracy': 0.7265625}
+16:08:38 DEBUG @ Model : {'batch': 4, 'size': 64, 'loss': 0.8658167, 'policy_head_loss': 0.06313072, 'value_head_loss': 0.38924253, 'policy_head_accuracy': 0.9208008, 'value_head_accuracy': 0.728125}
+16:08:38 DEBUG @ Model : {'batch': 5, 'size': 64, 'loss': 0.8420576, 'policy_head_loss': 0.063439004, 'value_head_loss': 0.37786624, 'policy_head_accuracy': 0.9176839, 'value_head_accuracy': 0.71875}
+16:08:38 DEBUG @ Model : {'batch': 6, 'size': 64, 'loss': 1.0426725, 'policy_head_loss': 0.063514516, 'value_head_loss': 0.39861324, 'policy_head_accuracy': 0.91524833, 'value_head_accuracy': 0.70535713}
+16:08:38 DEBUG @ Model : {'batch': 7, 'size': 64, 'loss': 0.92114085, 'policy_head_loss': 0.06344403, 'value_head_loss': 0.3991635, 'policy_head_accuracy': 0.91467285, 'value_head_accuracy': 0.70703125}
+16:08:38 DEBUG @ Model : {'batch': 8, 'size': 64, 'loss': 1.0815461, 'policy_head_loss': 0.06327656, 'value_head_loss': 0.41757604, 'policy_head_accuracy': 0.91552734, 'value_head_accuracy': 0.6961806}
+16:08:38 DEBUG @ Model : {'batch': 9, 'size': 64, 'loss': 1.0187812, 'policy_head_loss': 0.063345574, 'value_head_loss': 0.42586857, 'policy_head_accuracy': 0.91520995, 'value_head_accuracy': 0.6890625}
+16:08:38 DEBUG @ Model : {'batch': 10, 'size': 64, 'loss': 1.010125, 'policy_head_loss': 0.06340209, 'value_head_loss': 0.43190497, 'policy_head_accuracy': 0.91668147, 'value_head_accuracy': 0.67897725}
+16:08:38 DEBUG @ Model : {'batch': 11, 'size': 64, 'loss': 0.77670586, 'policy_head_loss': 0.06319528, 'value_head_loss': 0.41777363, 'policy_head_accuracy': 0.91815186, 'value_head_accuracy': 0.68098956}
+16:08:38 DEBUG @ Model : {'batch': 12, 'size': 64, 'loss': 0.86135083, 'policy_head_loss': 0.063176684, 'value_head_loss': 0.41220555, 'policy_head_accuracy': 0.9193585, 'value_head_accuracy': 0.6826923}
+16:08:38 DEBUG @ Model : {'batch': 13, 'size': 64, 'loss': 0.84448296, 'policy_head_loss': 0.0632331, 'value_head_loss': 0.4061878, 'policy_head_accuracy': 0.9203753, 'value_head_accuracy': 0.68303573}
+16:08:38 DEBUG @ Model : {'batch': 14, 'size': 64, 'loss': 0.81420386, 'policy_head_loss': 0.06328201, 'value_head_loss': 0.39898482, 'policy_head_accuracy': 0.92148435, 'value_head_accuracy': 0.68645835}
+16:08:38 DEBUG @ Model : {'batch': 15, 'size': 64, 'loss': 0.970297, 'policy_head_loss': 0.06319792, 'value_head_loss': 0.40259507, 'policy_head_accuracy': 0.92266846, 'value_head_accuracy': 0.6796875}
+16:08:38 DEBUG @ Model : {'batch': 16, 'size': 64, 'loss': 0.89052033, 'policy_head_loss': 0.06318342, 'value_head_loss': 0.40105695, 'policy_head_accuracy': 0.92342603, 'value_head_accuracy': 0.67922795}
+16:08:38 DEBUG @ Model : {'batch': 17, 'size': 64, 'loss': 0.7287053, 'policy_head_loss': 0.063001275, 'value_head_loss': 0.39089724, 'policy_head_accuracy': 0.9240994, 'value_head_accuracy': 0.6831597}
+16:08:38 DEBUG @ Model : {'batch': 18, 'size': 64, 'loss': 0.8344615, 'policy_head_loss': 0.06305211, 'value_head_loss': 0.38718674, 'policy_head_accuracy': 0.92486894, 'value_head_accuracy': 0.68421054}
+16:08:38 DEBUG @ Model : {'batch': 19, 'size': 64, 'loss': 0.90512264, 'policy_head_loss': 0.06294559, 'value_head_loss': 0.38755932, 'policy_head_accuracy': 0.9258545, 'value_head_accuracy': 0.6828125}
+16:08:38 DEBUG @ Model : {'batch': 20, 'size': 64, 'loss': 0.83568645, 'policy_head_loss': 0.06294586, 'value_head_loss': 0.3845193, 'policy_head_accuracy': 0.92645556, 'value_head_accuracy': 0.6845238}
+16:08:39 DEBUG @ Model : {'batch': 21, 'size': 64, 'loss': 0.84449035, 'policy_head_loss': 0.06299227, 'value_head_loss': 0.38213488, 'policy_head_accuracy': 0.92689097, 'value_head_accuracy': 0.6875}
+16:08:39 DEBUG @ Model : {'batch': 22, 'size': 64, 'loss': 0.8692127, 'policy_head_loss': 0.06299052, 'value_head_loss': 0.38110128, 'policy_head_accuracy': 0.927469, 'value_head_accuracy': 0.6902174}
+16:08:39 DEBUG @ Model : {'batch': 23, 'size': 64, 'loss': 0.73081374, 'policy_head_loss': 0.06298888, 'value_head_loss': 0.37441087, 'policy_head_accuracy': 0.92785645, 'value_head_accuracy': 0.6953125}
+16:08:39 DEBUG @ Model : {'batch': 24, 'size': 64, 'loss': 0.91123414, 'policy_head_loss': 0.06306866, 'value_head_loss': 0.3754144, 'policy_head_accuracy': 0.9282617, 'value_head_accuracy': 0.696875}
+16:08:39 DEBUG @ Model : {'batch': 25, 'size': 64, 'loss': 0.82353187, 'policy_head_loss': 0.06298607, 'value_head_loss': 0.37314612, 'policy_head_accuracy': 0.92868274, 'value_head_accuracy': 0.6965144}
+16:08:39 DEBUG @ Model : {'batch': 26, 'size': 64, 'loss': 0.86291265, 'policy_head_loss': 0.06298477, 'value_head_loss': 0.37245098, 'policy_head_accuracy': 0.9290184, 'value_head_accuracy': 0.6990741}
+16:08:39 DEBUG @ Model : {'batch': 27, 'size': 64, 'loss': 0.8613222, 'policy_head_loss': 0.063056104, 'value_head_loss': 0.37169725, 'policy_head_accuracy': 0.92961776, 'value_head_accuracy': 0.69977677}
+16:08:39 DEBUG @ Model : {'batch': 28, 'size': 64, 'loss': 0.8746824, 'policy_head_loss': 0.06308751, 'value_head_loss': 0.37151185, 'policy_head_accuracy': 0.9297128, 'value_head_accuracy': 0.6977371}
+16:08:39 DEBUG @ Model : {'batch': 29, 'size': 64, 'loss': 0.7223495, 'policy_head_loss': 0.063150674, 'value_head_loss': 0.36624727, 'policy_head_accuracy': 0.9299235, 'value_head_accuracy': 0.70104164}
+16:08:39 DEBUG @ Model : {'batch': 30, 'size': 64, 'loss': 0.8059492, 'policy_head_loss': 0.063177, 'value_head_loss': 0.36407164, 'policy_head_accuracy': 0.9302152, 'value_head_accuracy': 0.7016129}
+16:08:39 DEBUG @ Model : {'batch': 31, 'size': 64, 'loss': 0.7011752, 'policy_head_loss': 0.06320168, 'value_head_loss': 0.3587772, 'policy_head_accuracy': 0.9304657, 'value_head_accuracy': 0.70458984}
+16:08:39 DEBUG @ Model : {'batch': 32, 'size': 64, 'loss': 0.8202354, 'policy_head_loss': 0.06316335, 'value_head_loss': 0.35749212, 'policy_head_accuracy': 0.9308564, 'value_head_accuracy': 0.70501894}
+16:08:39 DEBUG @ Model : {'batch': 33, 'size': 64, 'loss': 0.752222, 'policy_head_loss': 0.06318699, 'value_head_loss': 0.35424116, 'policy_head_accuracy': 0.9311308, 'value_head_accuracy': 0.7077206}
+16:08:39 DEBUG @ Model : {'batch': 34, 'size': 64, 'loss': 0.73635685, 'policy_head_loss': 0.06320924, 'value_head_loss': 0.3507411, 'policy_head_accuracy': 0.9314174, 'value_head_accuracy': 0.7098214}
+16:08:39 DEBUG @ Model : {'batch': 35, 'size': 64, 'loss': 0.7384671, 'policy_head_loss': 0.06320207, 'value_head_loss': 0.34754026, 'policy_head_accuracy': 0.9315864, 'value_head_accuracy': 0.71050346}
+16:08:39 DEBUG @ Model : {'batch': 36, 'size': 64, 'loss': 0.6517253, 'policy_head_loss': 0.06319531, 'value_head_loss': 0.34218574, 'policy_head_accuracy': 0.9318056, 'value_head_accuracy': 0.7141047}
+16:08:39 DEBUG @ Model : {'batch': 37, 'size': 64, 'loss': 0.72905576, 'policy_head_loss': 0.0632423, 'value_head_loss': 0.3391121, 'policy_head_accuracy': 0.93193614, 'value_head_accuracy': 0.7158717}
+16:08:40 DEBUG @ Model : {'batch': 38, 'size': 64, 'loss': 0.9061414, 'policy_head_loss': 0.06318275, 'value_head_loss': 0.34085798, 'policy_head_accuracy': 0.93227917, 'value_head_accuracy': 0.71634614}
+16:08:40 DEBUG @ Model : {'batch': 39, 'size': 64, 'loss': 0.6754597, 'policy_head_loss': 0.06312619, 'value_head_loss': 0.33676618, 'policy_head_accuracy': 0.9324524, 'value_head_accuracy': 0.7199219}
+16:08:40 DEBUG @ Model : {'batch': 40, 'size': 64, 'loss': 0.8804338, 'policy_head_loss': 0.06317145, 'value_head_loss': 0.33779055, 'policy_head_accuracy': 0.9326529, 'value_head_accuracy': 0.7198933}
+16:08:40 DEBUG @ Model : {'batch': 41, 'size': 64, 'loss': 0.66602314, 'policy_head_loss': 0.063214585, 'value_head_loss': 0.33367693, 'policy_head_accuracy': 0.932623, 'value_head_accuracy': 0.7217262}
+16:08:40 DEBUG @ Model : {'batch': 42, 'size': 64, 'loss': 0.7526494, 'policy_head_loss': 0.0632557, 'value_head_loss': 0.33178458, 'policy_head_accuracy': 0.9327648, 'value_head_accuracy': 0.7212936}
+16:08:40 DEBUG @ Model : {'batch': 43, 'size': 64, 'loss': 0.82515943, 'policy_head_loss': 0.06324876, 'value_head_loss': 0.33168742, 'policy_head_accuracy': 0.9328613, 'value_head_accuracy': 0.721946}
+16:08:40 DEBUG @ Model : {'batch': 44, 'size': 64, 'loss': 0.84260106, 'policy_head_loss': 0.06328726, 'value_head_loss': 0.3319518, 'policy_head_accuracy': 0.932997, 'value_head_accuracy': 0.7222222}
+16:08:40 DEBUG @ Model : {'batch': 45, 'size': 64, 'loss': 0.7639123, 'policy_head_loss': 0.06327994, 'value_head_loss': 0.3305525, 'policy_head_accuracy': 0.9331479, 'value_head_accuracy': 0.72316575}
+16:08:40 DEBUG @ Model : {'batch': 46, 'size': 64, 'loss': 0.8124209, 'policy_head_loss': 0.063272975, 'value_head_loss': 0.33025885, 'policy_head_accuracy': 0.93333924, 'value_head_accuracy': 0.72207445}
+16:08:40 DEBUG @ Model : {'batch': 47, 'size': 64, 'loss': 0.78803277, 'policy_head_loss': 0.06324511, 'value_head_loss': 0.32950434, 'policy_head_accuracy': 0.9333852, 'value_head_accuracy': 0.7239583}
+16:08:40 DEBUG @ Model : {'batch': 48, 'size': 64, 'loss': 0.7903265, 'policy_head_loss': 0.063156195, 'value_head_loss': 0.3289031, 'policy_head_accuracy': 0.9336386, 'value_head_accuracy': 0.7251276}
+16:08:40 DEBUG @ Model : {'batch': 49, 'size': 64, 'loss': 0.9276172, 'policy_head_loss': 0.063131794, 'value_head_loss': 0.33102405, 'policy_head_accuracy': 0.93381834, 'value_head_accuracy': 0.7259375}
+16:08:40 DEBUG @ Model : {'batch': 50, 'size': 64, 'loss': 0.7629628, 'policy_head_loss': 0.063128255, 'value_head_loss': 0.32982633, 'policy_head_accuracy': 0.9339241, 'value_head_accuracy': 0.72794116}
+16:08:40 DEBUG @ Model : {'batch': 51, 'size': 64, 'loss': 1.0562446, 'policy_head_loss': 0.063124865, 'value_head_loss': 0.33432728, 'policy_head_accuracy': 0.9339928, 'value_head_accuracy': 0.72746396}
+16:08:40 DEBUG @ Model : {'batch': 52, 'size': 64, 'loss': 0.83267665, 'policy_head_loss': 0.06315992, 'value_head_loss': 0.33441415, 'policy_head_accuracy': 0.9339346, 'value_head_accuracy': 0.7293632}
+16:08:40 DEBUG @ Model : {'batch': 53, 'size': 64, 'loss': 0.84772867, 'policy_head_loss': 0.063156046, 'value_head_loss': 0.3348262, 'policy_head_accuracy': 0.9339283, 'value_head_accuracy': 0.7300347}
+16:08:41 DEBUG @ Model : {'batch': 54, 'size': 64, 'loss': 1.1095356, 'policy_head_loss': 0.06317081, 'value_head_loss': 0.33997667, 'policy_head_accuracy': 0.9338423, 'value_head_accuracy': 0.7303977}
+16:08:41 DEBUG @ Model : {'batch': 55, 'size': 64, 'loss': 0.8972961, 'policy_head_loss': 0.06320313, 'value_head_loss': 0.34114665, 'policy_head_accuracy': 0.93348473, 'value_head_accuracy': 0.73046875}
+16:08:41 DEBUG @ Model : {'batch': 56, 'size': 64, 'loss': 0.77485985, 'policy_head_loss': 0.06318089, 'value_head_loss': 0.34019214, 'policy_head_accuracy': 0.93326825, 'value_head_accuracy': 0.73135966}
+16:08:41 DEBUG @ Model : {'batch': 57, 'size': 64, 'loss': 0.91522866, 'policy_head_loss': 0.06319444, 'value_head_loss': 0.34166655, 'policy_head_accuracy': 0.9330087, 'value_head_accuracy': 0.73033404}
+16:08:41 DEBUG @ Model : {'batch': 58, 'size': 64, 'loss': 0.91441506, 'policy_head_loss': 0.0631904, 'value_head_loss': 0.343105, 'policy_head_accuracy': 0.9324558, 'value_head_accuracy': 0.72960806}
+16:08:41 DEBUG @ Model : {'batch': 59, 'size': 64, 'loss': 0.9759445, 'policy_head_loss': 0.06320347, 'value_head_loss': 0.34551436, 'policy_head_accuracy': 0.93184817, 'value_head_accuracy': 0.72786456}
+16:08:41 DEBUG @ Model : {'batch': 60, 'size': 64, 'loss': 0.7900715, 'policy_head_loss': 0.063216075, 'value_head_loss': 0.34480765, 'policy_head_accuracy': 0.9300997, 'value_head_accuracy': 0.72822744}
+16:08:41 DEBUG @ Model : {'batch': 61, 'size': 64, 'loss': 0.8100338, 'policy_head_loss': 0.06319545, 'value_head_loss': 0.3444881, 'policy_head_accuracy': 0.9297623, 'value_head_accuracy': 0.7273185}
+16:08:41 DEBUG @ Model : {'batch': 62, 'size': 64, 'loss': 1.021399, 'policy_head_loss': 0.06320774, 'value_head_loss': 0.3475108, 'policy_head_accuracy': 0.9293581, 'value_head_accuracy': 0.7251984}
+16:08:41 DEBUG @ Model : {'batch': 63, 'size': 64, 'loss': 0.7991146, 'policy_head_loss': 0.0632038, 'value_head_loss': 0.34699073, 'policy_head_accuracy': 0.9290886, 'value_head_accuracy': 0.7246094}
+16:08:41 DEBUG @ Model : {'batch': 64, 'size': 64, 'loss': 0.8491922, 'policy_head_loss': 0.06318427, 'value_head_loss': 0.3472816, 'policy_head_accuracy': 0.9290527, 'value_head_accuracy': 0.7240385}
+16:08:41 DEBUG @ Model : {'batch': 65, 'size': 64, 'loss': 0.82892895, 'policy_head_loss': 0.06316538, 'value_head_loss': 0.34726524, 'policy_head_accuracy': 0.92911786, 'value_head_accuracy': 0.7234849}
+16:08:41 DEBUG @ Model : {'batch': 66, 'size': 64, 'loss': 0.8089566, 'policy_head_loss': 0.063192494, 'value_head_loss': 0.34691423, 'policy_head_accuracy': 0.929079, 'value_head_accuracy': 0.72318095}
+16:08:41 DEBUG @ Model : {'batch': 67, 'size': 64, 'loss': 0.7332591, 'policy_head_loss': 0.063203886, 'value_head_loss': 0.34548354, 'policy_head_accuracy': 0.92908794, 'value_head_accuracy': 0.72449446}
+16:08:41 DEBUG @ Model : {'batch': 68, 'size': 64, 'loss': 0.80848086, 'policy_head_loss': 0.06320022, 'value_head_loss': 0.3452074, 'policy_head_accuracy': 0.9291426, 'value_head_accuracy': 0.7255435}
+16:08:41 DEBUG @ Model : {'batch': 69, 'size': 64, 'loss': 0.85228854, 'policy_head_loss': 0.06322567, 'value_head_loss': 0.34554398, 'policy_head_accuracy': 0.9293038, 'value_head_accuracy': 0.7254464}
+16:08:41 DEBUG @ Model : {'batch': 70, 'size': 64, 'loss': 0.93614984, 'policy_head_loss': 0.06325041, 'value_head_loss': 0.34706023, 'policy_head_accuracy': 0.9294021, 'value_head_accuracy': 0.72359157}
+16:08:42 DEBUG @ Model : {'batch': 71, 'size': 64, 'loss': 0.68745697, 'policy_head_loss': 0.06327447, 'value_head_loss': 0.34508824, 'policy_head_accuracy': 0.9295213, 'value_head_accuracy': 0.7246094}
+16:08:42 DEBUG @ Model : {'batch': 72, 'size': 64, 'loss': 0.9015553, 'policy_head_loss': 0.06328395, 'value_head_loss': 0.34612498, 'policy_head_accuracy': 0.92963064, 'value_head_accuracy': 0.7247431}
+16:08:42 DEBUG @ Model : {'batch': 73, 'size': 64, 'loss': 0.72381496, 'policy_head_loss': 0.06330688, 'value_head_loss': 0.3447259, 'policy_head_accuracy': 0.92974687, 'value_head_accuracy': 0.7250845}
+16:08:42 DEBUG @ Model : {'batch': 74, 'size': 64, 'loss': 0.8873604, 'policy_head_loss': 0.06330215, 'value_head_loss': 0.34557956, 'policy_head_accuracy': 0.9298503, 'value_head_accuracy': 0.72479165}
+16:08:42 DEBUG @ Model : {'batch': 75, 'size': 64, 'loss': 1.0205009, 'policy_head_loss': 0.0633109, 'value_head_loss': 0.34815696, 'policy_head_accuracy': 0.92990595, 'value_head_accuracy': 0.7236842}
+16:08:42 DEBUG @ Model : {'batch': 76, 'size': 64, 'loss': 0.72151303, 'policy_head_loss': 0.06330624, 'value_head_loss': 0.3468052, 'policy_head_accuracy': 0.9300838, 'value_head_accuracy': 0.7236201}
+16:08:42 DEBUG @ Model : {'batch': 77, 'size': 64, 'loss': 0.8908831, 'policy_head_loss': 0.063288674, 'value_head_loss': 0.34767997, 'policy_head_accuracy': 0.93019456, 'value_head_accuracy': 0.7235577}
+16:08:42 DEBUG @ Model : {'batch': 78, 'size': 64, 'loss': 0.9199966, 'policy_head_loss': 0.06331012, 'value_head_loss': 0.3488699, 'policy_head_accuracy': 0.9302901, 'value_head_accuracy': 0.7225079}
+16:08:42 DEBUG @ Model : {'batch': 79, 'size': 64, 'loss': 0.7324697, 'policy_head_loss': 0.063280255, 'value_head_loss': 0.34774402, 'policy_head_accuracy': 0.93044436, 'value_head_accuracy': 0.72265625}
+16:08:42 DEBUG @ Model : {'batch': 80, 'size': 64, 'loss': 0.7224371, 'policy_head_loss': 0.06326365, 'value_head_loss': 0.3465166, 'policy_head_accuracy': 0.9305194, 'value_head_accuracy': 0.72299385}
+16:08:42 DEBUG @ Model : {'batch': 81, 'size': 64, 'loss': 0.8249, 'policy_head_loss': 0.06324747, 'value_head_loss': 0.34657568, 'policy_head_accuracy': 0.9307057, 'value_head_accuracy': 0.72332317}
+16:08:42 DEBUG @ Model : {'batch': 82, 'size': 64, 'loss': 0.78375673, 'policy_head_loss': 0.06325614, 'value_head_loss': 0.3461201, 'policy_head_accuracy': 0.9308141, 'value_head_accuracy': 0.7232681}
+16:08:42 DEBUG @ Model : {'batch': 83, 'size': 64, 'loss': 0.78727406, 'policy_head_loss': 0.06322834, 'value_head_loss': 0.3457602, 'policy_head_accuracy': 0.9309373, 'value_head_accuracy': 0.7235863}
+16:08:42 DEBUG @ Model : {'batch': 84, 'size': 64, 'loss': 0.8589078, 'policy_head_loss': 0.063201204, 'value_head_loss': 0.34625822, 'policy_head_accuracy': 0.93100584, 'value_head_accuracy': 0.72389704}
+16:08:42 DEBUG @ Model : {'batch': 85, 'size': 2, 'loss': 0.48418158, 'policy_head_loss': 0.06322192, 'value_head_loss': 0.34234667, 'policy_head_accuracy': 0.9309968, 'value_head_accuracy': 0.72399855}
+ - 13s - loss: 0.8444 - policy_head_loss: 0.0632 - value_head_loss: 0.3423 - policy_head_accuracy: 0.9310 - value_head_accuracy: 0.7240
+16:08:45 INFO @ Model : Saving model to /home/users/t/t.moussa/AlphaZero/_Data/MigthyMonkey/model_checkpoints/04-0.84.hdf5...
+16:08:45 INFO @ Model : Saving model to mlflow as MigthyMonkey...
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mAttributeError[0m                            Traceback (most recent call last)
+[0;32m/beegfs/home/users/t/t.moussa/AlphaZero/Model/model.py[0m in [0;36m<module>[0;34m[0m
+[1;32m    375[0m     [0;31m# model.plot_model()[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    376[0m     model.auto_run_training(max_epochs=args.max_epochs,
+[0;32m--> 377[0;31m                             max_iterations=args.max_iterations)
+[0m
+[0;32m/beegfs/home/users/t/t.moussa/AlphaZero/Model/model.py[0m in [0;36mauto_run_training[0;34m(self, max_iterations, max_epochs)[0m
+[1;32m     89[0m             log.info("Commencing training %i/%i on dataset %s.",
+[1;32m     90[0m                      i, max_iterations, dataset_file)
+[0;32m---> 91[0;31m             [0mself[0m[0;34m.[0m[0mtrain[0m[0;34m([0m[0mtrain_data[0m[0;34m,[0m [0mepochs[0m[0;34m=[0m[0mmax_epochs[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m     92[0m [0;34m[0m[0m
+[1;32m     93[0m     [0;31m# @timing[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
 
-in process 61455:
-WHITE: StockingFish
-BLACK: StockingFish
+[0;32m/beegfs/home/users/t/t.moussa/AlphaZero/Model/model.py[0m in [0;36mtrain[0;34m(self, train_data, batch_size, epochs, initial_epoch)[0m
+[1;32m    156[0m                                     [0mcallbacks[0m[0;34m=[0m[0mself[0m[0;34m.[0m[0mcallbacks[0m[0;34m,[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    157[0m                                     [0minitial_epoch[0m[0;34m=[0m[0minitial_epoch[0m[0;34m,[0m[0;34m[0m[0;34m[0m[0m
+[0;32m--> 158[0;31m                                     verbose=2)
+[0m[1;32m    159[0m [0;34m[0m[0m
+[1;32m    160[0m         [0mself[0m[0;34m.[0m[0minitial_epoch[0m [0;34m=[0m [0mtrain_logs[0m[0;34m.[0m[0mhistory[0m[0;34m[[0m[0;34m'epoch'[0m[0;34m][0m[0;34m[[0m[0;34m-[0m[0;36m1[0m[0;34m][0m [0;34m+[0m [0;36m1[0m[0;34m[0m[0;34m[0m[0m
 
+[0;32m/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/keras/engine/training.py[0m in [0;36mfit[0;34m(self, x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight, sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_freq, max_queue_size, workers, use_multiprocessing, **kwargs)[0m
+[1;32m   1237[0m                                         [0msteps_per_epoch[0m[0;34m=[0m[0msteps_per_epoch[0m[0;34m,[0m[0;34m[0m[0;34m[0m[0m
+[1;32m   1238[0m                                         [0mvalidation_steps[0m[0;34m=[0m[0mvalidation_steps[0m[0;34m,[0m[0;34m[0m[0;34m[0m[0m
+[0;32m-> 1239[0;31m                                         validation_freq=validation_freq)
+[0m[1;32m   1240[0m [0;34m[0m[0m
+[1;32m   1241[0m     def evaluate(self,
+
+[0;32m/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/keras/engine/training_arrays.py[0m in [0;36mfit_loop[0;34m(model, fit_function, fit_inputs, out_labels, batch_size, epochs, verbose, callbacks, val_function, val_inputs, shuffle, initial_epoch, steps_per_epoch, validation_steps, validation_freq)[0m
+[1;32m    214[0m                         [0mepoch_logs[0m[0;34m[[0m[0;34m'val_'[0m [0;34m+[0m [0ml[0m[0;34m][0m [0;34m=[0m [0mo[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    215[0m [0;34m[0m[0m
+[0;32m--> 216[0;31m         [0mcallbacks[0m[0;34m.[0m[0mon_epoch_end[0m[0;34m([0m[0mepoch[0m[0;34m,[0m [0mepoch_logs[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m    217[0m         [0;32mif[0m [0mcallbacks[0m[0;34m.[0m[0mmodel[0m[0;34m.[0m[0mstop_training[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    218[0m             [0;32mbreak[0m[0;34m[0m[0;34m[0m[0m
+
+[0;32m/beegfs/home/users/t/t.moussa/env/lib/python3.7/site-packages/keras/callbacks/callbacks.py[0m in [0;36mon_epoch_end[0;34m(self, epoch, logs)[0m
+[1;32m    150[0m         [0mlogs[0m [0;34m=[0m [0mlogs[0m [0;32mor[0m [0;34m{[0m[0;34m}[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    151[0m         [0;32mfor[0m [0mcallback[0m [0;32min[0m [0mself[0m[0;34m.[0m[0mcallbacks[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+[0;32m--> 152[0;31m             [0mcallback[0m[0;34m.[0m[0mon_epoch_end[0m[0;34m([0m[0mepoch[0m[0;34m,[0m [0mlogs[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m    153[0m [0;34m[0m[0m
+[1;32m    154[0m     [0;32mdef[0m [0mon_train_batch_begin[0m[0;34m([0m[0mself[0m[0;34m,[0m [0mbatch[0m[0;34m,[0m [0mlogs[0m[0;34m=[0m[0;32mNone[0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+
+[0;32m/beegfs/home/users/t/t.moussa/AlphaZero/Model/model.py[0m in [0;36mon_epoch_end[0;34m(self, epoch, logs)[0m
+[1;32m    317[0m             [0;32mif[0m [0msave_mlflow[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    318[0m                 [0mlog[0m[0;34m.[0m[0minfo[0m[0;34m([0m[0;34m"Saving model to mlflow as %s..."[0m[0;34m,[0m [0mmodel_name[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0;32m--> 319[0;31m                 mlflow.keras.log_model(artifact_path="model",
+[0m[1;32m    320[0m                                        [0mkeras_model[0m[0;34m=[0m[0mself[0m[0;34m.[0m[0mmodel[0m[0;34m,[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    321[0m                                        [0mkeras_module[0m[0;34m=[0m[0mkeras[0m[0;34m,[0m[0;34m[0m[0;34m[0m[0m
+
+[0;31mAttributeError[0m: module 'mlflow' has no attribute 'keras'
