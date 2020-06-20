@@ -15,7 +15,7 @@ entry_points:
   watch_and_learn:
     parameters:
         num_of_parallel_processes: {type: float, default: 2}
-        num_of_games_per_process: {type: float, default: 0}
+        num_of_games_per_process: {type: float, default: git push0}
         rollouts_per_move: {type: float, default: 100}
         iterations: {type: float, default: 1}
         epochs: {type: float, default: 5}
@@ -59,7 +59,7 @@ entry_points:
         num_of_parallel_processes: {type: float, default: 2}
         num_of_games_per_process: {type: float, default: 10}
         fork_method: {type: string, default: "spawn"}
-        player_one: {type: string, default: "Player/default_config.yaml"}
-        player_two: {type: string, default: "Player/default_config.yaml"}
+        player_one: {type: string, default: "Player/MightyMonkey.yaml"}
+        player_two: {type: string, default: "Player/MightyMonkey.yaml"}
     command: "python3 Matches/create_dataset.py -p {num_of_parallel_processes} -g {num_of_games_per_process} 
              --fork_method {fork_method} --player_one {player_one} --player_two {player_two}"
