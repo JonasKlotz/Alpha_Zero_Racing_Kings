@@ -45,7 +45,7 @@ class Contest():
         self.game_id = game_id
         self.show_game = show_game
 
-    def start(self, num_of_matches=10):
+    def start(self, num_of_matches=3):
         '''
         start a series of matches. match data
         for each match is written to a separate
