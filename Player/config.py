@@ -9,12 +9,13 @@ import mlflow
 
 ROOTDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOTDIR)
-
+print("\n\n rootdir: ")
+print(ROOTDIR)
+print("\n\n")
 from lib.logger import get_logger
 log = get_logger("Config")
 
-mlflow.set_tracking_uri('http://frontend02:5050')
-
+#mlflow.set_tracking_uri('http://frontend02:5050')
 
 CONFIGDIR = "Player"
 
@@ -103,6 +104,9 @@ class DefaultOptions(Options):
 
 
 def search_config_file(name):
+    print("\n\nConfigdir: ")    
+    print(CONFIGDIR)
+    print("\n\n") 
     splits = name.split(".yaml")
     if len(splits) == 1:
         name += ".yaml"

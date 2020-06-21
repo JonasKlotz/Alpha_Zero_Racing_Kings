@@ -149,17 +149,18 @@ class AZero:
 
         if epochs == -1:  # train indefinitely; XXX: review
             epochs = 10000
+        mlflow.keras.autolog()
+        with mlflow.start_run():
+	# begin training
+               train_logs = self.model.fit(x_train, y_train,
+                                            batch_size=batch_size,
+                                            epochs=initial_epoch + epochs,
+                                            shuffle=True,
+                                            callbacks=self.callbacks,
+                                            initial_epoch=initial_epoch,
+                                            verbose=2)
 
-        # begin training
-        train_logs = self.model.fit(x_train, y_train,
-                                    batch_size=batch_size,
-                                    epochs=initial_epoch + epochs,
-                                    shuffle=True,
-                                    callbacks=self.callbacks,
-                                    initial_epoch=initial_epoch,
-                                    verbose=2)
-
-        self.initial_epoch = train_logs.history['epoch'][-1] + 1
+               self.initial_epoch = train_logs.history['epoch'][-1] + 1
 
     def summary(self):
         """ Prints a summary of the model architecture """
