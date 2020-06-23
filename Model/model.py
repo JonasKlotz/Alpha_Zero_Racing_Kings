@@ -7,6 +7,7 @@ import time
 import argparse
 
 import mlflow
+import mlflow.keras
 mlflow.set_tracking_uri("http://35.223.113.101:8000")
 
 # import tensorflow as tf
