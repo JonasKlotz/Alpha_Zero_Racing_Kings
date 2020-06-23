@@ -55,26 +55,27 @@ def assemble_dataset(handle):
     only filenames that contain this string will
     be considered for assembling the dataset
     '''
-    dataset = []
     counter = 0
-
-    for filename in os.listdir(GAMEDIR):
-        if f"game_{handle}" in filename and filename.endswith(".pkl"):
-            filepath = os.path.join(GAMEDIR, filename)
-            counter += 1
-            game_data = pickle.load(open(filepath, "rb"))
-            for i in game_data:
-                dataset.append(i)
-            log.info(f"added {filename} to dataset.")
 
     dataset_path = utility.get_unused_filepath(
         f"dataset_{handle}",
         DATASETDIR)
 
-    pickle.dump(dataset, open(dataset_path, "wb"))
+    with open(dataset_path, "wb") as dataset_file:
+        for filename in os.listdir(GAMEDIR):
+            dataset = []
+            if f"game_{handle}" in filename and filename.endswith(".pkl"):
+                filepath = os.path.join(GAMEDIR, filename)
+                counter += 1
+                game_data = pickle.load(open(filepath, "rb"))
+                for i in game_data:
+                    dataset.append(i)
+                pickle.dump(dataset, dataset_file)
+                log.info(f"added {filename} to dataset.")
+                del dataset
+
     log.info(f"saved data of {counter} games to {dataset_path}.")
 
-    del dataset
 
     test_load = pickle.load(open(dataset_path, "rb"))
     log.info(f"verified integrity of file.\n"
@@ -182,6 +183,7 @@ if __name__ == "__main__":
                    num_of_games_per_process=args.num_of_games_per_process,
                    fork_method=args.fork_method)
 
+    print("Dataset created.\n")
     # runtime_summary()
 
 # pylint: enable=E0401

@@ -1,7 +1,7 @@
 ### YAML DEFAULT Config-File
 
 #name of the model
-name: 'AlphaZero'
+name: 'AlphaZeroDefault'
 
 #directories
 dirs:

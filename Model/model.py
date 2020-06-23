@@ -7,8 +7,7 @@ import time
 import argparse
 
 import mlflow
-mlflow.set_tracking_uri("http://35.223.113.101:8000")
-
+import mlflow.keras
 # import tensorflow as tf
 # import tensorflow.keras as keras
 import keras
@@ -71,7 +70,7 @@ class AZero:
             mlflow.log_param(
                 "learning_rate", self.config.model.training.learning_rate)
 
-    def auto_run_training(self, max_iterations=5, max_epochs=10):
+    def auto_run_training(self, max_iterations=5, max_epochs=10, max_games=1000):
         """ Automatically enters a training loop that fetches newest datasets
         """
         for i in range(max_iterations):
@@ -84,11 +83,22 @@ class AZero:
                     dataset_file = get_latest_dataset_file(
                         self.config.dataset_dir)
             self.setup_callbacks(auto_run=True)  # new file, new callback
+            train_data = []
             with open(dataset_file, 'rb') as f:
-                train_data = pickle.load(f)
-            log.info("Commencing training %i/%i on dataset %s.",
-                     i, max_iterations, dataset_file)
+                games_in_train_data = 0
+                while games_in_train_data < max_games:
+                    try:
+                        game_data = pickle.load(f)
+                        for turn_data in game_data:
+                            train_data.append(turn_data)
+                        games_in_train_data += 1
+                    except EOFError:
+                        break
+
+            log.info("Commencing training %i/%i on dataset %s of size %d.",
+                     i + 1, max_iterations, dataset_file, games_in_train_data)
             self.train(train_data, epochs=max_epochs)
+            del train_data
 
     # @timing
     def inference(self, input):
@@ -364,6 +374,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--max_iterations", type=int, default=3)
     parser.add_argument("-ep", "--max_epochs", type=int, default=10000)
     parser.add_argument("--debug", type=bool, default=False)
+    parser.add_argument("-g", "--max-games", type=int, default=1000)
     args = parser.parse_args()
 
     DEBUG = args.debug
@@ -374,4 +385,5 @@ if __name__ == "__main__":
     # model.summary()
     # model.plot_model()
     model.auto_run_training(max_epochs=args.max_epochs,
-                            max_iterations=args.max_iterations)
+                            max_iterations=args.max_iterations,
+                            max_games=args.max_games)

@@ -6,13 +6,14 @@ entry_points:
         player: {type: string, default: "default_config"}
         max_iter: {type: float, default: 3}
         max_epochs: {type: float, default: 10000}
+        max_games: {type: float, default: 1000}
         debug: {type: bool, default: False}
-    command: "ipython Model/model.py -- 
-              --player={player} 
-              -i {max_iter} -ep {max_epochs} 
-              --debub={debug}"
+    command: "python3 Model/model.py
+              --player={player}
+              -i {max_iter} -ep {max_epochs} -g {max_games}
+              --debug={debug}"
 
-  create_dataset:
+  watch_and_learn:
     parameters:
         num_of_parallel_processes: {type: float, default: 2}
         num_of_games_per_process: {type: float, default: 10}
