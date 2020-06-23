@@ -12,7 +12,7 @@ entry_points:
               -i {max_iter} -ep {max_epochs} 
               --debub={debug}"
 
-  create_dataset:
+  watch_and_learn:
     parameters:
         num_of_parallel_processes: {type: float, default: 2}
         num_of_games_per_process: {type: float, default: 10}
