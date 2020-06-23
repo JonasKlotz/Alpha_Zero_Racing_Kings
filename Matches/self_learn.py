@@ -130,8 +130,9 @@ if __name__ == "__main__":
 
         assemble_dataset(handle=handle)
 
+        games_created = args.num_of_parallel_processes * args.num_of_games_per_process
         model.auto_run_training(max_iterations=args.iterations, \
-                max_epochs=args.epochs)
+                max_epochs=args.epochs, max_games=games_created)
 
 
 

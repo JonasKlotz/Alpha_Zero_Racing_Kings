@@ -12,10 +12,6 @@ sys.path.append(ROOTDIR)
 
 from lib.logger import get_logger
 log = get_logger("Config")
-
-mlflow.set_tracking_uri('http://frontend02:5050')
-
-
 CONFIGDIR = "Player"
 
 
