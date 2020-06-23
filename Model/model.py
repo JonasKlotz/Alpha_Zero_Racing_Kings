@@ -73,7 +73,7 @@ class AZero:
     def auto_run_training(self, max_iterations=5, max_epochs=10):
         """ Automatically enters a training loop that fetches newest datasets
         """
-        for i in range(max_iterations - 1):
+        for i in range(max_iterations):
             dataset_file = get_latest_dataset_file(self.config.dataset_dir)
             if dataset_file is None:
                 log.info("No dataset found in %s. Waiting..",
@@ -86,7 +86,7 @@ class AZero:
             with open(dataset_file, 'rb') as f:
                 train_data = pickle.load(f)
             log.info("Commencing training %i/%i on dataset %s.",
-                     i, max_iterations, dataset_file)
+                     i + 1, max_iterations, dataset_file)
             self.train(train_data, epochs=max_epochs)
 
     # @timing
