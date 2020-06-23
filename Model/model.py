@@ -373,6 +373,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--max_iterations", type=int, default=3)
     parser.add_argument("-ep", "--max_epochs", type=int, default=10000)
     parser.add_argument("--debug", type=bool, default=False)
+    parser.add_argument("-g", "--max-games", type=int, default=1000)
     args = parser.parse_args()
 
     DEBUG = args.debug
@@ -383,4 +384,5 @@ if __name__ == "__main__":
     # model.summary()
     # model.plot_model()
     model.auto_run_training(max_epochs=args.max_epochs,
-                            max_iterations=args.max_iterations)
+                            max_iterations=args.max_iterations,
+                            max_games=args.max_games)
