@@ -98,6 +98,7 @@ class AZero:
             log.info("Commencing training %i/%i on dataset %s of size %d.",
                      i + 1, max_iterations, dataset_file, games_in_train_data)
             self.train(train_data, epochs=max_epochs)
+            del train_data
 
     # @timing
     def inference(self, input):
