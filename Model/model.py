@@ -29,7 +29,7 @@ from Model.resnet import resnet_model
 from lib.logger import get_logger
 log = get_logger("Model")
 
-DEBUG = True
+DEBUG = False
 
 
 class AZero:
