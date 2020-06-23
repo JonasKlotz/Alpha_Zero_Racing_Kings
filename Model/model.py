@@ -73,7 +73,7 @@ class AZero:
     def auto_run_training(self, max_iterations=5, max_epochs=10):
         """ Automatically enters a training loop that fetches newest datasets
         """
-        for i in range(max_iterations):
+        for i in range(max_iterations - 1):
             dataset_file = get_latest_dataset_file(self.config.dataset_dir)
             if dataset_file is None:
                 log.info("No dataset found in %s. Waiting..",
