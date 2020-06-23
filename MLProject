@@ -10,7 +10,7 @@ entry_points:
     command: "ipython Model/model.py -- 
               --player={player} 
               -i {max_iter} -ep {max_epochs} 
-              --debub={debug}"
+              --debug={debug}"
 
   watch_and_learn:
     parameters:

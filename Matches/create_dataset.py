@@ -118,7 +118,7 @@ def parallel_matches(yamlpaths,
         selfplay = contest.Contest(
             player_one=players[0],
             player_two=players[1],
-            runs_per_move=rollouts_per_move,
+            rollouts_per_move=rollouts_per_move,
             game_id=handle,
             show_game=False)
         process = multiprocessing.Process(target=selfplay.start,
