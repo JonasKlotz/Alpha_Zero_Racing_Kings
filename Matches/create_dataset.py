@@ -183,7 +183,8 @@ if __name__ == "__main__":
                    num_of_games_per_process=args.num_of_games_per_process,
                    fork_method=args.fork_method)
 
-    runtime_summary()
+    print("Dataset created.\n")
+    # runtime_summary()
 
 # pylint: enable=E0401
 # pylint: enable=E0602
