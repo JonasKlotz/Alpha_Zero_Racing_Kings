@@ -133,7 +133,9 @@ def parallel_matches(yamlpaths,
     # written to disk
     return
 
-
+'''if __name__ =="__main__":
+    assemble_dataset("StockingFish9v1-StockingFish9v1_ismuzgtl")'''
+    
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Multiprocessing generation of self-play "
