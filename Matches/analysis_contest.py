@@ -124,7 +124,7 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--rollouts_per_move",
             type=int, default=100, \
             help="Simulation runs for each move.")
-    parser.add_argument("-n", "--number_of_games_in_contest",
+    parser.add_argument("-n", "--number_of_games",
             type=int, default=10, \
             help="number of games to be played in this contest. Default 10.")
     parser.add_argument("--show_game",
@@ -143,4 +143,4 @@ if __name__ == "__main__":
     start_args["show_game"] = bool(args.show_game)
 
     analysis_contest = AnalysisContest(**start_args)
-    analysis_contest.start(args.number_of_games_in_contest)
+    analysis_contest.start(args.number_of_games)
