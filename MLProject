@@ -5,7 +5,7 @@ entry_points:
     parameters:
         player: {type: string, default: "default_config"}
         max_iter: {type: float, default: 3}
-        max_epochs: {type: float, default: 10000}
+        max_epochs: {type: float, default: 100}
         max_games: {type: float, default: 1000}
         debug: {type: string, default: ""}
     command: "python3 Model/model.py
@@ -39,7 +39,7 @@ entry_points:
         epochs: {type: float, default: 5}
         selflearnruns: {type: float, default: 5}
         fork_method: {type: string, default: "spawn"}
-        player: {type: string, default: "Player/AltruisticOlm.yaml"}
+        player: {type: string, default: "Player/MightyMonkey.yaml"}
     command: "python3 Matches/self_learn.py -p {num_of_parallel_processes} -g {num_of_games_per_process} 
              -r {rollouts_per_move} -i {iterations} -e {epochs} -s {selflearnruns}
              --fork_method {fork_method} --player {player}"
@@ -60,7 +60,7 @@ entry_points:
         num_of_parallel_processes: {type: float, default: 2}
         num_of_games_per_process: {type: float, default: 10}
         fork_method: {type: string, default: "spawn"}
-        player_one: {type: string, default: "Player/default_config.yaml"}
-        player_two: {type: string, default: "Player/default_config.yaml"}
+        player_one: {type: string, default: "Player/MightyMonkey.yaml"}
+        player_two: {type: string, default: "Player/MightyMonkey.yaml"}
     command: "python3 Matches/create_dataset.py -p {num_of_parallel_processes} -g {num_of_games_per_process} 
              --fork_method {fork_method} --player_one {player_one} --player_two {player_two}"
