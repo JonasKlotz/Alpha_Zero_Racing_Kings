@@ -116,7 +116,7 @@ class Match():
             # only increment after black move
             moves += select
             self._show_game()
-            if moves % self.report_cycle == 0 and ~select:
+            if moves % self.report_cycle == 0 and select == 0:
                 time1 = self._report(time1, moves) 
 
         return self._clean_up_end_game(moves)

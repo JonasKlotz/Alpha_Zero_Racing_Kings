@@ -54,6 +54,17 @@ entry_points:
              --rollouts_per_move {rollouts_per_move} --report_cycle {report_cycle} 
              --show_game {show_game}"
 
+  analysis_contest:
+    parameters:
+        player_one: {type: string, default: "Player/MockingBird.yaml"}
+        player_two: {type: string, default: "Player/MockingBird.yaml"}
+        rollouts_per_move: {type: float, default: 100}
+        number_of_games: {type: float, default: 10}
+        show_game: {type: float, default: 0}
+    command: "python3 Matches/analysis_contest.py --player_one {player_one} --player_two {player_two}
+             --rollouts_per_move {rollouts_per_move}  --number_of_games {number_of_games}
+             --show_game {show_game}"
+
   create_dataset:
     parameters:
         num_of_parallel_processes: {type: float, default: 10}
