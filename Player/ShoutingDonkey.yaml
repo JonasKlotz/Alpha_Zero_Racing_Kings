@@ -55,9 +55,9 @@ model:
     training:
         learning_rate: 1.e-3
     logging:
-        save_model_every: 15
+        save_model_every: 10
         log_metrics_every: 1
-        log_mlflow: False
+        log_mlflow: True
         load_from_mlflow: True
         mlflow_model_version: 0
         save_local: True

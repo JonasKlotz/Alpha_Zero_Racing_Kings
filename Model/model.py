@@ -377,7 +377,7 @@ if __name__ == "__main__":
     parser.add_argument("-g", "--max-games", type=int, default=1000)
     args = parser.parse_args()
 
-    DEBUG = args.debug
+    DEBUG = False
 
     config = Config(args.player)
 

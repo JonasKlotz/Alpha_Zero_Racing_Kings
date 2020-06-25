@@ -1,0 +1,51 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2020/06/25 21:11:25 INFO mlflow.projects: === Created directory /tmp/tmpheiu5wpn for downloading remote URIs passed to arguments of type 'path' ===
+2020/06/25 21:11:25 INFO mlflow.projects: === Running command 'python3 Model/model.py --player=Player/ShoutingDonkey.yaml -i 1 -ep 500 -g 25000 --debug=False' in run with ID '4df61356dae64000a199f0bb61afd744' === 
+2020-06-25 21:12:19.145238: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcuda.so.1
+2020-06-25 21:12:19.172752: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1561] Found device 0 with properties: 
+pciBusID: 0000:82:00.0 name: Tesla P100-PCIE-16GB computeCapability: 6.0
+coreClock: 1.3285GHz coreCount: 56 deviceMemorySize: 15.90GiB deviceMemoryBandwidth: 681.88GiB/s
+2020-06-25 21:12:19.179054: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.1
+2020-06-25 21:12:19.220824: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+2020-06-25 21:12:19.453761: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcufft.so.10
+2020-06-25 21:12:19.630975: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcurand.so.10
+2020-06-25 21:12:20.008364: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusolver.so.10
+2020-06-25 21:12:20.190478: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusparse.so.10
+2020-06-25 21:12:20.287091: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
+2020-06-25 21:12:20.290609: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1703] Adding visible gpu devices: 0
+2020-06-25 21:12:20.291336: I tensorflow/core/platform/cpu_feature_guard.cc:143] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2020-06-25 21:12:20.322433: I tensorflow/core/platform/profile_utils/cpu_utils.cc:102] CPU Frequency: 2199935000 Hz
+2020-06-25 21:12:20.322860: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x48118e0 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2020-06-25 21:12:20.323084: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+2020-06-25 21:12:20.436719: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x4883df0 initialized for platform CUDA (this does not guarantee that XLA will be used). Devices:
+2020-06-25 21:12:20.436953: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Tesla P100-PCIE-16GB, Compute Capability 6.0
+2020-06-25 21:12:20.473359: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1561] Found device 0 with properties: 
+pciBusID: 0000:82:00.0 name: Tesla P100-PCIE-16GB computeCapability: 6.0
+coreClock: 1.3285GHz coreCount: 56 deviceMemorySize: 15.90GiB deviceMemoryBandwidth: 681.88GiB/s
+2020-06-25 21:12:20.473711: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.1
+2020-06-25 21:12:20.473938: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+2020-06-25 21:12:20.474152: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcufft.so.10
+2020-06-25 21:12:20.474390: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcurand.so.10
+2020-06-25 21:12:20.474604: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusolver.so.10
+2020-06-25 21:12:20.474805: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcusparse.so.10
+2020-06-25 21:12:20.475039: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
+2020-06-25 21:12:20.478641: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1703] Adding visible gpu devices: 0
+2020-06-25 21:12:20.480257: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.1
+2020-06-25 21:12:20.500434: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1102] Device interconnect StreamExecutor with strength 1 edge matrix:
+2020-06-25 21:12:20.500688: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1108]      0 
+2020-06-25 21:12:20.500911: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1121] 0:   N 
+2020-06-25 21:12:20.507224: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1247] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 15056 MB memory) -> physical GPU (device: 0, name: Tesla P100-PCIE-16GB, pci bus id: 0000:82:00.0, compute capability: 6.0)
+2020-06-25 21:12:57.653777: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+2020-06-25 21:12:58.858896: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
+slurmstepd: error: *** JOB 18435856 ON gpu019 CANCELLED AT 2020-06-25T21:29:08 ***

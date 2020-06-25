@@ -1,0 +1,86 @@
+21:12:08 INFO @ Log : Date: 25.06.2020
+21:12:08 INFO @ Config : Loading Config from Player/ShoutingDonkey.yaml.
+21:12:08 INFO @ Model : Fetching model ShoutingDonkey version 9 from mlflow server.
+21:12:43 INFO @ Model : Commencing training 1/1 on dataset /beegfs/home/users/k/konstantin_ausborn/AlphaZero-Gruppe1/datasets/dataset_ShoutingDonkey-StockingFish_0001.pkl of size 1699.
+Epoch 1/500
+ - 35s - loss: 0.1340 - policy_head_loss: 0.0511 - value_head_loss: 0.0517 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9573
+Epoch 2/500
+ - 23s - loss: 0.1067 - policy_head_loss: 0.0511 - value_head_loss: 0.0267 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9818
+Epoch 3/500
+ - 22s - loss: 0.1009 - policy_head_loss: 0.0511 - value_head_loss: 0.0233 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9838
+Epoch 4/500
+ - 22s - loss: 0.0956 - policy_head_loss: 0.0511 - value_head_loss: 0.0205 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9846
+Epoch 5/500
+ - 22s - loss: 0.0934 - policy_head_loss: 0.0511 - value_head_loss: 0.0206 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9857
+Epoch 6/500
+ - 22s - loss: 0.0919 - policy_head_loss: 0.0511 - value_head_loss: 0.0210 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9843
+Epoch 7/500
+ - 22s - loss: 0.0907 - policy_head_loss: 0.0511 - value_head_loss: 0.0211 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9858
+Epoch 8/500
+ - 22s - loss: 0.0892 - policy_head_loss: 0.0511 - value_head_loss: 0.0209 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9848
+Epoch 9/500
+ - 22s - loss: 0.0886 - policy_head_loss: 0.0511 - value_head_loss: 0.0210 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9853
+Epoch 10/500
+ - 22s - loss: 0.0866 - policy_head_loss: 0.0511 - value_head_loss: 0.0198 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9848
+21:17:07 INFO @ Model : Saving model to /beegfs/home/users/k/konstantin_ausborn/AlphaZero-Gruppe1/_Data/ShoutingDonkey/model_checkpoints/09-0.09.hdf5...
+21:17:07 INFO @ Model : Saving model to mlflow as ShoutingDonkey...
+Epoch 11/500
+ - 22s - loss: 0.0847 - policy_head_loss: 0.0511 - value_head_loss: 0.0190 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9851
+Epoch 12/500
+ - 22s - loss: 0.0841 - policy_head_loss: 0.0511 - value_head_loss: 0.0196 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9873
+Epoch 13/500
+ - 22s - loss: 0.0820 - policy_head_loss: 0.0511 - value_head_loss: 0.0183 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9867
+Epoch 14/500
+ - 22s - loss: 0.0819 - policy_head_loss: 0.0511 - value_head_loss: 0.0192 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9856
+Epoch 15/500
+ - 22s - loss: 0.0798 - policy_head_loss: 0.0511 - value_head_loss: 0.0178 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9862
+Epoch 16/500
+ - 22s - loss: 0.0819 - policy_head_loss: 0.0511 - value_head_loss: 0.0206 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9860
+Epoch 17/500
+ - 22s - loss: 0.0803 - policy_head_loss: 0.0511 - value_head_loss: 0.0189 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9856
+Epoch 18/500
+ - 22s - loss: 0.0805 - policy_head_loss: 0.0511 - value_head_loss: 0.0194 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9854
+Epoch 19/500
+ - 22s - loss: 0.0797 - policy_head_loss: 0.0511 - value_head_loss: 0.0188 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9851
+Epoch 20/500
+ - 22s - loss: 0.0796 - policy_head_loss: 0.0511 - value_head_loss: 0.0186 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9865
+21:21:21 INFO @ Model : Saving model to /beegfs/home/users/k/konstantin_ausborn/AlphaZero-Gruppe1/_Data/ShoutingDonkey/model_checkpoints/19-0.08.hdf5...
+21:21:22 INFO @ Model : Saving model to mlflow as ShoutingDonkey...
+Epoch 21/500
+ - 22s - loss: 0.0792 - policy_head_loss: 0.0511 - value_head_loss: 0.0186 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9856
+Epoch 22/500
+ - 22s - loss: 0.0773 - policy_head_loss: 0.0511 - value_head_loss: 0.0173 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9871
+Epoch 23/500
+ - 22s - loss: 0.0792 - policy_head_loss: 0.0511 - value_head_loss: 0.0194 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9869
+Epoch 24/500
+ - 22s - loss: 0.0772 - policy_head_loss: 0.0511 - value_head_loss: 0.0177 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9862
+Epoch 25/500
+ - 22s - loss: 0.0775 - policy_head_loss: 0.0511 - value_head_loss: 0.0183 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9865
+Epoch 26/500
+ - 22s - loss: 0.0757 - policy_head_loss: 0.0511 - value_head_loss: 0.0171 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9876
+Epoch 27/500
+ - 22s - loss: 0.0767 - policy_head_loss: 0.0511 - value_head_loss: 0.0187 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9871
+Epoch 28/500
+ - 22s - loss: 0.0773 - policy_head_loss: 0.0511 - value_head_loss: 0.0186 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9842
+Epoch 29/500
+ - 22s - loss: 0.0761 - policy_head_loss: 0.0511 - value_head_loss: 0.0178 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9871
+Epoch 30/500
+ - 22s - loss: 0.0767 - policy_head_loss: 0.0511 - value_head_loss: 0.0186 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9860
+21:25:33 INFO @ Model : Saving model to /beegfs/home/users/k/konstantin_ausborn/AlphaZero-Gruppe1/_Data/ShoutingDonkey/model_checkpoints/29-0.08.hdf5...
+21:25:33 INFO @ Model : Saving model to mlflow as ShoutingDonkey...
+Epoch 31/500
+ - 22s - loss: 0.0753 - policy_head_loss: 0.0511 - value_head_loss: 0.0175 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9876
+Epoch 32/500
+ - 22s - loss: 0.0740 - policy_head_loss: 0.0511 - value_head_loss: 0.0168 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9861
+Epoch 33/500
+ - 22s - loss: 0.0756 - policy_head_loss: 0.0511 - value_head_loss: 0.0184 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9858
+Epoch 34/500
+ - 22s - loss: 0.0737 - policy_head_loss: 0.0511 - value_head_loss: 0.0168 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9859
+Epoch 35/500
+ - 22s - loss: 0.0764 - policy_head_loss: 0.0511 - value_head_loss: 0.0190 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9857
+Epoch 36/500
+ - 22s - loss: 0.0762 - policy_head_loss: 0.0511 - value_head_loss: 0.0190 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9866
+Epoch 37/500
+ - 22s - loss: 0.0737 - policy_head_loss: 0.0511 - value_head_loss: 0.0168 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9872
+Epoch 38/500
+ - 22s - loss: 0.0735 - policy_head_loss: 0.0511 - value_head_loss: 0.0170 - policy_head_accuracy: 0.9486 - value_head_accuracy: 0.9858
