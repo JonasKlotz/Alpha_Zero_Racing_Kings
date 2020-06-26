@@ -90,6 +90,12 @@ class AztsTree():
         del self.root
         self._init_tree()
 
+
+
+    def simulate_move(self):
+        self._tree_search(self.rollouts_per_move)
+
+
     def make_move(self):
         '''
         calculate move

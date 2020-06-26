@@ -75,6 +75,10 @@ class Player():
         '''
         self.tree.reset()
 
+    def simulate_move(self):
+        if self.tree is not None:
+            self.tree.simulate_move()
+
     def make_move(self):
         '''
         :return str: move in uci notation
