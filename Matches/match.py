@@ -61,7 +61,6 @@ class Match():
         self.training_payoffs = TRAINING_PAYOFFS
         self.show_game = show_game
         self.report_cycle = report_cycle
-        self.match_moves = []
         self.track_player = track_player
 
     def set_game_state(self, fen_state):
@@ -143,7 +142,7 @@ class Match():
         result = self.game.board.result()
         state = self.game.get_game_state()
         log.info(f"game ended after {moves} "
-              + f"moves with {result} ({TO_STRING[state]}).")
+              + f"turns with {result} ({TO_STRING[state]}).")
         score = self.training_payoffs[state]
 
         for i in self.players:
@@ -164,10 +163,10 @@ class Match():
         time_now = time.time()
         elapsed = time_now - time_before
         avg_per_move = elapsed / self.report_cycle
-        log.info(f"process {os.getpid()}: total moves: {moves}; " \
-                + f"{self.report_cycle} moves in " \
+        log.info(f"process {os.getpid()}: total turns: {moves}; " \
+                + f"{self.report_cycle} turns in " \
                 + f"{str(elapsed)[0:5]}s, average of " \
-                + f"{str(avg_per_move)[0:4]}s per move.")
+                + f"{str(avg_per_move)[0:4]}s per turn.")
         return time_now
 
 
