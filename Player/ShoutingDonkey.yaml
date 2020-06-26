@@ -12,8 +12,8 @@ dirs:
 
 #player parameters
 player:
-    heat: 1
-    exploration: 1
+    heat: 3
+    exploration: 2
     rollout_payoffs:
         white:
             white_wins: 1

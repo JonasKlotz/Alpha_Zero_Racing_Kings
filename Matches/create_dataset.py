@@ -61,6 +61,8 @@ def assemble_dataset(handle):
         f"dataset_{handle}",
         DATASETDIR)
 
+    print(handle)
+    print(" is game handle\n")
     with open(dataset_path, "wb") as dataset_file:
         for filename in os.listdir(GAMEDIR):
             dataset = []
