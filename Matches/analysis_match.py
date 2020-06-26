@@ -64,16 +64,18 @@ class AnalysisMatch(match.Match):
             # only increment after black move
             moves += select
             self._show_game()
+
+            if moves % self.report_cycle and select == 0:
+                time1 = self._report(time1, moves)
+
+
             if moves % self.report_cycle == 0 and \
                     active_player.color == self.track_player:
                 stats = active_player.get_stats()
-                stats = {} if stats == None else stats
-
-
+                stats = {} if stats == None else stats 
                 color = 1 if active_player.color == WHITE else -1
                 stats["player_color"] = color
                 self.gamestats.append(stats)
-                time1 = self._report(time1, moves)
 
 
         result = self.game.board.result()
@@ -101,30 +103,12 @@ class AnalysisMatch(match.Match):
                 log.info("writing to mlflow server: metrics ...")
                 for i, j in enumerate(self.gamestats):
                     move = (i + 1) * self.report_cycle
-                    self._unpack_metrics(j, move)
+                    utility.unpack_metrics(dictionary=j, idx=move)
 
         for i in self.players:
-            i.stop()
+            i.stop() 
 
-
-        return state
-
-
-    def _unpack_metrics(self, dictionary, moves, prefix=""):
-        '''
-        call this function within a mlflow run
-        environment to unpack statistic dictionaries
-        from the model and track them in mlflow
-        :param int moves: current move in game 
-        '''
-        for i in dictionary.keys():
-            j = dictionary[i]
-            new_prefix = f"{i}" if prefix is "" else f"{prefix}-{i}"
-            if isinstance(j, dict):
-                self._unpack_metrics(j, moves, new_prefix)
-            elif isinstance(j, float) or isinstance(j, int):
-                mlflow.log_metric(new_prefix, j, moves)
-
+        return state 
 
     def track_metrics(self):
         result = self.simulate()

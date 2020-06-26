@@ -1,6 +1,8 @@
 import os.path
 import string
 import random
+import mlflow
+from lib.logger import get_logger
 
 from Player import config
 from Model.model import AZero
@@ -8,6 +10,8 @@ from Azts.config import GAMEDIR, PLAYERDIR
 from Azts import player
 from Azts import stockfish_player
 from Azts import mock_model
+
+log = get_logger("Utility")
 
 GAME = "game"
 STATS = "stats"
@@ -238,3 +242,27 @@ def load_players(loc_1, loc_2):
                 #**(config.player.as_dictionary())))#~* dynamite
 
     return players
+
+
+
+
+def unpack_metrics(dictionary, idx=None, prefix=""):
+    '''
+    call this function within a mlflow run
+    environment to unpack statistic dictionaries
+    from the model and track them in mlflow
+    :param int idx: current index to log, like move in
+    game or game in contest. If None, this will be ignored
+    and will be written as global metric to the experiment
+    '''
+    for i in dictionary.keys():
+        j = dictionary[i]
+        new_prefix = f"{i}" if prefix is "" else f"{prefix}-{i}"
+        if isinstance(j, dict):
+            unpack_metrics(j, idx, new_prefix)
+        elif isinstance(j, float) or isinstance(j, int):
+            log.info(f"writing metric {new_prefix} to mlflow server")
+            if idx == None:
+                mlflow.log_metric(new_prefix, j)
+            else:
+                mlflow.log_metric(new_prefix, j, idx)
