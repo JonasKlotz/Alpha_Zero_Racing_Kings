@@ -59,7 +59,7 @@ class MatchReplay():
         print("Press [enter] to step through game.\n" \
                 + "Input a number to jump to respective move.\n" \
                 + "Enter \"exit\" to exit the replay.\n" \
-                + "Enter \"clear\" to clear the screen.\n")
+                + "Enter \"clear\" to clear the screen.\n" \
                 + "Enter \"help\" to display this message.\n")
 
     def replay(self): 
