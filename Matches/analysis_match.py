@@ -65,7 +65,7 @@ class AnalysisMatch(match.Match):
             moves += select
             self._show_game()
 
-            if moves % self.report_cycle and select == 0:
+            if moves % self.report_cycle == 0 and select == 0:
                 time1 = self._report(time1, moves)
 
 
@@ -88,17 +88,10 @@ class AnalysisMatch(match.Match):
         if self.track_player in [WHITE, BLACK]:
             with mlflow.start_run():
                 log.info("writing to mlflow server: score ...")
-                mlflow.log_metric("score", score)
+                mlflow.log_metric("score", score) 
 
-                # write list of moves to file and
-                # log it to mlflow server
-                moves_file = "match_moves.pkl"
-                if os.path.exists(moves_file):
-                    os.remove(moves_file)
-                pickle.dump(self.match_moves, open(moves_file, "wb"))
-                log.info("writing to mlflow server: match_moves.pkl ...")
-                mlflow.log_artifact(moves_file)
-                os.remove(moves_file)
+                log.info("writing to mlflow server: match moves ...")
+                utility.write_artifact_to_server(self.match_moves, "match_moves") 
 
                 log.info("writing to mlflow server: metrics ...")
                 for i, j in enumerate(self.gamestats):

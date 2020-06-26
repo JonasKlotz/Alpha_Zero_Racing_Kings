@@ -1,7 +1,9 @@
+import os
 import os.path
 import string
 import random
 import mlflow
+import pickle
 from lib.logger import get_logger
 
 from Player import config
@@ -266,3 +268,23 @@ def unpack_metrics(dictionary, idx=None, prefix=""):
                 mlflow.log_metric(new_prefix, j)
             else:
                 mlflow.log_metric(new_prefix, j, idx)
+
+
+def write_artifact_to_server(data, label=None, idx=None):
+    artifact_file = None
+
+    idx = "" if idx == None else str(idx).zfill(4)
+
+    if label == None:
+        artifact_file = random_string(8) + idx + ".pkl"
+        while os.path.exists(artifact_file):
+            artifact_file = random_string(8) + idx + ".pkl"
+    else:
+        artifact_file = label + idx + ".pkl"
+        if os.path.exists(artifact_file):
+            os.remove(artifact_file)
+
+    pickle.dump(data, open(artifact_file, "wb"))
+    log.info(f"writing to mlflow server: {artifact_file} ...")
+    mlflow.log_artifact(artifact_file)
+    os.remove(artifact_file)

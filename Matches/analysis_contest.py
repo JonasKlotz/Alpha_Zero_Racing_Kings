@@ -67,10 +67,7 @@ class AnalysisContest(contest.Contest):
         :param int num_of_matches: number of matches
         to be simulated
         '''
-        self._init_conteststats()
-
-        stats = self._init_stats()
-
+        self._init_conteststats() 
 
         for i in range(num_of_matches):
             switch = i % 2
@@ -79,7 +76,7 @@ class AnalysisContest(contest.Contest):
             player_one = self.players[switch]
             player_two = self.players[1 - switch]
 
-            stats = {}
+            stats = self._init_stats()
 
 
             match = analysis_match.AnalysisMatch(
@@ -103,7 +100,7 @@ class AnalysisContest(contest.Contest):
                 j.reset()
 
         with mlflow.start_run():
-            self._unpack_metrics(self.conteststats) 
+            utility.unpack_metrics(dictionary=self.conteststats) 
 
 
     def _track_global_score(self, p1, p2, result):
@@ -119,22 +116,6 @@ class AnalysisContest(contest.Contest):
         else:
             self.conteststats[p1.name][DRAWS] += 1
             self.conteststats[p2.name][DRAWS] += 1 
-
-
-    def _unpack_metrics(self, dictionary, prefix=""):
-        '''
-        call this function within a mlflow run
-        environment to unpack statistic dictionaries
-        from the model and track them in mlflow
-        :param int moves: current move in game 
-        '''
-        for i in dictionary.keys():
-            j = dictionary[i]
-            new_prefix = f"{i}" if prefix is "" else f"{prefix}-{i}"
-            if isinstance(j, dict):
-                self._unpack_metrics(j, new_prefix)
-            elif isinstance(j, float) or isinstance(j, int):
-                mlflow.log_metric(new_prefix, j)
 
 
 
