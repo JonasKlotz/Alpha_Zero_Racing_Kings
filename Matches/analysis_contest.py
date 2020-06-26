@@ -9,7 +9,9 @@ import time
 import argparse
 import pickle 
 import mlflow
+import copy
 from lib.logger import get_logger
+
 
 from Player import config 
 from Azts import player
@@ -55,7 +57,8 @@ class AnalysisContest(contest.Contest):
         for k in [WHITE_WINS, BLACK_WINS, \
                 DRAW_BY_REP, DRAW_BY_TWO_WINS, \
                 DRAW_BY_STALE_MATE]:
-        stats[k] = 0
+            stats[k] = 0
+
         return stats
 
     def start(self, num_of_matches=10):
@@ -68,6 +71,8 @@ class AnalysisContest(contest.Contest):
         to be simulated
         '''
         self._init_conteststats() 
+        self.gamemoves = [None] * num_of_matches
+        self.gamestats = [None] * num_of_matches
 
         for i in range(num_of_matches):
             switch = i % 2
@@ -89,11 +94,13 @@ class AnalysisContest(contest.Contest):
             result = match.simulate()
 
             stats[result] = 1
-            self._track_global_score(player_one, player_two, result)
+            stats["num_of_moves"] = len(match.match_moves)
+            stats["figure_count"] = self._figure_count(match)
+            self._track_global_score(player_one, player_two, result) 
 
-
-            self.gamestats.append(stats)
-            self.gamemoves.append(match.match_moves)
+            self.gamestats[i] = stats 
+            moves_copy = copy.deepcopy(match.match_moves) 
+            self.gamemoves[i] = moves_copy
 
             del match
             for j in self.players:
@@ -101,6 +108,32 @@ class AnalysisContest(contest.Contest):
 
         with mlflow.start_run():
             utility.unpack_metrics(dictionary=self.conteststats) 
+            for i, stats in enumerate(self.gamestats):
+                utility.unpack_metrics(dictionary=stats, idx=i, \
+                        prefix="00_tracked_per_match")
+            for i, moves in enumerate(self.gamemoves):
+                utility.write_artifact_to_server(data=moves, \
+                        label="game", \
+                        idx=i)
+
+    def _figure_count(self, match):
+        figure_count = {}
+        game_fen = match.game.board.fen().split(" ")[0]
+        white_total = 1
+        black_total = 1
+        for i, figures in enumerate(["QRNB", "qrnb"]):
+            for k in figures:
+                count = game_fen.count(k)
+                figure_count[k] = count
+                if i == 0:
+                    white_total += count
+                elif i == 1:
+                    black_total += count
+        
+        figure_count["00white_total"] = white_total
+        figure_count["00black_total"] = black_total
+
+        return figure_count
 
 
     def _track_global_score(self, p1, p2, result):

@@ -45,6 +45,9 @@ class AnalysisMatch(match.Match):
         log.info(f"\nWHITE: {self.players[0].name}\n"
               + f"BLACK: {self.players[1].name}\n")
 
+        self.match_moves = []
+        self.gamestats = []
+
         # game loop:
         while True:
             # check break condition:
@@ -81,7 +84,7 @@ class AnalysisMatch(match.Match):
         result = self.game.board.result()
         state = self.game.get_game_state()
         log.info(f"game ended after {moves} "
-              + f"moves with {result} ({TO_STRING[state]}).")
+              + f"turns with {result} ({TO_STRING[state]}).")
         score = self.training_payoffs[state]
 
         # write results to mlserver
