@@ -28,8 +28,7 @@ args = parser.parse_args()
 def cli_play(ai_name, human_name, human_color):
 
     ai_player = utility.load_player(ai_name) 
-    hi_player = player.CLIPlayer(other_player=ai_player, \
-            name=human_name) 
+    hi_player = player.CLIPlayer(name=human_name) 
 
     cli_match = None
 

@@ -48,14 +48,6 @@ class Player():
         self.statemachine = None
         self.color = color
 
-    def __str__(self):
-        head = f"Player {self.name}, playing " \
-                + f"as {self.color}\n" 
-        if self.tree == None:
-            return head
-        else:
-            return head + self.tree.__str__()
-
     def set_color(self, color):
         '''
         sets color =)
@@ -74,10 +66,6 @@ class Player():
         resets all stateful things
         '''
         self.tree.reset()
-
-    def simulate_move(self):
-        if self.tree is not None:
-            self.tree.simulate_move()
 
     def make_move(self):
         '''
@@ -159,7 +147,6 @@ class CLIPlayer(Player):
     '''
 
     def __init__(self,
-                 other_player,
                  name="UNNAMED PLAYER",
                  color=WHITE):
         '''
@@ -167,7 +154,6 @@ class CLIPlayer(Player):
         because there is no azts_tree
         involved to keep state
         '''
-        self.other_player = other_player
         self.name = name
         self.color = color
         self.statemachine = state_machine.StateMachine()
@@ -191,17 +177,9 @@ class CLIPlayer(Player):
         poll the player for a move
         '''
         move = self._parse_user_input()
-        self.receive_move(move)
+        if move not in ["exit", "tree"]:
+            self.receive_move(move)
         return move
-
-    def _tear_down(self, x):
-        self.other_player.stop() 
-        sys.exit()
-
-    def _print_tree(self, x):
-        print("Other players state:")
-        print(self.other_player)
-
 
     def _parse_user_input(self):
         '''
@@ -217,25 +195,22 @@ class CLIPlayer(Player):
 
         consequences = {"h": lambda x: print("> \"list\": list legal moves\n"
                                              + "> \"clear\": clear screen\n"
-                                             + "> \"exit\": exit game\n"
-                                             + "> \"tree\": print other "
-                                             + "players search tree\n"),
+                                             + "> \"exit\": exit game"),
                         "list": lambda x: [print(i) for i in x],
                         "ls": lambda x: [print(i) for i in x],
                         "clear": lambda x: os.system('cls' if os.name == 'nt'
-                                                     else 'clear'),
-                        "exit": self._tear_down,
-                        "tree": self._print_tree}
+                                                     else 'clear')}
 
         legal_moves = self.statemachine.rollout_game.get_moves_observation()
-        choices = legal_moves + list(consequences.keys()) 
+        meta_options = ["exit", "tree"] 
+        choices = legal_moves + list(consequences.keys()) + meta_options
         user_input = input("> ")
 
         while user_input not in choices:
             print(f"> {user_input} is not a legal move")
             user_input = input("> ")
 
-        if user_input in legal_moves:
+        if user_input in legal_moves + meta_options:
             return user_input
 
         consequences[user_input](legal_moves)
