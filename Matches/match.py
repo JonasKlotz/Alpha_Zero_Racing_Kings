@@ -61,7 +61,6 @@ class Match():
         self.training_payoffs = TRAINING_PAYOFFS
         self.show_game = show_game
         self.report_cycle = report_cycle
-        self.match_moves = []
         self.track_player = track_player
 
     def set_game_state(self, fen_state):
@@ -105,7 +104,6 @@ class Match():
             other_player = self.players[1 - select]
             # handle all moves
             move = active_player.make_move()
-            move = self._handle_user_input(move, select)
 
             other_player.receive_move(move)
             self.game.make_move(move)
@@ -119,19 +117,7 @@ class Match():
             if moves % self.report_cycle == 0 and select == 0:
                 time1 = self._report(time1, moves) 
 
-        return self._clean_up_end_game(moves)
-
-
-    def _handle_user_input(self, move, select):
-        if move == "exit":
-            for i in self.players:
-                i.stop()
-            sys.exit()
-        if move == "tree":
-            print(self.players[1 - select].tree)
-            move = self.players[select].make_move()
-
-        return move
+        return self._clean_up_end_game(moves) 
 
     def _clean_up_end_game(self, moves):
         '''
@@ -143,7 +129,7 @@ class Match():
         result = self.game.board.result()
         state = self.game.get_game_state()
         log.info(f"game ended after {moves} "
-              + f"moves with {result} ({TO_STRING[state]}).")
+              + f"turns with {result} ({TO_STRING[state]}).")
         score = self.training_payoffs[state]
 
         for i in self.players:
@@ -164,10 +150,10 @@ class Match():
         time_now = time.time()
         elapsed = time_now - time_before
         avg_per_move = elapsed / self.report_cycle
-        log.info(f"process {os.getpid()}: total moves: {moves}; " \
-                + f"{self.report_cycle} moves in " \
+        log.info(f"process {os.getpid()}: total turns: {moves}; " \
+                + f"{self.report_cycle} turns in " \
                 + f"{str(elapsed)[0:5]}s, average of " \
-                + f"{str(avg_per_move)[0:4]}s per move.")
+                + f"{str(avg_per_move)[0:4]}s per turn.")
         return time_now
 
 

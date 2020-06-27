@@ -10,12 +10,15 @@ import os
 from lib.logger import get_logger
 
 from Azts import utility 
-from Azts.config import TO_STRING, WHITE 
+from Azts.config import TO_STRING, WHITE, BLACK
 from Matches import match 
 
 log = get_logger("AnalysisMatch")
 
 class AnalysisMatch(match.Match):
+
+    match_moves = []
+    gamestats = []
 
     def simulate(self):
         '''
@@ -41,76 +44,67 @@ class AnalysisMatch(match.Match):
         time1 = time.time()
         log.info(f"\nWHITE: {self.players[0].name}\n"
               + f"BLACK: {self.players[1].name}\n")
-        with mlflow.start_run():
-            while True:
-                # check break condition:
-                if self.game.is_ended():
-                    break
-                # select players
-                select = 0 if self.game.get_current_player() else 1
-                active_player = self.players[select]
-                other_player = self.players[1 - select]
-                # handle all moves
-                move = active_player.make_move()
-                other_player.receive_move(move)
-                self.game.make_move(move)
-                # collect data
-                self.data_collection.append(active_player.dump_data())
-                self.match_moves.append(move)
 
-                # statistics:
-                # only increment after black move
-                moves += select
-                self._show_game()
-                if moves % self.report_cycle == 0 and \
-                        active_player.color == self.track_player:
-                    stats = active_player.get_stats()
-                    self._unpack_metrics(stats, moves)
-                    color = 1 if active_player.color == WHITE else -1
-                    mlflow.log_metric("player_color", color, moves)
-                    time1 = self._report(time1, moves)
+        self.match_moves = []
+        self.gamestats = []
+
+        # game loop:
+        while True:
+            # check break condition:
+            if self.game.is_ended():
+                break
+            # select players
+            select = 0 if self.game.get_current_player() else 1
+            active_player = self.players[select]
+            other_player = self.players[1 - select]
+            # handle all moves
+            move = active_player.make_move()
+            other_player.receive_move(move)
+            self.game.make_move(move)
+            self.match_moves.append(move)
+
+            # statistics:
+            # only increment after black move
+            moves += select
+            self._show_game()
+
+            if moves % self.report_cycle == 0 and select == 0:
+                time1 = self._report(time1, moves)
 
 
-            result = self.game.board.result()
-            state = self.game.get_game_state()
-            log.info(f"game ended after {moves} "
-                  + f"moves with {result} ({TO_STRING[state]}).")
-            score = self.training_payoffs[state]
-            mlflow.log_metric("score", score)
+            if moves % self.report_cycle == 0 and \
+                    active_player.color == self.track_player:
+                stats = active_player.get_stats()
+                stats = {} if stats == None else stats 
+                color = 1 if active_player.color == WHITE else -1
+                stats["player_color"] = color
+                self.gamestats.append(stats)
 
-            # write list of moves to file and
-            # log it to mlflow server
-            moves_file = "match_moves.pkl"
-            if os.path.exists(moves_file):
-                os.remove(moves_file)
-            pickle.dump(self.match_moves, open(moves_file, "wb"))
-            mlflow.log_artifact(moves_file)
-            os.remove(moves_file)
+
+        result = self.game.board.result()
+        state = self.game.get_game_state()
+        log.info(f"game ended after {moves} "
+              + f"turns with {result} ({TO_STRING[state]}).")
+        score = self.training_payoffs[state]
+
+        # write results to mlserver
+        if self.track_player in [WHITE, BLACK]:
+            with mlflow.start_run():
+                log.info("writing to mlflow server: score ...")
+                mlflow.log_metric("score", score) 
+
+                log.info("writing to mlflow server: match moves ...")
+                utility.write_artifact_to_server(self.match_moves, "match_moves") 
+
+                log.info("writing to mlflow server: metrics ...")
+                for i, j in enumerate(self.gamestats):
+                    move = (i + 1) * self.report_cycle
+                    utility.unpack_metrics(dictionary=j, idx=move)
 
         for i in self.players:
-            i.stop()
+            i.stop() 
 
-        for i in self.data_collection:
-            i[2] = score 
-
-        return state
-
-
-    def _unpack_metrics(self, dictionary, moves, prefix=""):
-        '''
-        call this function within a mlflow run
-        environment to unpack statistic dictionaries
-        from the model and track them in mlflow
-        :param int moves: current move in game 
-        '''
-        for i in dictionary.keys():
-            j = dictionary[i]
-            new_prefix = f"{i}" if prefix is "" else f"{prefix}-{i}"
-            if isinstance(j, dict):
-                self._unpack_metrics(j, moves, new_prefix)
-            elif isinstance(j, float) or isinstance(j, int):
-                mlflow.log_metric(new_prefix, j, moves)
-
+        return state 
 
     def track_metrics(self):
         result = self.simulate()
