@@ -65,7 +65,7 @@ class AZero:
         self.compile_model()
         self.setup_callbacks()
 
-        #TODO
+        # TODO
         '''
         if self.config.model.logging.log_mlflow:
             mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
@@ -106,7 +106,8 @@ class AZero:
     # @timing
     def inference(self, input):
         policy, value = self.model.predict(input[None, :])
-        policy = policy.squeeze()
+        # note: inference is not supported on batch of samples as of now
+        policy = softmax(policy.squeeze())
         value = value.squeeze()
         if DEBUG:
             if not valid_ndarray(input):

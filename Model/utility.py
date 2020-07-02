@@ -5,6 +5,11 @@ import numpy as np
 from mlflow.tracking import MlflowClient
 
 
+def softmax(Z):
+    A = np.exp(Z - Z.max())
+    return A / A.sum()
+
+
 def get_members(obj):
     return [(a, getattr(obj, a)) for a in dir(obj) if "__" not in a]
 
@@ -14,7 +19,7 @@ def valid_tensor(t):
 
 
 def valid_ndarray(t):
-    return np.isfinite(t).any()
+    return np.isfinite(t).any() and t.any()
 
 
 def get_latest_dataset_file(_dir):
