@@ -13,6 +13,7 @@ import mlflow.keras
 import keras
 
 from keras.optimizers import Adam
+from keras.activations import softmax
 # from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 # from keras.callbacks import ReduceLROnPlateau
 from keras.utils.vis_utils import plot_model
@@ -103,8 +104,9 @@ class AZero:
     # @timing
     def inference(self, input):
         policy, value = self.model.predict(input[None, :])
-        policy = policy.squeeze()
+        policy = softmax(policy).squeeze()
         value = value.squeeze()
+        log.debug("policy sums to %f", policy.sum())
         if DEBUG:
             if not valid_ndarray(input):
                 log.critical("INVALID TENSOR FOUND IN INPUT")
