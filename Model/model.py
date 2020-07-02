@@ -13,7 +13,6 @@ import mlflow.keras
 import keras
 
 from keras.optimizers import Adam
-from keras.activations import softmax
 # from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 # from keras.callbacks import ReduceLROnPlateau
 from keras.utils.vis_utils import plot_model
@@ -66,7 +65,7 @@ class AZero:
         self.compile_model()
         self.setup_callbacks()
 
-        #TODO
+        # TODO
         '''
         if self.config.model.logging.log_mlflow:
             mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
@@ -107,9 +106,9 @@ class AZero:
     # @timing
     def inference(self, input):
         policy, value = self.model.predict(input[None, :])
-        policy = softmax(policy).squeeze()
+        # note: inference is not supported on batch of samples as of now
+        policy = softmax(policy.squeeze())
         value = value.squeeze()
-        log.debug("policy sums to %f", policy.sum())
         if DEBUG:
             if not valid_ndarray(input):
                 log.critical("INVALID TENSOR FOUND IN INPUT")
