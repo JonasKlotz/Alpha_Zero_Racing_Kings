@@ -1,0 +1,105 @@
+#name of the model
+name: 'MightyMonkey'
+
+#directories
+dirs:
+    base: "_Data"
+    checkpoint_dir: "model_checkpoints"
+    game_dir: "games"
+    dataset_dir: "datasets"
+
+#player parameters
+player:
+    heat: 1
+    exploration: 1
+    rollout_payoffs:
+        white:
+            white_wins: 1
+            black_wins: -1
+            draw: 0
+            draw_by_rep: -1
+            draw_by_stale_mate: 0
+            draw_by_two_wins: 0
+        black:
+            white_wins: -1
+            black_wins: 1
+            draw: 0
+            draw_by_rep: -1
+            draw_by_stale_mate: 0
+            draw_by_two_wins: 0
+
+#use mock model instead of azts/stockfish
+#for debugging. this overwrites loading of
+#models, regardless of configuration
+mock: False
+
+#stockfish parameters
+stockfish:
+    #use stockfish instead of model; this
+    #overwrites loading of a neural network
+    #model regardless of configuration
+    enable: False
+    #given time limit for move evaluation
+    time_limit: 0.1
+    #maximum tree search depth
+    search_depth: 10
+
+#model parameters
+model:
+    #input feature dimensions
+    input_shape: [8,8,11]
+    #total number of residual blocks
+    resnet_depth: 9
+    training:
+        learning_rate: 1.e-3
+    logging:
+        save_model_every: 5
+        log_metrics_every: 1
+        log_mlflow: False
+        load_from_mlflow: False
+        mlflow_model_version: 0
+        save_local: True
+        save_mlflow: True
+    #residual block specifications
+    residual_block:
+        #number of layers in residual block
+        layers: 2
+        #number of filters per layer
+        num_filters: 128
+        #convolutional filter size: SxS
+        filter_size: 3
+        #stride of convolutional layer
+        filter_stride: 1
+        #activation function after conv layer
+        activation: 'relu'
+        #add batch normalization
+        batch_normalization: True
+    policy_head:
+        #policy head's residual layer specifications
+        residual_layer:
+            num_filters: 192
+            filter_size: 3
+            filter_stride: 1
+            batch_normalization: True
+        #policy head's fully connected layer specifications
+        dense_layer:
+            #number of output filters for dense layer
+            #this is also the number of valid moves (8x8xnum_filters)
+            num_filters: 64
+            #type of activation function
+            activation: 'relu'
+    value_head:
+        #value head's residual layer specifications
+        residual_layer:
+            num_filters: 4
+            filter_size: 3
+            filter_stride: 1
+            batch_normalization: True
+        #value head's fully connected layer specifications
+        dense_layer:
+            #number of output filters for first dense layer
+            #After Flatten()! Downsampling from 8x8xres_num_filt -> num_filters
+            num_filters: 256
+            #type of activation function for second dense layer
+            activation: 'tanh'
+
