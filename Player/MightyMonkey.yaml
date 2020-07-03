@@ -6,7 +6,7 @@ dirs:
     base: "_Data"
     checkpoint_dir: "model_checkpoints"
     game_dir: "games"
-    dataset_dir: "Current_Dataset"
+    dataset_dir: "datasets"
 
 #player parameters
 player:

@@ -12,7 +12,7 @@ from Player import config
 from Azts import mock_model
 from Azts import player
 from Azts import utility
-from Azts.config import GAMEDIR, DATASETDIR
+from Azts.config import GAMEDIR, DATASETDIR, ROOTDIR
 from Matches import contest
 
 log = get_logger("create_dataset")
@@ -57,9 +57,11 @@ def assemble_dataset(handle):
     '''
     counter = 0
 
+    DATASETDIR1 = os.path.join(ROOTDIR, "Good_Datasets")
+
     dataset_path = utility.get_unused_filepath(
         f"dataset_{handle}",
-        DATASETDIR)
+        DATASETDIR1)
 
     with open(dataset_path, "wb") as dataset_file:
         for filename in os.listdir(GAMEDIR):
