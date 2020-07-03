@@ -79,11 +79,14 @@ class Player():
         if self.tree is not None:
             self.tree.simulate_move()
 
-    def make_move(self):
+    def make_move(self, timelimit=False):
         '''
+        :param float timelimit: timelimit for a move
+        in seconds. If set, this overrides the
+        option rollouts per move.
         :return str: move in uci notation
         '''
-        return self.tree.make_move()
+        return self.tree.make_move(timelimit)
 
     def receive_move(self, move):
         '''
