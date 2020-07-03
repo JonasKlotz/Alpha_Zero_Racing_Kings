@@ -9,7 +9,9 @@ import time
 import argparse
 import pickle 
 import mlflow
+import copy
 from lib.logger import get_logger
+
 
 from Player import config 
 from Azts import player
@@ -21,7 +23,7 @@ from Azts.config import GAMEDIR, \
     WHITE_WINS, BLACK_WINS, \
     DRAW_BY_REP, DRAW_BY_TWO_WINS, \
     DRAW_BY_STALE_MATE
-from Matches import match
+from Matches import analysis_match
 from Matches import contest
 
 log = get_logger("AnalysisContest")
@@ -32,8 +34,32 @@ DRAWS = "_draws"
 
 class AnalysisContest(contest.Contest):
     
-    gamestats = {}
+    conteststats = {}
+    gamemoves = []
+    gamestats = []
 
+
+    def _init_conteststats(self):
+
+        for i in self.players:
+            self.conteststats[i.name] = {}
+            for j in [WHITE, BLACK]:
+                self.conteststats[i.name][j] = {}
+                for k in [WHITE_WINS, BLACK_WINS, \
+                        DRAW_BY_REP, DRAW_BY_TWO_WINS, \
+                        DRAW_BY_STALE_MATE]:
+                    self.conteststats[i.name][j][k] = 0
+            for j in [WINS, LOSSES, DRAWS]:
+                self.conteststats[i.name][j] = 0
+
+    def _init_stats(self):
+        stats = {}
+        for k in [WHITE_WINS, BLACK_WINS, \
+                DRAW_BY_REP, DRAW_BY_TWO_WINS, \
+                DRAW_BY_STALE_MATE]:
+            stats[k] = 0
+
+        return stats
 
     def start(self, num_of_matches=10):
         '''
@@ -44,17 +70,9 @@ class AnalysisContest(contest.Contest):
         :param int num_of_matches: number of matches
         to be simulated
         '''
-        for i in self.players:
-            self.gamestats[i.name] = {}
-            for j in [WHITE, BLACK]:
-                self.gamestats[i.name][j] = {}
-                for k in [WHITE_WINS, BLACK_WINS, \
-                        DRAW_BY_REP, DRAW_BY_TWO_WINS, \
-                        DRAW_BY_STALE_MATE]:
-                    self.gamestats[i.name][j][k] = 0
-            for j in [WINS, LOSSES, DRAWS]:
-                self.gamestats[i.name][j] = 0
-
+        self._init_conteststats() 
+        self.gamemoves = [None] * num_of_matches
+        self.gamestats = [None] * num_of_matches
 
         for i in range(num_of_matches):
             switch = i % 2
@@ -63,51 +81,74 @@ class AnalysisContest(contest.Contest):
             player_one = self.players[switch]
             player_two = self.players[1 - switch]
 
+            stats = self._init_stats()
 
-            contest_match = match.Match(
+
+            match = analysis_match.AnalysisMatch(
                 player_one=player_one,
                 player_two=player_two,
                 rollouts_per_move=self.rollouts_per_move,
-                show_game=self.show_game)
+                show_game=self.show_game,
+                track_player=None)
 
-            result = contest_match.simulate()
+            result = match.simulate()
 
-            for j, k in zip([player_one, player_two], [WHITE, BLACK]):
-                self.gamestats[j.name][k][result] += 1 
+            stats[result] = 1
+            stats["num_of_moves"] = len(match.match_moves)
+            stats["figure_count"] = self._figure_count(match)
+            self._track_global_score(player_one, player_two, result) 
 
+            self.gamestats[i] = stats 
+            moves_copy = copy.deepcopy(match.match_moves) 
+            self.gamemoves[i] = moves_copy
 
-            if result == WHITE_WINS:
-                self.gamestats[player_one.name][WINS] += 1
-                self.gamestats[player_two.name][LOSSES] += 1
-            elif result == BLACK_WINS:
-                self.gamestats[player_one.name][LOSSES] += 1
-                self.gamestats[player_two.name][WINS] += 1
-            else:
-                self.gamestats[player_one.name][DRAWS] += 1
-                self.gamestats[player_two.name][DRAWS] += 1 
-
-            del contest_match
+            del match
             for j in self.players:
                 j.reset()
 
         with mlflow.start_run():
-            self._unpack_metrics(self.gamestats) 
+            utility.unpack_metrics(dictionary=self.conteststats) 
+            for i, stats in enumerate(self.gamestats):
+                utility.unpack_metrics(dictionary=stats, idx=i, \
+                        prefix="00_tracked_per_match")
+            for i, moves in enumerate(self.gamemoves):
+                utility.write_artifact_to_server(data=moves, \
+                        label="game", \
+                        idx=i)
+
+    def _figure_count(self, match):
+        figure_count = {}
+        game_fen = match.game.board.fen().split(" ")[0]
+        white_total = 1
+        black_total = 1
+        for i, figures in enumerate(["QRNB", "qrnb"]):
+            for k in figures:
+                count = game_fen.count(k)
+                figure_count[k] = count
+                if i == 0:
+                    white_total += count
+                elif i == 1:
+                    black_total += count
+        
+        figure_count["00white_total"] = white_total
+        figure_count["00black_total"] = black_total
+
+        return figure_count
 
 
-    def _unpack_metrics(self, dictionary, prefix=""):
-        '''
-        call this function within a mlflow run
-        environment to unpack statistic dictionaries
-        from the model and track them in mlflow
-        :param int moves: current move in game 
-        '''
-        for i in dictionary.keys():
-            j = dictionary[i]
-            new_prefix = f"{i}" if prefix is "" else f"{prefix}-{i}"
-            if isinstance(j, dict):
-                self._unpack_metrics(j, new_prefix)
-            elif isinstance(j, float) or isinstance(j, int):
-                mlflow.log_metric(new_prefix, j)
+    def _track_global_score(self, p1, p2, result):
+        for j, k in zip([p1, p2], [WHITE, BLACK]):
+            self.conteststats[j.name][k][result] += 1 
+
+        if result == WHITE_WINS:
+            self.conteststats[p1.name][WINS] += 1
+            self.conteststats[p2.name][LOSSES] += 1
+        elif result == BLACK_WINS:
+            self.conteststats[p1.name][LOSSES] += 1
+            self.conteststats[p2.name][WINS] += 1
+        else:
+            self.conteststats[p1.name][DRAWS] += 1
+            self.conteststats[p2.name][DRAWS] += 1 
 
 
 

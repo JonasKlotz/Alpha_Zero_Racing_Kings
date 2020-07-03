@@ -1,6 +1,10 @@
+import os
 import os.path
 import string
 import random
+import mlflow
+import pickle
+from lib.logger import get_logger
 
 from Player import config
 from Model.model import AZero
@@ -8,6 +12,8 @@ from Azts.config import GAMEDIR, PLAYERDIR
 from Azts import player
 from Azts import stockfish_player
 from Azts import mock_model
+
+log = get_logger("Utility")
 
 GAME = "game"
 STATS = "stats"
@@ -238,3 +244,47 @@ def load_players(loc_1, loc_2):
                 #**(config.player.as_dictionary())))#~* dynamite
 
     return players
+
+
+
+
+def unpack_metrics(dictionary, idx=None, prefix=""):
+    '''
+    call this function within a mlflow run
+    environment to unpack statistic dictionaries
+    from the model and track them in mlflow
+    :param int idx: current index to log, like move in
+    game or game in contest. If None, this will be ignored
+    and will be written as global metric to the experiment
+    '''
+    for i in dictionary.keys():
+        j = dictionary[i]
+        new_prefix = f"{i}" if prefix is "" else f"{prefix}-{i}"
+        if isinstance(j, dict):
+            unpack_metrics(j, idx, new_prefix)
+        elif isinstance(j, float) or isinstance(j, int):
+            log.info(f"writing metric {new_prefix} to mlflow server")
+            if idx == None:
+                mlflow.log_metric(new_prefix, j)
+            else:
+                mlflow.log_metric(new_prefix, j, idx)
+
+
+def write_artifact_to_server(data, label=None, idx=None):
+    artifact_file = None
+
+    idx = "" if idx == None else str(idx).zfill(4)
+
+    if label == None:
+        artifact_file = random_string(8) + idx + ".pkl"
+        while os.path.exists(artifact_file):
+            artifact_file = random_string(8) + idx + ".pkl"
+    else:
+        artifact_file = label + idx + ".pkl"
+        if os.path.exists(artifact_file):
+            os.remove(artifact_file)
+
+    pickle.dump(data, open(artifact_file, "wb"))
+    log.info(f"writing to mlflow server: {artifact_file} ...")
+    mlflow.log_artifact(artifact_file)
+    os.remove(artifact_file)

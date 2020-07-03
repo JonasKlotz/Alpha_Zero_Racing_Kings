@@ -65,10 +65,13 @@ class AZero:
         self.compile_model()
         self.setup_callbacks()
 
+        # TODO
+        '''
         if self.config.model.logging.log_mlflow:
             mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
             mlflow.log_param(
                 "learning_rate", self.config.model.training.learning_rate)
+        '''
 
     def auto_run_training(self, max_iterations=5, max_epochs=10, max_games=1000):
         """ Automatically enters a training loop that fetches newest datasets
@@ -103,7 +106,8 @@ class AZero:
     # @timing
     def inference(self, input):
         policy, value = self.model.predict(input[None, :])
-        policy = policy.squeeze()
+        # note: inference is not supported on batch of samples as of now
+        policy = softmax(policy.squeeze())
         value = value.squeeze()
         if DEBUG:
             if not valid_ndarray(input):
