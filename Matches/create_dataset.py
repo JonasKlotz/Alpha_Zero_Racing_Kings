@@ -155,9 +155,9 @@ if __name__ == "__main__":
                         help="number of games to be created by each "
                         + "process. Defaults to 10")
     parser.add_argument("-r", "--rollouts_per_move",
-                        type=int, default=100, help="number of "
-                        + "rollouts that the engine performs while "
-                        + "determinating a single move. Defaults to 100.")
+                        type=int, default=50, help="number of "
+                                                   + "rollouts that the engine performs while "
+                                                   + "determinating a single move. Defaults to 100.")
     parser.add_argument("--fork_method", type=str,
                         default="spawn", help="depending on operating "
                         + "system, different fork methods are valid for "
