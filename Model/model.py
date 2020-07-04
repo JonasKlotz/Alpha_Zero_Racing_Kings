@@ -105,9 +105,8 @@ class AZero:
 
     # @timing
     def inference(self, input):
-        policy, value = self.model.predict(input[None, :])
-        # note: inference is not supported on batch of samples as of now
-        policy = softmax(policy.squeeze())
+        _, policy, value = self.model.predict(input[None, :])
+        policy = policy.squeeze()
         value = value.squeeze()
         if DEBUG:
             if not valid_ndarray(input):
@@ -152,7 +151,7 @@ class AZero:
         if DEBUG:
             assert valid_ndarray(x_train), "INVALID ndarray FOUND IN x_train"
             assert valid_ndarray(
-                y_train["policy_head"]), "INVALID ndarray FOUND IN policy of y_train"
+                y_train["policy_head_logits"]), "INVALID ndarray FOUND IN policy of y_train"
             assert valid_ndarray(
                 y_train["value_head"]), "INVALID ndarray FOUND IN value of y_train"
 
