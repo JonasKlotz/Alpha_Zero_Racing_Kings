@@ -280,7 +280,8 @@ class AZero:
         log.info("Fetching model %s version %s from mlflow server.",
                  self.config.name, version)
         self.model = mlflow.keras.load_model(model_uri)
-
+        model_v2_update()
+        
     def build_model(self):
         """ Builds the ResNet model via config parameters """
 
