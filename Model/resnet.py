@@ -1,4 +1,5 @@
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten, Add
+from keras.activations import softmax
 from keras.regularizers import l2
 
 
@@ -92,7 +93,7 @@ def resnet_model(input, config):
         _x = Dense(dense_num_filters,
                    activation=dense_activation,
                    kernel_initializer='he_normal',
-                   name="policy_head")(_x)
+                   name="policy_head_logits")(_x)
         return _x
 
     def value_head_model(input):
@@ -126,7 +127,8 @@ def resnet_model(input, config):
 
     # build model
     body = body_model(input)
-    policy_head = policy_head_model(body)
+    policy_head_logits = policy_head_model(body)
+    policy_head = softmax(policy_head_logits)
     value_head = value_head_model(body)
 
-    return policy_head, value_head
+    return policy_head_logits, policy_head, value_head
