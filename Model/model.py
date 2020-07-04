@@ -248,7 +248,7 @@ class AZero:
     def compile_model(self):
         """ Compiles the model """
         categorical = keras.losses.CategoricalCrossentropy(from_logits=True)
-        losses = {"policy_head": categorical,
+        losses = {"policy_head_logits": categorical,
                   "value_head": "mean_squared_error"}
         learning_rate = self.config.model.training.learning_rate
         optimizer = Adam(learning_rate=learning_rate)
