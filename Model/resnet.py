@@ -132,3 +132,12 @@ def resnet_model(input, config):
     value_head = value_head_model(body)
 
     return policy_head, value_head
+    
+def model_v2_update(model):
+    try:
+        model.get_layer("policy_head_logits")
+    except ValueError:
+        logits = model.get_layer("policy_head")
+        logits.name = "policy_head_logits"
+        # XXX complete
+        
