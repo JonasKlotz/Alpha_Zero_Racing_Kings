@@ -94,6 +94,7 @@ def resnet_model(input, config):
                    activation=dense_activation,
                    kernel_initializer='he_normal',
                    name="policy_head_logits")(_x)
+        _x = softmax(_x)
         return _x
 
     def value_head_model(input):
@@ -127,8 +128,7 @@ def resnet_model(input, config):
 
     # build model
     body = body_model(input)
-    policy_head_logits = policy_head_model(body)
-    policy_head = softmax(policy_head_logits)
+    policy_head = policy_head_model(body)
     value_head = value_head_model(body)
 
-    return policy_head_logits, policy_head, value_head
+    return policy_head, value_head
