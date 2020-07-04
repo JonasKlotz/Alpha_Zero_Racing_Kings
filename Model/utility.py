@@ -41,7 +41,7 @@ def prepare_dataset(train_data):
     x_train = np.stack(x_train.flatten(), axis=0)
     y_train_p = np.stack(y_train_p.flatten(), axis=0)
     y_train_v = np.stack(y_train_v.flatten(), axis=0)
-    y_train = {"policy_head": y_train_p,
+    y_train = {"policy_head_logits": y_train_p,
                "value_head": y_train_v}
     return x_train, y_train
 
