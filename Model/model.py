@@ -105,7 +105,7 @@ class AZero:
 
     # @timing
     def inference(self, input):
-        _, policy, value = self.model.predict(input[None, :])
+        policy, value = self.model.predict(input[None, :])
         policy = policy.squeeze()
         value = value.squeeze()
         if DEBUG:
@@ -300,7 +300,7 @@ class LogCallback(keras.callbacks.Callback):
         # pylint: disable=bad-super-call
         super(keras.callbacks.Callback, self).__init__()
         self.config = config
-        self.metrics = ["loss", "policy_head_accuracy", "policy_head_loss",
+        self.metrics = ["loss", "policy_head_logits_accuracy", "policy_head_logits_loss",
                         "value_head_accuracy", "value_head_loss", "epoch"]
 
     def on_epoch_end(self, epoch, logs=None):
