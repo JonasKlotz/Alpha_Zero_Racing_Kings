@@ -1,5 +1,4 @@
-from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten, Add
-from keras.activations import softmax
+from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten, Add, Softmax
 from keras.regularizers import l2
 
 
@@ -133,11 +132,20 @@ def resnet_model(input, config):
 
     return policy_head, value_head
     
+    
 def model_v2_update(model):
+    """Updates model so that there is a seperate softmax layer for inference"""
     try:
         model.get_layer("policy_head_logits")
+        return model
     except ValueError:
-        logits = model.get_layer("policy_head")
-        logits.name = "policy_head_logits"
-        # XXX complete
+        policy = model.get_layer("policy_head")
+        policy.name = "policy_head_logits"
         
+        policy = Softmax(axis=None, name="policy_head")(policy.output)
+        value = model.output[1]
+        
+        model = keras.models.Model(inputs=[model.input],
+                                          outputs=[policy, value],
+                                          name=model.name)
+        return model
