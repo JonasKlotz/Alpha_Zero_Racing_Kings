@@ -24,7 +24,7 @@ from lib.timing import timing
 
 from Azts.config import DATASETDIR
 from Player.config import Config
-from Model.resnet import resnet_model
+from Model.resnet import resnet_model, model_v2_update
 
 from lib.logger import get_logger
 log = get_logger("Model")
@@ -280,7 +280,7 @@ class AZero:
         log.info("Fetching model %s version %s from mlflow server.",
                  self.config.name, version)
         self.model = mlflow.keras.load_model(model_uri)
-        model_v2_update()
+        self.model = model_v2_update(self.model)
         
     def build_model(self):
         """ Builds the ResNet model via config parameters """
