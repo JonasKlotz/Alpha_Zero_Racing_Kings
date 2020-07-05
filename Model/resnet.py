@@ -139,6 +139,7 @@ def model_v2_update(model):
         model.get_layer("policy_head_logits")
         return model
     except ValueError:
+        print("Updating model to v2")
         policy = model.get_layer("policy_head")
         policy.name = "policy_head_logits"
         
@@ -148,4 +149,5 @@ def model_v2_update(model):
         model = keras.models.Model(inputs=[model.input],
                                           outputs=[policy, value],
                                           name=model.name)
+        print(model.summary())
         return model
