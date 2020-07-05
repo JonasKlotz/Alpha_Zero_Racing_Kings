@@ -93,8 +93,7 @@ def resnet_model(input, config):
         _x = Dense(dense_num_filters,
                    activation=dense_activation,
                    kernel_initializer='he_normal',
-                   name="policy_head_logits")(_x)
-        _x = softmax(_x)
+                   name="policy_head")(_x)
         return _x
 
     def value_head_model(input):
@@ -134,21 +133,16 @@ def resnet_model(input, config):
     return policy_head, value_head
     
     
-def model_v2_update(model):
-    """Updates model so that there is a seperate softmax layer for inference"""
-    try:
-        model.get_layer("policy_head_logits")
-        return model
-    except ValueError:
-        print("Updating model to v2")
-        policy = model.get_layer("policy_head")
-        policy.name = "policy_head_logits"
-        
-        policy = Softmax(axis=None, name="policy_head")(policy.output)
-        value = model.output[1]
-        
-        model = keras.models.Model(inputs=[model.input],
-                                          outputs=[policy, value],
-                                          name=model.name)
-        print(model.summary())
-        return model
+
+def inference_model(model):
+  input = model.input
+
+  policy = model.get_layer("policy_head")
+
+  policy = Softmax(axis=None, name="policy_head_softmax")(policy.output)
+  value = model.output[1]
+
+  model = keras.models.Model(inputs=[input],
+                             outputs=[policy, value],
+                             name=model.name)
+  return model
