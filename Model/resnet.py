@@ -1,3 +1,4 @@
+import keras
 from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten, Add, Softmax
 from keras.regularizers import l2
 
