@@ -5,10 +5,7 @@ import numpy as np
 from mlflow.tracking import MlflowClient
 
 
-def softmax(Z):
-    A = np.exp(Z - Z.max())
-    return A / A.sum()
-
+def softmax(Z 
 
 def get_members(obj):
     return [(a, getattr(obj, a)) for a in dir(obj) if "__" not in a]
@@ -29,7 +26,7 @@ def get_latest_dataset_file(_dir):
     if len(files) == 0:
         return None
 
-    def key_map(file):
+    def key_map(file): 
         return os.path.getmtime(os.path.join(_dir, file))
     newest_file = max(files, key=key_map)
     return os.path.join(_dir, newest_file)
@@ -41,7 +38,7 @@ def prepare_dataset(train_data):
     x_train = np.stack(x_train.flatten(), axis=0)
     y_train_p = np.stack(y_train_p.flatten(), axis=0)
     y_train_v = np.stack(y_train_v.flatten(), axis=0)
-    y_train = {"policy_head_logits": y_train_p,
+    y_train = {"policy_head": y_train_p,
                "value_head": y_train_v}
     return x_train, y_train
 
