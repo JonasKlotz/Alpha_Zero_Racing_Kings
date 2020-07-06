@@ -159,12 +159,12 @@ def transfer_update(model):
                    activation='relu',   #XXX read from config
                    kernel_initializer='he_normal')(_x)
         _x = Reshape((8,8,64), name="policy_head")(_x)
-        input = model.input
         policy = _x
+        input = model.input
         value = model.output[1]
         model = Model(inputs=[input],
                       outputs=[policy, value],
                       name=model.name)
-        print("Transfered model successfully")
+        print("Transferred model successfully")
         model.summary()
         return model
