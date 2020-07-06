@@ -10,8 +10,8 @@ dirs:
 
 #player parameters
 player:
-    heat: 1
-    exploration: 1
+    heat: 10
+    exploration: 10
     rollout_payoffs:
         white:
             white_wins: 1
@@ -56,7 +56,7 @@ model:
         save_model_every: 5
         log_metrics_every: 1
         log_mlflow: False
-        load_from_mlflow: False
+        load_from_mlflow: True
         mlflow_model_version: 0
         save_local: True
         save_mlflow: True

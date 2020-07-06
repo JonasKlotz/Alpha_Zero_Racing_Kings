@@ -36,7 +36,7 @@ stockfish:
     #use stockfish instead of model
     enable: True
     #given time limit for move evaluation
-    time_limit: 0.2
+    time_limit: 0.75
     #maximum tree search depth
     search_depth: 10
 #model parameters
