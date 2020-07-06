@@ -18,10 +18,7 @@ def parallel_matches_with_preloaded_model(yamlpath, \
         num_of_games_per_process, \
         fork_method="spawn"):
     '''
-    this version of parallel matches takes a preloaded
-    model as input and creates a deepcopy for each thread
-    to achieve real parallel processing without loading
-    the model n-times from the mlflow server
+    no deep copy of models anymore.
     '''
 
     # according to
@@ -36,8 +33,7 @@ def parallel_matches_with_preloaded_model(yamlpath, \
     for _ in range(num_of_parallel_processes):
         # create a model copy for each parallel
         # process
-        modelcopy = copy.deepcopy(model)
-        players = [utility.load_player_with_model(model=modelcopy, \
+        players = [utility.load_player_with_model(model=model, \
                 config=utility.load_player_conf(yamlpath)) for _ \
                 in range(2)]
 
