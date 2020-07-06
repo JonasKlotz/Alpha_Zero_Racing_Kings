@@ -153,6 +153,7 @@ def inference_model(model):
 def transfer_update(model):
     try:
         model.get_layer("policy_flatten")
+        return model
     except:
         _x = model.get_layer("policy_head").input
         _x = Flatten(name="policy_flatten")(_x)
