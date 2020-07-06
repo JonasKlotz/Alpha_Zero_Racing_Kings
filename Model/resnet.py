@@ -1,5 +1,6 @@
 import keras
-from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten, Add, Softmax
+from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten, Add, Softmax, Reshape
+from keras.models import Model
 from keras.regularizers import l2
 
 
@@ -90,10 +91,11 @@ def resnet_model(input, config):
                             stride=res_filter_stride,
                             activation=res_activation,
                             batch_normalization=res_batch_normalization)
-        _x = Dense(dense_num_filters,
+        _x = Flatten(name="policy_flatten")(_x)
+        _x = Dense(8 * 8 * 64,
                    activation=dense_activation,
-                   kernel_initializer='he_normal',
-                   name="policy_head")(_x)
+                   kernel_initializer='he_normal')(_x)
+        _x = Reshape((8,8,64), name="policy_head")(_x)
         return _x
 
     def value_head_model(input):
@@ -142,7 +144,27 @@ def inference_model(model):
   policy = Softmax(axis=None, name="policy_head_softmax")(policy.output)
   value = model.output[1]
 
-  model = keras.models.Model(inputs=[input],
-                             outputs=[policy, value],
-                             name=model.name)
+  model = Model(inputs=[input],
+                outputs=[policy, value],
+                name=model.name)
   return model
+
+def transfer_update(model):
+    try:
+        model.get_layer("policy_flatten")
+    except:
+        _x = model.get_layer("policy_head").input
+        _x = Flatten(name="policy_flatten")(_x)
+        _x = Dense(8 * 8 * 64,
+                   activation='relu',   #XXX read from config
+                   kernel_initializer='he_normal')(_x)
+        _x = Reshape((8,8,64), name="policy_head")(_x)
+        input = model.input
+        policy = _x
+        value = model.output[1]
+        model = Model(inputs=[input],
+                      outputs=[policy, value],
+                      name=model.name)
+        print("Transfered model successfully")
+        model.summary()
+        return model
