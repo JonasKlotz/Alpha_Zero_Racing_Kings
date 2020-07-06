@@ -24,7 +24,7 @@ from lib.timing import timing
 
 from Azts.config import DATASETDIR
 from Player.config import Config
-from Model.resnet import resnet_model, model_v2_update
+from Model.resnet import resnet_model, inference_model, transfer_update
 
 from lib.logger import get_logger
 log = get_logger("Model")
@@ -105,7 +105,7 @@ class AZero:
 
     # @timing
     def inference(self, input):
-        policy, value = self.model.predict(input[None, :])
+        policy, value = self.inference_model.predict(input[None, :])
         policy = policy.squeeze()
         value = value.squeeze()
         if DEBUG:
@@ -151,7 +151,7 @@ class AZero:
         if DEBUG:
             assert valid_ndarray(x_train), "INVALID ndarray FOUND IN x_train"
             assert valid_ndarray(
-                y_train["policy_head_logits"]), "INVALID ndarray FOUND IN policy of y_train"
+                y_train["policy_head"]), "INVALID ndarray FOUND IN policy of y_train"
             assert valid_ndarray(
                 y_train["value_head"]), "INVALID ndarray FOUND IN value of y_train"
 
@@ -189,9 +189,6 @@ class AZero:
         """ Makes sure that the architecture and config file
         are stored once per model version
         """
-        # if config.model.logging.save_mlflow:
-        #     return  # XXX implement?
-
         # save model
         model_file = os.path.join(
             self.config.checkpoint_dir, "architecture.yaml")
@@ -248,7 +245,7 @@ class AZero:
     def compile_model(self):
         """ Compiles the model """
         categorical = keras.losses.CategoricalCrossentropy(from_logits=True)
-        losses = {"policy_head_logits": categorical,
+        losses = {"policy_head": categorical,
                   "value_head": "mean_squared_error"}
         learning_rate = self.config.model.training.learning_rate
         optimizer = Adam(learning_rate=learning_rate)
@@ -262,6 +259,8 @@ class AZero:
                 self.config.model.logging.mlflow_model_version)
         else:
             self.load_local_model()
+        self.model = transfer_update(self.model)
+        self.inference_model = inference_model(self.model)
 
     def load_local_model(self):
         self.build_model()
@@ -280,7 +279,6 @@ class AZero:
         log.info("Fetching model %s version %s from mlflow server.",
                  self.config.name, version)
         self.model = mlflow.keras.load_model(model_uri)
-        self.model = model_v2_update(self.model)
         
     def build_model(self):
         """ Builds the ResNet model via config parameters """
@@ -301,7 +299,7 @@ class LogCallback(keras.callbacks.Callback):
         # pylint: disable=bad-super-call
         super(keras.callbacks.Callback, self).__init__()
         self.config = config
-        self.metrics = ["loss", "policy_head_logits_accuracy", "policy_head_logits_loss",
+        self.metrics = ["loss", "policy_head_accuracy", "policy_head_loss",
                         "value_head_accuracy", "value_head_loss", "epoch"]
 
     def on_epoch_end(self, epoch, logs=None):
