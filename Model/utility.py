@@ -4,9 +4,6 @@ import numpy as np
 
 from mlflow.tracking import MlflowClient
 
-
-def softmax(Z 
-
 def get_members(obj):
     return [(a, getattr(obj, a)) for a in dir(obj) if "__" not in a]
 
