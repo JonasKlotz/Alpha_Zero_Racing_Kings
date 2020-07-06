@@ -94,7 +94,8 @@ def resnet_model(input, config):
         _x = Flatten(name="policy_flatten")(_x)
         _x = Dense(8 * 8 * 64,
                    activation=dense_activation,
-                   kernel_initializer='he_normal')(_x)
+                   kernel_initializer='he_normal',
+                   name="policy_dense")(_x)
         _x = Reshape((8,8,64), name="policy_head")(_x)
         return _x
 
@@ -157,7 +158,8 @@ def transfer_update(model):
         _x = Flatten(name="policy_flatten")(_x)
         _x = Dense(8 * 8 * 64,
                    activation='relu',   #XXX read from config
-                   kernel_initializer='he_normal')(_x)
+                   kernel_initializer='he_normal',
+                   name="policy_dense")(_x)
         _x = Reshape((8,8,64), name="policy_head")(_x)
         policy = _x
         input = model.input
