@@ -4,6 +4,7 @@ import numpy as np
 
 from mlflow.tracking import MlflowClient
 
+
 def get_members(obj):
     return [(a, getattr(obj, a)) for a in dir(obj) if "__" not in a]
 
@@ -23,7 +24,7 @@ def get_latest_dataset_file(_dir):
     if len(files) == 0:
         return None
 
-    def key_map(file): 
+    def key_map(file):
         return os.path.getmtime(os.path.join(_dir, file))
     newest_file = max(files, key=key_map)
     return os.path.join(_dir, newest_file)

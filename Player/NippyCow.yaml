@@ -1,9 +1,11 @@
+# name: 'PreppyPenguin'
 name: 'NippyCow'
 
 model:
+    dtype: 'float16'
     logging:
         save_model_every: 1
         log_mlflow: False
-        load_from_mlflow: False
+        load_from_mlflow: True
         save_local: True
         save_mlflow: False

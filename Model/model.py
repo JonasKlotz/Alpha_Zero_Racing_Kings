@@ -8,8 +8,6 @@ import argparse
 
 import mlflow
 import mlflow.keras
-# import tensorflow as tf
-# import tensorflow.keras as keras
 import keras
 
 from keras.optimizers import Adam
@@ -64,14 +62,6 @@ class AZero:
         self.remember_model_architecture()
         self.compile_model()
         self.setup_callbacks()
-
-        # TODO
-        '''
-        if self.config.model.logging.log_mlflow:
-            mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
-            mlflow.log_param(
-                "learning_rate", self.config.model.training.learning_rate)
-        '''
 
     def auto_run_training(self, max_iterations=5, max_epochs=10, max_games=1000):
         """ Automatically enters a training loop that fetches newest datasets
@@ -161,6 +151,11 @@ class AZero:
         if epochs == -1:  # train indefinitely; XXX: review
             epochs = 10000
 
+        if self.config.model.logging.log_mlflow:
+            mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
+            mlflow.log_param(
+                "learning_rate", self.config.model.training.learning_rate)
+
         # begin training
         train_logs = self.model.fit(x_train, y_train,
                                     batch_size=batch_size,
@@ -201,9 +196,9 @@ class AZero:
         if not os.path.isfile(config_file):
             self.config.dump(config_file)
 
-    def load_model_architecture(self, file):
-        """ Restores model architecture from yaml file """
-        self.model = keras.models.model_from_yaml(file)
+    # def load_model_architecture(self, file):
+    #     """ Restores model architecture from yaml file """
+    #     self.model = keras.models.model_from_yaml(file)
 
     def new_model_available(self):
         """ checks whether a new checkpoint file is available 
@@ -211,17 +206,6 @@ class AZero:
         new_checkpoint_file, _ = newest_checkpoint_file(
             self.config.checkpoint_dir)
         return not new_checkpoint_file == self.checkpoint_file
-
-    def restore_local_model(self):
-        """ Checks for latest model checkpoint and restores the weights """
-        checkpoint_file, self.initial_epoch = newest_checkpoint_file(
-            self.config.checkpoint_dir)
-
-        if checkpoint_file is not None:
-            self.restore_from_checkpoint(checkpoint_file)
-        else:
-            log.info("No previous checkpoint found.")
-            log.info("Initializing new network.")
 
     def restore_from_checkpoint(self, checkpoint_file):
         """ Restores weights from given checkpoint """
@@ -259,12 +243,21 @@ class AZero:
                 self.config.model.logging.mlflow_model_version)
         else:
             self.load_local_model()
-        self.model = transfer_update(self.model)
+        self.model = transfer_update(self.model, self.config)
         self.inference_model = inference_model(self.model)
 
     def load_local_model(self):
-        self.build_model()
-        self.restore_local_model()
+        """ Checks for latest model checkpoint and restores the weights """
+        checkpoint_file, self.initial_epoch = newest_checkpoint_file(
+            self.config.checkpoint_dir)
+
+        if checkpoint_file is not None:
+            self.build_model()
+            self.restore_from_checkpoint(checkpoint_file)
+        else:
+            log.info("No previous checkpoint found.")
+            log.info("Initializing new network.")
+            self.build_model()
 
     def load_from_mlflow(self, version=0):
         if version is 0:    # search for newest model on server
@@ -279,7 +272,7 @@ class AZero:
         log.info("Fetching model %s version %s from mlflow server.",
                  self.config.name, version)
         self.model = mlflow.keras.load_model(model_uri)
-        
+
     def build_model(self):
         """ Builds the ResNet model via config parameters """
 
@@ -384,8 +377,9 @@ if __name__ == "__main__":
     config = Config(args.player)
 
     model = AZero(config)
+    model.model.save_weights('test.h5')
     # model.summary()
     # model.plot_model()
-    model.auto_run_training(max_epochs=args.max_epochs,
-                            max_iterations=args.max_iterations,
-                            max_games=args.max_games)
+    # model.auto_run_training(max_epochs=args.max_epochs,
+    #                         max_iterations=args.max_iterations,
+    #                         max_games=args.max_games)
