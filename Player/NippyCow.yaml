@@ -1,8 +1,7 @@
 # name: 'PreppyPenguin'
-name: 'NippyCow'
+name: 'NippyCowwww'
 
 model:
-    dtype: 'float16'
     logging:
         save_model_every: 1
         log_mlflow: False

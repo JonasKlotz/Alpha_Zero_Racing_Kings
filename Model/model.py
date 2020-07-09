@@ -109,9 +109,10 @@ class AZero:
     def setup_callbacks(self, auto_run=False):
         lr_reducer = ReduceLROnPlateau(monitor='policy_head_loss',
                                        factor=0.1,
-                                       cooldown=20,
+                                       cooldown=10,
                                        patience=10,
-                                       min_lr=0.1e-6)
+                                       min_lr=0.1e-6,
+                                       verbose=1)
 
         save_model = LogCallback(self.config)
 
@@ -139,15 +140,13 @@ class AZero:
         if initial_epoch is None:
             initial_epoch = self.initial_epoch
 
-        if epochs == -1:  # train indefinitely; XXX: review
-            epochs = 10000
+        if epochs == -1:
+            epochs = 100000
 
         batch_size = self.config.model.training.batch_size
 
         if self.config.model.logging.log_mlflow:
             mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
-            mlflow.log_param(
-                "learning_rate", self.config.model.training.learning_rate)
             mlflow.log_param(
                 "batch_size", batch_size)
 
@@ -305,13 +304,16 @@ class LogCallback(keras.callbacks.Callback):
         save_local_fmt = "{epoch:02d}-{loss:.2f}.hdf5"
 
         if log_mlflow and epoch % log_every == 0:
+            lr = float(keras.backend.get_value(
+                self.model.optimizer.learning_rate))
+            mlflow.log_param("learning_rate", lr)
             for metric in self.metrics:
                 mlflow.log_metric(metric, logs[metric], step=epoch)
 
         if (epoch + 1) % save_model_every == 0:
             if save_local:
                 file = os.path.join(local_dir, save_local_fmt.format(
-                    epoch=epoch, loss=logs["loss"]))
+                    epoch=epoch + 1, loss=logs["loss"]))
                 log.info("Saving model to %s...", file)
                 self.model.save_weights(file)
             if save_mlflow:
@@ -374,6 +376,6 @@ if __name__ == "__main__":
     model = AZero(config)
     model.summary()
     # model.plot_model()
-    # model.auto_run_training(max_epochs=args.max_epochs,
-    #                         max_iterations=args.max_iterations,
-    #                         max_games=args.max_games)
+    model.auto_run_training(max_epochs=args.max_epochs,
+                            max_iterations=args.max_iterations,
+                            max_games=args.max_games)
