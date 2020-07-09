@@ -55,7 +55,7 @@ model:
     #total number of residual blocks
     resnet_depth: 9
     training:
-        learning_rate: 1.e-3
+        learning_rate: 1.e-1
         batch_size: 64
     logging:
         save_model_every: 5
@@ -82,8 +82,8 @@ model:
     policy_head:
         #policy head's residual layer specifications
         residual_layer:
-            num_filters: 192
-            filter_size: 3
+            num_filters: 4
+            filter_size: 1
             filter_stride: 1
             batch_normalization: True
         #policy head's fully connected layer specifications
@@ -96,7 +96,7 @@ model:
         #value head's residual layer specifications
         residual_layer:
             num_filters: 4
-            filter_size: 3
+            filter_size: 1
             filter_stride: 1
             batch_normalization: True
         #value head's fully connected layer specifications

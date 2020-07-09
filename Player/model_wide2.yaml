@@ -1,8 +1,8 @@
-name: "model_deep"
+name: "model_wide2"
 
-# Trainable params: 6,750,745
+# Trainable params: 6,845,459
 model:
-    resnet_depth: 19
+    resnet_depth: 7
     logging:
         save_model_every: 5
         log_metrics_every: 1
@@ -16,12 +16,12 @@ model:
     residual_block:
         layers: 2
         num_filters: 128
-        filter_size: 3
+        filter_size: 5
     policy_head:
         residual_layer:
             num_filters: 4
     value_head:
         residual_layer:
-            num_filters: 4
+            num_filters: 2
         dense_layer:
-            num_filters: 256
+            num_filters: 128

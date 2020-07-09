@@ -11,8 +11,7 @@ import mlflow.keras
 import keras
 
 from keras.optimizers import Adam
-# from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-# from keras.callbacks import ReduceLROnPlateau
+from keras.callbacks import ReduceLROnPlateau
 from keras.utils.vis_utils import plot_model
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -108,23 +107,15 @@ class AZero:
         return policy, value
 
     def setup_callbacks(self, auto_run=False):
-        # checkpoint_file = os.path.join(self.config.checkpoint_dir,
-        #                                "{epoch:02d}-{loss:.2f}.hdf5")
-        # checkpoint = ModelCheckpoint(filepath=checkpoint_file,
-        #                              # monitor='val_acc',
-        #                              save_weights_only=True,
-        #                              verbose=1,
-        #                              save_best_only=False)
-
-        # lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
-        #                                cooldown=0,
-        #                                patience=5,
-        #                                min_lr=0.5e-6)
-        # callbacks = [checkpoint, lr_reducer]
+        lr_reducer = ReduceLROnPlateau(monitor='policy_head_loss',
+                                       factor=0.1,
+                                       cooldown=20,
+                                       patience=10,
+                                       min_lr=0.1e-6)
 
         save_model = LogCallback(self.config)
 
-        callbacks = [save_model]
+        callbacks = [save_model, lr_reducer]
 
         if auto_run:
             auto_fetch_dataset = AutoFetchDatasetCallback(
