@@ -133,7 +133,7 @@ class AZero:
 
         self.callbacks = callbacks
 
-    def train(self, train_data, batch_size=64, epochs=10, initial_epoch=None):
+    def train(self, train_data, epochs=10, initial_epoch=None):
         """ Enters the training loop """
 
         x_train, y_train = prepare_dataset(train_data)
@@ -151,10 +151,14 @@ class AZero:
         if epochs == -1:  # train indefinitely; XXX: review
             epochs = 10000
 
+        batch_size = self.config.model.training.batch_size
+
         if self.config.model.logging.log_mlflow:
             mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
             mlflow.log_param(
                 "learning_rate", self.config.model.training.learning_rate)
+            mlflow.log_param(
+                "batch_size", batch_size)
 
         # begin training
         train_logs = self.model.fit(x_train, y_train,
@@ -377,8 +381,7 @@ if __name__ == "__main__":
     config = Config(args.player)
 
     model = AZero(config)
-    model.model.save_weights('test.h5')
-    # model.summary()
+    model.summary()
     # model.plot_model()
     # model.auto_run_training(max_epochs=args.max_epochs,
     #                         max_iterations=args.max_iterations,
