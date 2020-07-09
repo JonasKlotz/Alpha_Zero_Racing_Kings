@@ -6,6 +6,6 @@ model:
     logging:
         save_model_every: 1
         log_mlflow: False
-        load_from_mlflow: True
+        load_from_mlflow: False
         save_local: True
         save_mlflow: False
