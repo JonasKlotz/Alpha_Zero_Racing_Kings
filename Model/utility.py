@@ -44,10 +44,13 @@ def prepare_dataset(train_data):
 def mlflow_get_latest_version(model_name):
     def key_map(ml_model):
         return ml_model.version
-    model_list = MlflowClient().get_latest_versions(model_name)
-    if len(model_list) == 0:
+    try:
+        model_list = MlflowClient().get_latest_versions(model_name)
+        if len(model_list) == 0:
+            return 0
+        latest = max(model_list, key=key_map)
+    except Exception:
         return 0
-    latest = max(model_list, key=key_map)
     return latest.version
 
 
