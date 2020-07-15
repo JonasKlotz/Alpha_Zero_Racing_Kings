@@ -1,6 +1,11 @@
 name: mini_alpha_zero
 
 entry_points:
+  upload:
+    parameters:
+        player: {type: string}
+    command: "python3 Model/upload.py --player={player}"
+  
   train:
     parameters:
         player: {type: string, default: "MightyMonkey"}

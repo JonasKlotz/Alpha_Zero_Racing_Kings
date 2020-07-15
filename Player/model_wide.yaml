@@ -1,0 +1,27 @@
+name: "model_wide"
+
+# Trainable params: 6,826,838
+model:
+    resnet_depth: 9
+    logging:
+        save_model_every: 5
+        log_metrics_every: 1
+        log_mlflow: True
+        load_from_mlflow: False
+        mlflow_model_version: 0
+        save_local: True
+        save_mlflow: True
+    training:
+        batch_size: 64
+    residual_block:
+        layers: 2
+        num_filters: 192
+        filter_size: 3
+    policy_head:
+        residual_layer:
+            num_filters: 3
+    value_head:
+        residual_layer:
+            num_filters: 4
+        dense_layer:
+            num_filters: 128

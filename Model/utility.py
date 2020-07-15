@@ -5,11 +5,6 @@ import numpy as np
 from mlflow.tracking import MlflowClient
 
 
-def softmax(Z):
-    A = np.exp(Z - Z.max())
-    return A / A.sum()
-
-
 def get_members(obj):
     return [(a, getattr(obj, a)) for a in dir(obj) if "__" not in a]
 
@@ -49,10 +44,13 @@ def prepare_dataset(train_data):
 def mlflow_get_latest_version(model_name):
     def key_map(ml_model):
         return ml_model.version
-    model_list = MlflowClient().get_latest_versions(model_name)
-    if len(model_list) == 0:
+    try:
+        model_list = MlflowClient().get_latest_versions(model_name)
+        if len(model_list) == 0:
+            return 0
+        latest = max(model_list, key=key_map)
+    except Exception:
         return 0
-    latest = max(model_list, key=key_map)
     return latest.version
 
 

@@ -1,4 +1,6 @@
-from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten, Add
+import keras
+from keras.layers import Dense, Conv2D, BatchNormalization, Activation, Flatten, Add, Softmax, Reshape
+from keras.models import Model
 from keras.regularizers import l2
 
 
@@ -35,6 +37,8 @@ def residual_layer(input,
 
 def resnet_model(input, config):
     """ Builds the ResNet model via config parameters """
+
+    # keras.backend.set_floatx(config.model.dtype)
 
     def body_model(input):
         # read config
@@ -78,7 +82,6 @@ def resnet_model(input, config):
         res_filter_stride = opt.residual_layer.filter_stride
         res_batch_normalization = opt.residual_layer.batch_normalization
         res_activation = config.model.residual_block.activation
-        dense_num_filters = opt.dense_layer.num_filters
         dense_activation = opt.dense_layer.activation
 
         # build model
@@ -89,10 +92,8 @@ def resnet_model(input, config):
                             stride=res_filter_stride,
                             activation=res_activation,
                             batch_normalization=res_batch_normalization)
-        _x = Dense(dense_num_filters,
-                   activation=dense_activation,
-                   kernel_initializer='he_normal',
-                   name="policy_head")(_x)
+        _x = policy_fully_connected_layer(_x,
+                                          activation=dense_activation)
         return _x
 
     def value_head_model(input):
@@ -130,3 +131,44 @@ def resnet_model(input, config):
     value_head = value_head_model(body)
 
     return policy_head, value_head
+
+
+def inference_model(model):
+    policy = model.get_layer("policy_head")
+
+    policy = Softmax(axis=None, name="policy_head_softmax")(policy.output)
+    value = model.output[1]
+
+    model = Model(inputs=[model.input],
+                  outputs=[policy, value],
+                  name=model.name)
+    return model
+
+
+def transfer_update(model, config):
+    try:
+        model.get_layer("policy_flatten")
+        return model
+    except ValueError:
+        dense_activation = config.model.policy_head.dense_layer.activation
+
+        _x = model.get_layer("policy_head").input
+        policy = policy_fully_connected_layer(_x,
+                                              activation=dense_activation)
+        value = model.output[1]
+        model = Model(inputs=[model.input],
+                      outputs=[policy, value],
+                      name=model.name)
+        print("Transferred model successfully")
+        model.summary()
+        return model
+
+
+def policy_fully_connected_layer(_x, activation='relu'):
+    _x = Flatten(name="policy_flatten")(_x)
+    _x = Dense(8 * 8 * 64,
+               activation=activation,
+               kernel_initializer='he_normal',
+               name="policy_dense")(_x)
+    _x = Reshape((8, 8, 64), name="policy_head")(_x)
+    return _x
