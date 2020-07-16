@@ -1,10 +1,28 @@
-# name: 'PreppyPenguin'
-name: 'NippyCowwww'
+name: "model_deep2"
 
+# Trainable params: 6,750,745
 model:
+    resnet_depth: 19
     logging:
         save_model_every: 1
         log_mlflow: False
         load_from_mlflow: False
         save_local: True
         save_mlflow: False
+        mlflow_model_version: 0
+        save_local: True
+        save_mlflow: True
+    training:
+        batch_size: 64
+    residual_block:
+        layers: 2
+        num_filters: 128
+        filter_size: 3
+    policy_head:
+        residual_layer:
+            num_filters: 4
+    value_head:
+        residual_layer:
+            num_filters: 4
+        dense_layer:
+            num_filters: 256

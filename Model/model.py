@@ -116,7 +116,8 @@ class AZero:
 
         save_model = LogCallback(self.config)
 
-        callbacks = [save_model, lr_reducer]
+        # callbacks = [save_model, lr_reducer]
+        callbacks = [save_model]
 
         if auto_run:
             auto_fetch_dataset = AutoFetchDatasetCallback(
@@ -374,7 +375,7 @@ if __name__ == "__main__":
     config = Config(args.player)
 
     model = AZero(config)
-    model.summary()
+    # model.summary()
     # model.plot_model()
     model.auto_run_training(max_epochs=args.max_epochs,
                             max_iterations=args.max_iterations,
