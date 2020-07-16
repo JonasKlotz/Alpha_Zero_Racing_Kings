@@ -384,7 +384,7 @@ if __name__ == "__main__":
     config = Config(args.player)
 
     model = AZero(config)
-    # model.summary()
+    model.summary()
     # model.plot_model()
     model.auto_run_training(max_epochs=args.max_epochs,
                             max_iterations=args.max_iterations,
