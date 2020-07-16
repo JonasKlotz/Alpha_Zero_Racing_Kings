@@ -20,8 +20,10 @@ model:
     policy_head:
         residual_layer:
             num_filters: 4
+            filter_size: 3
     value_head:
         residual_layer:
             num_filters: 2
+            filter_size: 3
         dense_layer:
             num_filters: 128
