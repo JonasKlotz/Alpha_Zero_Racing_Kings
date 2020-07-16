@@ -61,8 +61,8 @@ def parallel_matches_with_preloaded_model(yamlpath, \
         i.join()
 
     # just to make sure: clean up
-    for i in selfplays:
-        del i
+    # for i in selfplays:
+    #     del i
 
 
 
