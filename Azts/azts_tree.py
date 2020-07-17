@@ -96,7 +96,7 @@ class AztsTree():
         self._tree_search(self.rollouts_per_move)
 
 
-    def make_move(self):
+    def make_move(self, timelimit = None):
         '''
         calculate move
         :return str: move in uci notation
@@ -107,7 +107,10 @@ class AztsTree():
             raise Exception("Game over")
 
         if self.color == self.statemachine.get_player_color():
-            self._tree_search(self.rollouts_per_move)
+            if timelimit is None:
+                self._tree_search(self.rollouts_per_move)
+            else:
+                self._timelimited_tree_search(timelimit)
             move, new_root = self.root.get_move(self.heat)
             if new_root is None:
                 raise Exception("next node is none after make move")
@@ -201,6 +204,37 @@ class AztsTree():
         del self.statemachine
         self.statemachine = state_machine.StateMachine()
         self._init_tree()
+
+    def _timelimited_tree_search(self, timelimit):
+        '''
+        :param float timelimit: timelimit for returning
+        a move in seconds
+        '''
+        start_time = time.time()
+        time_passed = time.time() - start_time
+        count = 0
+        longest_rollout = 0
+
+        # have a tolerance of twice the longest time
+        # a rollout took so far to keep the timelimit
+        while((time_passed + 2 * longest_rollout) < timelimit):
+            self.root.rollout()
+            count += 1
+
+            # track time of the longest rollout
+            this_rollout = time.time() - (time_passed + start_time)
+            longest_rollout = this_rollout \
+                    if this_rollout > longest_rollout \
+                    else longest_rollout
+
+
+            time_passed = time.time() - start_time
+
+        print(f"{count} rollouts with average " \
+                + f"{str(time_passed / count)[0:7]} " \
+                + "calculation time in " \
+                + f"{str(time_passed)[0:7]} seconds.")
+
 
     def _tree_search(self, rollouts=10):
         '''

@@ -113,6 +113,9 @@ class AztsNode():
 
             # only store prior values of legal moves
             self.edges[:, PPRIOR] = policy[self.legal_move_indices]
+#           print("edges[:, PRIOR]:")
+#           for i in self.edges[:, PPRIOR]:
+#               print(i)
 
 
     def __str__(self):
@@ -133,7 +136,7 @@ class AztsNode():
             filler = {"move": "\t\t\t", "score": "\t\t\t\t", "probability": "\t", \
                     "prior": "\t\t\t\t\t", "visits": "\t\t\t\t\t\t"}
             select = i.split("_")[1]
-            distr_metric = f"\t{i}:{filler[select]}{str(move_stats[i])[0:5]}\n"
+            distr_metric = f"\t{i}:{filler[select]}{str(move_stats[i])[0:9]}\n"
             metric_string += distr_metric 
 
         metric_string += "\n\nNote that the scores change dynamically\n" \
