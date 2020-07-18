@@ -43,7 +43,7 @@ def create_dataset(yamlpaths,
     return 0
 
 
-def assemble_dataset(handle):
+def assemble_dataset(handle, max_games=None):
     '''
     collects all game files with a specific handle
     and assembles them into a dataset that is being
@@ -64,6 +64,8 @@ def assemble_dataset(handle):
     with open(dataset_path, "wb") as dataset_file:
         for filename in os.listdir(GAMEDIR):
             dataset = []
+            if max_games and counter >= max_games:
+                break
             if f"game_{handle}" in filename and filename.endswith(".pkl"):
                 filepath = os.path.join(GAMEDIR, filename)
                 counter += 1
