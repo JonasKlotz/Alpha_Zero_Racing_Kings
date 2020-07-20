@@ -48,17 +48,20 @@ stockfish:
 
 #model parameters
 model:
+    #data type; 'float32' or 'float16'
+    dtype: 'float32'
     #input feature dimensions
     input_shape: [8,8,11]
     #total number of residual blocks
     resnet_depth: 9
     training:
-        learning_rate: 1.e-3
+        learning_rate: 1.e-1
+        batch_size: 64
     logging:
         save_model_every: 5
         log_metrics_every: 1
         log_mlflow: True
-        load_from_mlflow: True
+        load_from_mlflow: False
         mlflow_model_version: 0
         save_local: True
         save_mlflow: True
@@ -79,22 +82,21 @@ model:
     policy_head:
         #policy head's residual layer specifications
         residual_layer:
-            num_filters: 192
-            filter_size: 3
+            num_filters: 4
+            filter_size: 1
             filter_stride: 1
             batch_normalization: True
         #policy head's fully connected layer specifications
         dense_layer:
-            #number of output filters for dense layer
-            #this is also the number of valid moves (8x8xnum_filters)
-            num_filters: 64
+            #policy output shape
+            output_shape: [8,8,64]
             #type of activation function
             activation: 'relu'
     value_head:
         #value head's residual layer specifications
         residual_layer:
             num_filters: 4
-            filter_size: 3
+            filter_size: 1
             filter_stride: 1
             batch_normalization: True
         #value head's fully connected layer specifications

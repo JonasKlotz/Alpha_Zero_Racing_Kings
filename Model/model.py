@@ -8,13 +8,10 @@ import argparse
 
 import mlflow
 import mlflow.keras
-# import tensorflow as tf
-# import tensorflow.keras as keras
 import keras
 
 from keras.optimizers import Adam
-# from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-# from keras.callbacks import ReduceLROnPlateau
+from keras.callbacks import ReduceLROnPlateau
 from keras.utils.vis_utils import plot_model
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -24,7 +21,7 @@ from lib.timing import timing
 
 from Azts.config import DATASETDIR
 from Player.config import Config
-from Model.resnet import resnet_model
+from Model.resnet import resnet_model, inference_model, transfer_update
 
 from lib.logger import get_logger
 log = get_logger("Model")
@@ -65,14 +62,6 @@ class AZero:
         self.compile_model()
         self.setup_callbacks()
 
-        # TODO
-        '''
-        if self.config.model.logging.log_mlflow:
-            mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
-            mlflow.log_param(
-                "learning_rate", self.config.model.training.learning_rate)
-        '''
-
     def auto_run_training(self, max_iterations=5, max_epochs=10, max_games=1000):
         """ Automatically enters a training loop that fetches newest datasets
         """
@@ -105,9 +94,8 @@ class AZero:
 
     # @timing
     def inference(self, input):
-        policy, value = self.model.predict(input[None, :])
-        # note: inference is not supported on batch of samples as of now
-        policy = softmax(policy.squeeze())
+        policy, value = self.inference_model.predict(input[None, :])
+        policy = policy.squeeze()
         value = value.squeeze()
         if DEBUG:
             if not valid_ndarray(input):
@@ -119,23 +107,16 @@ class AZero:
         return policy, value
 
     def setup_callbacks(self, auto_run=False):
-        # checkpoint_file = os.path.join(self.config.checkpoint_dir,
-        #                                "{epoch:02d}-{loss:.2f}.hdf5")
-        # checkpoint = ModelCheckpoint(filepath=checkpoint_file,
-        #                              # monitor='val_acc',
-        #                              save_weights_only=True,
-        #                              verbose=1,
-        #                              save_best_only=False)
-
-        # lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
-        #                                cooldown=0,
-        #                                patience=5,
-        #                                min_lr=0.5e-6)
-        # callbacks = [checkpoint, lr_reducer]
+        lr_reducer = ReduceLROnPlateau(monitor='policy_head_loss',
+                                       factor=0.1,
+                                       cooldown=10,
+                                       patience=10,
+                                       min_lr=0.1e-6,
+                                       verbose=1)
 
         save_model = LogCallback(self.config)
 
-        callbacks = [save_model]
+        callbacks = [save_model, lr_reducer]
 
         if auto_run:
             auto_fetch_dataset = AutoFetchDatasetCallback(
@@ -144,7 +125,7 @@ class AZero:
 
         self.callbacks = callbacks
 
-    def train(self, train_data, batch_size=64, epochs=10, initial_epoch=None):
+    def train(self, train_data, epochs=10, initial_epoch=None):
         """ Enters the training loop """
 
         x_train, y_train = prepare_dataset(train_data)
@@ -159,8 +140,15 @@ class AZero:
         if initial_epoch is None:
             initial_epoch = self.initial_epoch
 
-        if epochs == -1:  # train indefinitely; XXX: review
-            epochs = 10000
+        if epochs == -1:
+            epochs = 100000
+
+        batch_size = self.config.model.training.batch_size
+
+        if self.config.model.logging.log_mlflow:
+            mlflow.log_param("resnet_depth", self.config.model.resnet_depth)
+            mlflow.log_param(
+                "batch_size", batch_size)
 
         # begin training
         train_logs = self.model.fit(x_train, y_train,
@@ -190,9 +178,6 @@ class AZero:
         """ Makes sure that the architecture and config file
         are stored once per model version
         """
-        # if config.model.logging.save_mlflow:
-        #     return  # XXX implement?
-
         # save model
         model_file = os.path.join(
             self.config.checkpoint_dir, "architecture.yaml")
@@ -205,9 +190,9 @@ class AZero:
         if not os.path.isfile(config_file):
             self.config.dump(config_file)
 
-    def load_model_architecture(self, file):
-        """ Restores model architecture from yaml file """
-        self.model = keras.models.model_from_yaml(file)
+    # def load_model_architecture(self, file):
+    #     """ Restores model architecture from yaml file """
+    #     self.model = keras.models.model_from_yaml(file)
 
     def new_model_available(self):
         """ checks whether a new checkpoint file is available 
@@ -215,17 +200,6 @@ class AZero:
         new_checkpoint_file, _ = newest_checkpoint_file(
             self.config.checkpoint_dir)
         return not new_checkpoint_file == self.checkpoint_file
-
-    def restore_local_model(self):
-        """ Checks for latest model checkpoint and restores the weights """
-        checkpoint_file, self.initial_epoch = newest_checkpoint_file(
-            self.config.checkpoint_dir)
-
-        if checkpoint_file is not None:
-            self.restore_from_checkpoint(checkpoint_file)
-        else:
-            log.info("No previous checkpoint found.")
-            log.info("Initializing new network.")
 
     def restore_from_checkpoint(self, checkpoint_file):
         """ Restores weights from given checkpoint """
@@ -263,10 +237,21 @@ class AZero:
                 self.config.model.logging.mlflow_model_version)
         else:
             self.load_local_model()
+        self.model = transfer_update(self.model, self.config)
+        self.inference_model = inference_model(self.model)
 
     def load_local_model(self):
-        self.build_model()
-        self.restore_local_model()
+        """ Checks for latest model checkpoint and restores the weights """
+        checkpoint_file, self.initial_epoch = newest_checkpoint_file(
+            self.config.checkpoint_dir)
+
+        if checkpoint_file is not None:
+            self.build_model()
+            self.restore_from_checkpoint(checkpoint_file)
+        else:
+            log.info("No previous checkpoint found.")
+            log.info("Initializing new network.")
+            self.build_model()
 
     def load_from_mlflow(self, version=0):
         if version is 0:    # search for newest model on server
@@ -319,13 +304,16 @@ class LogCallback(keras.callbacks.Callback):
         save_local_fmt = "{epoch:02d}-{loss:.2f}.hdf5"
 
         if log_mlflow and epoch % log_every == 0:
+            lr = float(keras.backend.get_value(
+                self.model.optimizer.learning_rate))
+            mlflow.log_param("learning_rate", lr)
             for metric in self.metrics:
                 mlflow.log_metric(metric, logs[metric], step=epoch)
 
         if (epoch + 1) % save_model_every == 0:
             if save_local:
                 file = os.path.join(local_dir, save_local_fmt.format(
-                    epoch=epoch, loss=logs["loss"]))
+                    epoch=epoch + 1, loss=logs["loss"]))
                 log.info("Saving model to %s...", file)
                 self.model.save_weights(file)
             if save_mlflow:
@@ -386,7 +374,7 @@ if __name__ == "__main__":
     config = Config(args.player)
 
     model = AZero(config)
-    # model.summary()
+    model.summary()
     # model.plot_model()
     model.auto_run_training(max_epochs=args.max_epochs,
                             max_iterations=args.max_iterations,
