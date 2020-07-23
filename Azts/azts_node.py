@@ -113,9 +113,7 @@ class AztsNode():
 
             # only store prior values of legal moves
             edges_sum = policy[self.legal_move_indices].sum()
-            edges_sum = 1 \
-                    if edges_sum < 0.000001 \
-                    else edges_sum
+            edges_sum = max(edges_sum, 0.000001)
             self.edges[:, PPRIOR] = policy[self.legal_move_indices] / edges_sum
             
 
