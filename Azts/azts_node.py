@@ -112,7 +112,9 @@ class AztsNode():
                 dtype=EDGE_DTYPE)
 
             # only store prior values of legal moves
-            self.edges[:, PPRIOR] = policy[self.legal_move_indices]
+            edges_sum = policy[self.legal_move_indices].sum()
+            self.edges[:, PPRIOR] = policy[self.legal_move_indices] / edges_sum
+            
 
 
     def __str__(self):
