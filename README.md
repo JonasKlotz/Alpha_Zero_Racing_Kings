@@ -23,32 +23,6 @@ Wir implementieren den Alpha-Zero-Algorithmus als Künstliche Intelligenz für d
 * Die Originalimplementierung nutzt hierfür _ein_ Modell mit zwei _heads_, also $`p, v = f_\theta (s)`$, wobei im Training der Fehler sowohl zwischen $`p`$ und $`\pi`$ (_policy_, Zugempfehlungen) minimiert wird als auch zwischen $`v`$ und $`z`$ (_value_, Stellungsbewertung)
 * Falls das Modell nicht hinreichend trainiert ist, können im Spielbetrieb illegale Züge vorgeschlagen werden!
 
-## Arbeitsbereiche
-
-* **Modell**: Konzeption und Training inklusive Initialisierung, Speichern, Laden, Fortsetzen von unterbrochenem Training, [Inferenz](glossary#inferenz), Einrichtung und Nutzung der TU-Infrastruktur
-* **MCTS**: Implementierung für Training und Spielbetrieb, Optimierung durch Vektorisierung in Numpy und/oder Entwurf passender Datenstrukturen
-* **Interface**: Übersetzung FEN-Notation in [Tensor-Notation](glossary#tensor-notation), Implementierung einer Port-Schnittstelle, Kompatibilität mit Game-Server
-* **Organisation**: Projektplanung, Architekturskizze, Fortschrittskontrolle, Dokumentation für den Projektbericht
-* **Testen**: Testentwurf für möglichst viele Komponenten, Sicherstellen von Code-Qualität
-
-## Arbeitsmodus
-
-Wir treffen uns Donnerstags von 14 bis 16 Uhr. Ziel der Treffen:
-* Bericht über die **aktuell laufenden Arbeitspakete**
-* Dabei besonders Fokus auf **Abhängigkeiten zwischen Arbeitsbereichen**
-* Abhängigkeiten sollten im Optimalfall bis spätestens Freitag aufgelöst werden
-* Planung der **Arbeitspakete für die nächste Woche**:
-* Einzelne Arbeitspakete in kleine Arbeitsschritte aufteilen und innerhalb des Wikis **auf der Seite des Arbeitsbereiches** durch `###`-Überschriften dokumentieren. Die Überschriften verlinken auf die Issues im Trackersystem, wo detaillierte Informationen zu diesem Arbeitsschritt festgehalten sind mit folgender Syntax: `### Arbeitsschritt #[Nummer der Issue]`
-* Issues können auf Wikieinträge mit folgender Syntax verlinken: `[Details](/../wikis/pageslug#paragraph)`
-* siehe Beispiel-Issue #2 und [Beispiel-Wikieintrag](interface#ein-arbeitsschritt); gerne auch [Issues untereinander und mit Commit-Messages verlinken](https://docs.gitlab.com/ee/user/project/issues/crosslinking_issues.html)
-* Die Planung der Arbeitspakete in kleinen Arbeitsschritten kann auch in Untergruppen nach Arbeitsbereichen geschehen
-
-## Gruppen
-* **Organisation**: Sebastian, Konstantin
-* **MCTS**: Martin, Tarik, Sebastian
-* **Modell**: Konstantin, Thomas, Jonas, Tarik, Kurt
-* **Interface**: Thomas, Jonas, Martin
-* **Git, Tests**: Tarik, Martin
 
 
 ## Zeitplan
